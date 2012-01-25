@@ -14,4 +14,6 @@
     
 }
 
+@property (unsafe_unretained, nonatomic) UIScrollView * activeFeelingImagesTableView;
+
 @end

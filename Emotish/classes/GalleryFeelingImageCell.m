@@ -18,7 +18,7 @@
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
         
-        BOOL debugging = YES;
+        BOOL debugging = NO;
         
         self.feelingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, GC_FEELING_IMAGE_MARGIN_VERTICAL, GC_FEELING_IMAGE_SIDE_LENGTH, GC_FEELING_IMAGE_SIDE_LENGTH)];
         self.feelingImageView.backgroundColor = [UIColor clearColor];

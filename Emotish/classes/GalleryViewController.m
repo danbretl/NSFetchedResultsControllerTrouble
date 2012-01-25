@@ -18,12 +18,13 @@
 @implementation GalleryViewController
 
 @synthesize feelingsTableView=_feelingsTableView;
+@synthesize activeFeelingImagesTableView=_activeFeelingImagesTableView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        debugging = YES;
+        debugging = NO;
     }
     return self;
 }
@@ -74,7 +75,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSLog(@"cellForRowAtIndexPath:%d-%d", indexPath.section, indexPath.row);
+//    NSLog(@"cellForRowAtIndexPath:%d-%d", indexPath.section, indexPath.row);
     
     if (tableView == self.feelingsTableView) {
         
@@ -114,14 +115,15 @@
     
 }
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    
-    if (scrollView == self.feelingsTableView) {
-        
-    } else {
-        
-    }
-    
-}
+//- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+//    if (scrollView == self.feelingsTableView) {
+////        NSLog(@"feelingsTableView.contentOffset.y=%f", scrollView.contentOffset.y);
+//        [self.activeFeelingImagesTableView setContentOffset:CGPointZero animated:YES];
+//        self.activeFeelingImagesTableView = nil;
+//    } else {
+//        self.activeFeelingImagesTableView = scrollView;
+////        NSLog(@"imagesTableView(%d).contentOffset.y=%f", scrollView.tag, scrollView.contentOffset.y);
+//    }
+//}
 
 @end
