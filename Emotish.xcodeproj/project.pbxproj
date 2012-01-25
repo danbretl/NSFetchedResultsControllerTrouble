@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3299A14614D0967A0017FAEF /* GalleryFeelingCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3299A14514D0967A0017FAEF /* GalleryFeelingCell.m */; };
+		3299A14914D096890017FAEF /* GalleryFeelingImageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */; };
+		3299A19414D0A90B0017FAEF /* protoImage1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3299A14C14D0A90B0017FAEF /* protoImage1.jpg */; };
+		3299A19514D0A90B0017FAEF /* protoImage2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3299A14D14D0A90B0017FAEF /* protoImage2.jpg */; };
+		3299A19614D0A90B0017FAEF /* protoImage3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3299A14E14D0A90B0017FAEF /* protoImage3.jpg */; };
+		3299A19714D0A90B0017FAEF /* protoImage4.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3299A14F14D0A90B0017FAEF /* protoImage4.jpg */; };
+		3299A1DD14D0BDA20017FAEF /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 3299A1DC14D0BDA20017FAEF /* Icon.png */; };
+		3299A1DF14D0BDA60017FAEF /* Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3299A1DE14D0BDA60017FAEF /* Icon@2x.png */; };
 		32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EB14D0929F00191C6F /* UIKit.framework */; };
 		32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1ED14D0929F00191C6F /* Foundation.framework */; };
 		32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */; };
@@ -20,6 +28,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3299A14214D095B20017FAEF /* GalleryConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryConstants.h; path = classes/GalleryConstants.h; sourceTree = "<group>"; };
+		3299A14414D0967A0017FAEF /* GalleryFeelingCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryFeelingCell.h; path = classes/GalleryFeelingCell.h; sourceTree = "<group>"; };
+		3299A14514D0967A0017FAEF /* GalleryFeelingCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GalleryFeelingCell.m; path = classes/GalleryFeelingCell.m; sourceTree = "<group>"; };
+		3299A14714D096890017FAEF /* GalleryFeelingImageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryFeelingImageCell.h; path = classes/GalleryFeelingImageCell.h; sourceTree = "<group>"; };
+		3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GalleryFeelingImageCell.m; path = classes/GalleryFeelingImageCell.m; sourceTree = "<group>"; };
+		3299A14C14D0A90B0017FAEF /* protoImage1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = protoImage1.jpg; sourceTree = "<group>"; };
+		3299A14D14D0A90B0017FAEF /* protoImage2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = protoImage2.jpg; sourceTree = "<group>"; };
+		3299A14E14D0A90B0017FAEF /* protoImage3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = protoImage3.jpg; sourceTree = "<group>"; };
+		3299A14F14D0A90B0017FAEF /* protoImage4.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = protoImage4.jpg; sourceTree = "<group>"; };
+		3299A1DC14D0BDA20017FAEF /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		3299A1DE14D0BDA60017FAEF /* Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon@2x.png"; sourceTree = "<group>"; };
 		32E2F1E714D0929F00191C6F /* Emotish.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Emotish.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32E2F1EB14D0929F00191C6F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		32E2F1ED14D0929F00191C6F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -52,12 +71,42 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3279F84C14D0BDE900169BB0 /* icons */ = {
+			isa = PBXGroup;
+			children = (
+				3299A1DC14D0BDA20017FAEF /* Icon.png */,
+				3299A1DE14D0BDA60017FAEF /* Icon@2x.png */,
+			);
+			name = icons;
+			sourceTree = "<group>";
+		};
+		3299A14A14D097560017FAEF /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Shared;
+			sourceTree = "<group>";
+		};
+		3299A14B14D0A8F60017FAEF /* images */ = {
+			isa = PBXGroup;
+			children = (
+				3299A14C14D0A90B0017FAEF /* protoImage1.jpg */,
+				3299A14D14D0A90B0017FAEF /* protoImage2.jpg */,
+				3299A14E14D0A90B0017FAEF /* protoImage3.jpg */,
+				3299A14F14D0A90B0017FAEF /* protoImage4.jpg */,
+			);
+			name = images;
+			path = Emotish/images;
+			sourceTree = "<group>";
+		};
 		32E2F1DC14D0929E00191C6F = {
 			isa = PBXGroup;
 			children = (
 				32E2F1F314D0929F00191C6F /* Emotish */,
 				32E2F1EA14D0929F00191C6F /* Frameworks */,
 				32E2F1E814D0929F00191C6F /* Products */,
+				3299A14B14D0A8F60017FAEF /* images */,
+				3279F84C14D0BDE900169BB0 /* icons */,
 			);
 			sourceTree = "<group>";
 		};
@@ -85,6 +134,7 @@
 			children = (
 				32E2F1FC14D0929F00191C6F /* EmotishAppDelegate.h */,
 				32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */,
+				3299A14A14D097560017FAEF /* Shared */,
 				32E2F20A14D092B800191C6F /* GalleryViewController */,
 				32E2F20914D092B600191C6F /* FeelingViewController */,
 				32E2F20814D092B500191C6F /* UserViewController */,
@@ -130,9 +180,14 @@
 		32E2F20A14D092B800191C6F /* GalleryViewController */ = {
 			isa = PBXGroup;
 			children = (
+				3299A14214D095B20017FAEF /* GalleryConstants.h */,
 				32E2F20B14D0931400191C6F /* GalleryViewController.h */,
 				32E2F20C14D0931400191C6F /* GalleryViewController.m */,
 				32E2F20D14D0931400191C6F /* GalleryViewController.xib */,
+				3299A14414D0967A0017FAEF /* GalleryFeelingCell.h */,
+				3299A14514D0967A0017FAEF /* GalleryFeelingCell.m */,
+				3299A14714D096890017FAEF /* GalleryFeelingImageCell.h */,
+				3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */,
 			);
 			name = GalleryViewController;
 			sourceTree = "<group>";
@@ -189,6 +244,12 @@
 			files = (
 				32E2F1F814D0929F00191C6F /* InfoPlist.strings in Resources */,
 				32E2F20F14D0931400191C6F /* GalleryViewController.xib in Resources */,
+				3299A19414D0A90B0017FAEF /* protoImage1.jpg in Resources */,
+				3299A19514D0A90B0017FAEF /* protoImage2.jpg in Resources */,
+				3299A19614D0A90B0017FAEF /* protoImage3.jpg in Resources */,
+				3299A19714D0A90B0017FAEF /* protoImage4.jpg in Resources */,
+				3299A1DD14D0BDA20017FAEF /* Icon.png in Resources */,
+				3299A1DF14D0BDA60017FAEF /* Icon@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,6 +264,8 @@
 				32E2F1FE14D0929F00191C6F /* EmotishAppDelegate.m in Sources */,
 				32E2F20114D0929F00191C6F /* Emotish.xcdatamodeld in Sources */,
 				32E2F20E14D0931400191C6F /* GalleryViewController.m in Sources */,
+				3299A14614D0967A0017FAEF /* GalleryFeelingCell.m in Sources */,
+				3299A14914D096890017FAEF /* GalleryFeelingImageCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -306,6 +369,7 @@
 				32E2F20614D0929F00191C6F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

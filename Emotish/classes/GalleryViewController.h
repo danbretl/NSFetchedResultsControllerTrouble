@@ -8,6 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
-@interface GalleryViewController : UIViewController
+@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIScrollViewDelegate> {
+    
+    BOOL debugging;
+    
+}
 
 @end
