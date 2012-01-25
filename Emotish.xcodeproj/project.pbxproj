@@ -1,0 +1,284 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EB14D0929F00191C6F /* UIKit.framework */; };
+		32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1ED14D0929F00191C6F /* Foundation.framework */; };
+		32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */; };
+		32E2F1F214D0929F00191C6F /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1F114D0929F00191C6F /* CoreData.framework */; };
+		32E2F1F814D0929F00191C6F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 32E2F1F614D0929F00191C6F /* InfoPlist.strings */; };
+		32E2F1FA14D0929F00191C6F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F1F914D0929F00191C6F /* main.m */; };
+		32E2F1FE14D0929F00191C6F /* EmotishAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */; };
+		32E2F20114D0929F00191C6F /* Emotish.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		32E2F1E714D0929F00191C6F /* Emotish.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Emotish.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		32E2F1EB14D0929F00191C6F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		32E2F1ED14D0929F00191C6F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		32E2F1F114D0929F00191C6F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		32E2F1F514D0929F00191C6F /* Emotish-Info.plist */ = {isa = PBXFileReference; path = "Emotish-Info.plist"; sourceTree = "<group>"; };
+		32E2F1F714D0929F00191C6F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		32E2F1F914D0929F00191C6F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		32E2F1FB14D0929F00191C6F /* Emotish-Prefix.pch */ = {isa = PBXFileReference; path = "Emotish-Prefix.pch"; sourceTree = "<group>"; };
+		32E2F1FC14D0929F00191C6F /* EmotishAppDelegate.h */ = {isa = PBXFileReference; path = EmotishAppDelegate.h; sourceTree = "<group>"; };
+		32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EmotishAppDelegate.m; sourceTree = "<group>"; };
+		32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Emotish.xcdatamodel; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		32E2F1E414D0929F00191C6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */,
+				32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */,
+				32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */,
+				32E2F1F214D0929F00191C6F /* CoreData.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		32E2F1DC14D0929E00191C6F = {
+			isa = PBXGroup;
+			children = (
+				32E2F1F314D0929F00191C6F /* Emotish */,
+				32E2F1EA14D0929F00191C6F /* Frameworks */,
+				32E2F1E814D0929F00191C6F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		32E2F1E814D0929F00191C6F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				32E2F1E714D0929F00191C6F /* Emotish.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		32E2F1EA14D0929F00191C6F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				32E2F1EB14D0929F00191C6F /* UIKit.framework */,
+				32E2F1ED14D0929F00191C6F /* Foundation.framework */,
+				32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */,
+				32E2F1F114D0929F00191C6F /* CoreData.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		32E2F1F314D0929F00191C6F /* Emotish */ = {
+			isa = PBXGroup;
+			children = (
+				32E2F1FC14D0929F00191C6F /* EmotishAppDelegate.h */,
+				32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */,
+				32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */,
+				32E2F1F414D0929F00191C6F /* Supporting Files */,
+			);
+			path = Emotish;
+			sourceTree = "<group>";
+		};
+		32E2F1F414D0929F00191C6F /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				32E2F1F514D0929F00191C6F /* Emotish-Info.plist */,
+				32E2F1F614D0929F00191C6F /* InfoPlist.strings */,
+				32E2F1F914D0929F00191C6F /* main.m */,
+				32E2F1FB14D0929F00191C6F /* Emotish-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		32E2F1E614D0929F00191C6F /* Emotish */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32E2F20414D0929F00191C6F /* Build configuration list for PBXNativeTarget "Emotish" */;
+			buildPhases = (
+				32E2F1E314D0929F00191C6F /* Sources */,
+				32E2F1E414D0929F00191C6F /* Frameworks */,
+				32E2F1E514D0929F00191C6F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Emotish;
+			productName = Emotish;
+			productReference = 32E2F1E714D0929F00191C6F /* Emotish.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		32E2F1DE14D0929E00191C6F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = 32E2F1E114D0929E00191C6F /* Build configuration list for PBXProject "Emotish" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 32E2F1DC14D0929E00191C6F;
+			productRefGroup = 32E2F1E814D0929F00191C6F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				32E2F1E614D0929F00191C6F /* Emotish */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		32E2F1E514D0929F00191C6F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32E2F1F814D0929F00191C6F /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		32E2F1E314D0929F00191C6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32E2F1FA14D0929F00191C6F /* main.m in Sources */,
+				32E2F1FE14D0929F00191C6F /* EmotishAppDelegate.m in Sources */,
+				32E2F20114D0929F00191C6F /* Emotish.xcdatamodeld in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		32E2F1F614D0929F00191C6F /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				32E2F1F714D0929F00191C6F /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		32E2F20214D0929F00191C6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		32E2F20314D0929F00191C6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		32E2F20514D0929F00191C6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Emotish/Emotish-Prefix.pch";
+				INFOPLIST_FILE = "Emotish/Emotish-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		32E2F20614D0929F00191C6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Emotish/Emotish-Prefix.pch";
+				INFOPLIST_FILE = "Emotish/Emotish-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		32E2F1E114D0929E00191C6F /* Build configuration list for PBXProject "Emotish" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32E2F20214D0929F00191C6F /* Debug */,
+				32E2F20314D0929F00191C6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		32E2F20414D0929F00191C6F /* Build configuration list for PBXNativeTarget "Emotish" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32E2F20514D0929F00191C6F /* Debug */,
+				32E2F20614D0929F00191C6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
+			);
+			currentVersion = 32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */;
+			path = Emotish.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 32E2F1DE14D0929E00191C6F /* Project object */;
+}
