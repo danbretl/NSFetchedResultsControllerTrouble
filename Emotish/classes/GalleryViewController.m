@@ -90,6 +90,7 @@
         cell.imagesTableView.dataSource = self;
         cell.imagesTableView.tag = indexPath.row;
         [cell.imagesTableView reloadData];
+        cell.imagesTableView.contentOffset = CGPointMake(0, 0);
         
         return cell;
         
