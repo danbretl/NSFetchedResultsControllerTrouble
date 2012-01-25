@@ -7,8 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GalleryViewController.h"
 
 @interface EmotishAppDelegate : UIResponder <UIApplicationDelegate>
+
+@property (strong, nonatomic) GalleryViewController * galleryViewController;
 
 @property (strong, nonatomic) UIWindow *window;
 

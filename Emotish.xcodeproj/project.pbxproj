@@ -15,6 +15,8 @@
 		32E2F1FA14D0929F00191C6F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F1F914D0929F00191C6F /* main.m */; };
 		32E2F1FE14D0929F00191C6F /* EmotishAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */; };
 		32E2F20114D0929F00191C6F /* Emotish.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */; };
+		32E2F20E14D0931400191C6F /* GalleryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F20C14D0931400191C6F /* GalleryViewController.m */; };
+		32E2F20F14D0931400191C6F /* GalleryViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32E2F20D14D0931400191C6F /* GalleryViewController.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,13 +25,16 @@
 		32E2F1ED14D0929F00191C6F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		32E2F1F114D0929F00191C6F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
-		32E2F1F514D0929F00191C6F /* Emotish-Info.plist */ = {isa = PBXFileReference; path = "Emotish-Info.plist"; sourceTree = "<group>"; };
+		32E2F1F514D0929F00191C6F /* Emotish-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Emotish-Info.plist"; sourceTree = "<group>"; };
 		32E2F1F714D0929F00191C6F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		32E2F1F914D0929F00191C6F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		32E2F1FB14D0929F00191C6F /* Emotish-Prefix.pch */ = {isa = PBXFileReference; path = "Emotish-Prefix.pch"; sourceTree = "<group>"; };
-		32E2F1FC14D0929F00191C6F /* EmotishAppDelegate.h */ = {isa = PBXFileReference; path = EmotishAppDelegate.h; sourceTree = "<group>"; };
+		32E2F1FB14D0929F00191C6F /* Emotish-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Emotish-Prefix.pch"; sourceTree = "<group>"; };
+		32E2F1FC14D0929F00191C6F /* EmotishAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EmotishAppDelegate.h; sourceTree = "<group>"; };
 		32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EmotishAppDelegate.m; sourceTree = "<group>"; };
 		32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Emotish.xcdatamodel; sourceTree = "<group>"; };
+		32E2F20B14D0931400191C6F /* GalleryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryViewController.h; path = classes/GalleryViewController.h; sourceTree = "<group>"; };
+		32E2F20C14D0931400191C6F /* GalleryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GalleryViewController.m; path = classes/GalleryViewController.m; sourceTree = "<group>"; };
+		32E2F20D14D0931400191C6F /* GalleryViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = GalleryViewController.xib; path = classes/GalleryViewController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,7 +85,10 @@
 			children = (
 				32E2F1FC14D0929F00191C6F /* EmotishAppDelegate.h */,
 				32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */,
-				32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */,
+				32E2F20A14D092B800191C6F /* GalleryViewController */,
+				32E2F20914D092B600191C6F /* FeelingViewController */,
+				32E2F20814D092B500191C6F /* UserViewController */,
+				32E2F20714D092B100191C6F /* Data Models */,
 				32E2F1F414D0929F00191C6F /* Supporting Files */,
 			);
 			path = Emotish;
@@ -95,6 +103,38 @@
 				32E2F1FB14D0929F00191C6F /* Emotish-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		32E2F20714D092B100191C6F /* Data Models */ = {
+			isa = PBXGroup;
+			children = (
+				32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */,
+			);
+			name = "Data Models";
+			sourceTree = "<group>";
+		};
+		32E2F20814D092B500191C6F /* UserViewController */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = UserViewController;
+			sourceTree = "<group>";
+		};
+		32E2F20914D092B600191C6F /* FeelingViewController */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = FeelingViewController;
+			sourceTree = "<group>";
+		};
+		32E2F20A14D092B800191C6F /* GalleryViewController */ = {
+			isa = PBXGroup;
+			children = (
+				32E2F20B14D0931400191C6F /* GalleryViewController.h */,
+				32E2F20C14D0931400191C6F /* GalleryViewController.m */,
+				32E2F20D14D0931400191C6F /* GalleryViewController.xib */,
+			);
+			name = GalleryViewController;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -148,6 +188,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				32E2F1F814D0929F00191C6F /* InfoPlist.strings in Resources */,
+				32E2F20F14D0931400191C6F /* GalleryViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,6 +202,7 @@
 				32E2F1FA14D0929F00191C6F /* main.m in Sources */,
 				32E2F1FE14D0929F00191C6F /* EmotishAppDelegate.m in Sources */,
 				32E2F20114D0929F00191C6F /* Emotish.xcdatamodeld in Sources */,
+				32E2F20E14D0931400191C6F /* GalleryViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

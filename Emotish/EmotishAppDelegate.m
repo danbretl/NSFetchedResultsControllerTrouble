@@ -10,6 +10,7 @@
 
 @implementation EmotishAppDelegate
 
+@synthesize galleryViewController = _galleryViewController;
 @synthesize window = _window;
 @synthesize managedObjectContext = __managedObjectContext;
 @synthesize managedObjectModel = __managedObjectModel;
@@ -20,6 +21,8 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
+    self.galleryViewController = [[GalleryViewController alloc] initWithNibName:@"GalleryViewController" bundle:[NSBundle mainBundle]];
+    self.window.rootViewController = self.galleryViewController;
     [self.window makeKeyAndVisible];
     return YES;
 }
