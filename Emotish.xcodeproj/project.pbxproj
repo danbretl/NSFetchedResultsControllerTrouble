@@ -343,6 +343,10 @@
 		32E2F20614D0929F00191C6F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					armv6,
+					armv7,
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Emotish/Emotish-Prefix.pch";
 				INFOPLIST_FILE = "Emotish/Emotish-Info.plist";
