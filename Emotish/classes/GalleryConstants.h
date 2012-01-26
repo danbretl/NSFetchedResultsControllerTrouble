@@ -11,7 +11,7 @@
 
 #define GC_TABLE_WIDTH                      320.0
 
-#define GC_FEELING_IMAGE_SIDE_LENGTH        60.0
+#define GC_FEELING_IMAGE_SIDE_LENGTH        80.0
 #define GC_FEELING_IMAGE_MARGIN_VERTICAL    2.0
 #define GC_FEELING_IMAGE_MARGIN_RIGHT       5.0
 

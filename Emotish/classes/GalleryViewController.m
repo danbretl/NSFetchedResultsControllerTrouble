@@ -18,7 +18,7 @@
 @implementation GalleryViewController
 
 @synthesize feelingsTableView=_feelingsTableView;
-@synthesize activeFeelingImagesTableView=_activeFeelingImagesTableView;
+@synthesize activeFeelingCell=_activeFeelingCell;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -46,6 +46,7 @@
     
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
     self.feelingsTableView.contentOffset = CGPointMake(0, 0);
+    self.feelingsTableView.tag = -1;
     
     if (debugging) {
         self.feelingsTableView.backgroundColor = [UIColor greenColor];
@@ -93,6 +94,8 @@
         [cell.imagesTableView reloadData];
         cell.imagesTableView.contentOffset = CGPointMake(0, 0);
         
+        if (indexPath.section == 0 && indexPath.row == 0) { self.activeFeelingCell = cell; }
+        
         return cell;
         
     } else {
@@ -113,6 +116,40 @@
         
     }
     
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+//    NSLog(@"scrollView(%d)DidScroll, contentOffset=%@, \nisDecelerating=%d, isTracking=%d, isDragging=%d", scrollView.tag, NSStringFromCGPoint(scrollView.contentOffset), scrollView.isDecelerating, scrollView.isTracking, scrollView.isDragging);
+    if (scrollView == self.feelingsTableView) {
+        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+        self.activeFeelingCell = nil;
+//        NSLog(@"oldActiveFeelingCell.imagesTableView.contentOffset.y = %f", oldActiveFeelingCell.imagesTableView.contentOffset.y);
+        if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+            [oldActiveFeelingCell scrollToOriginAnimated:YES];
+        } else {
+            [oldActiveFeelingCell highlightLabel:NO];
+        }
+    } else {
+        if (scrollView == self.activeFeelingCell.imagesTableView) {
+//            if (scrollView.contentOffset.y == 0) {
+//                [self.activeFeelingCell highlightLabel:NO];
+//                self.activeFeelingCell = nil;
+//            }
+        } else {
+            if (scrollView.isTracking) {
+                GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+                self.activeFeelingCell = nil;
+                if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+                    [oldActiveFeelingCell scrollToOriginAnimated:YES];
+                } else {
+                    [oldActiveFeelingCell highlightLabel:NO];
+                }
+                self.activeFeelingCell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+                [self.activeFeelingCell highlightLabel:YES];
+                //            [self.activeFeelingCell highlightLabel:YES animated:YES];   
+            }
+        }
+    }
 }
 
 //- (void)scrollViewDidScroll:(UIScrollView *)scrollView {

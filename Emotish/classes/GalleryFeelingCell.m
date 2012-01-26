@@ -9,10 +9,19 @@
 #import "GalleryFeelingCell.h"
 #import "GalleryConstants.h"
 
+//#define GFC_ANIMATION_DURATION 0.25
+
+@interface GalleryFeelingCell()
+@end
+
 @implementation GalleryFeelingCell
 
 @synthesize imagesTableView=_imagesTableView;
 @synthesize feelingLabel=_feelingLabel;
+
+@synthesize feelingLabelColorNormal=_feelingLabelColorNormal;
+@synthesize feelingLabelColorHighlight=_feelingLabelColorHighlight;
+//@synthesize feelingLabelHighlighted=_feelingLabelHighlighted;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -20,6 +29,9 @@
     if (self) {
         
         BOOL debugging = NO;
+        
+        self.feelingLabelColorNormal = [UIColor colorWithWhite:0.8 alpha:1.0];
+        self.feelingLabelColorHighlight = [UIColor colorWithWhite:0.6 alpha:1.0];
         
         CGFloat selfHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
         CGFloat labelContainerWidth = GC_TABLE_WIDTH - (GC_FEELING_IMAGE_SIDE_LENGTH + GC_FEELING_IMAGE_MARGIN_RIGHT + floorf(GC_FEELING_IMAGE_SIDE_LENGTH * 0.2));
@@ -29,6 +41,7 @@
         [self addSubview:wrapperScrollView];
         
         self.imagesTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, selfHeight, GC_TABLE_WIDTH)];
+//        self.imagesTableView.delegate = self;
         self.imagesTableView.alwaysBounceVertical = YES;
         self.imagesTableView.showsHorizontalScrollIndicator = NO;
         self.imagesTableView.showsVerticalScrollIndicator = NO;
@@ -43,10 +56,10 @@
         
         self.feelingLabel = [[UILabel alloc] initWithFrame:CGRectMake(GC_FEELING_LABEL_MARGIN_LEFT, 0, labelWidth, selfHeight)];
         self.feelingLabel.textAlignment = UITextAlignmentRight;
-        self.feelingLabel.textColor = [UIColor colorWithWhite:0.6 alpha:1.0];
         self.feelingLabel.text = @"feeling";
         self.feelingLabel.font = [UIFont boldSystemFontOfSize:36.0];
         self.feelingLabel.adjustsFontSizeToFitWidth = YES;
+        [self highlightLabel:NO];
         UIView * feelingLabelContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, labelContainerWidth, selfHeight)];
         feelingLabelContainer.transform = CGAffineTransformMakeRotation(M_PI * 0.5);
         [feelingLabelContainer addSubview:self.feelingLabel];
@@ -64,5 +77,46 @@
     }
     return self;
 }
+
+- (void) highlightLabel:(BOOL)highlight {
+    self.feelingLabel.textColor = highlight ? self.feelingLabelColorHighlight : self.feelingLabelColorNormal;
+}
+
+//- (void) highlightLabel:(BOOL)highlight animated:(BOOL)animated {
+//    if (animated) {
+//        [UIView animateWithDuration:GFC_ANIMATION_DURATION animations:^{
+//            [self highlightLabel:highlight];
+//        }];
+//    } else {
+//        [self highlightLabel:highlight];
+//    }
+//}
+
+//- (void) scrollToOrigin {
+//    [self highlightLabel:NO];
+////    [self.imagesTableView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:NO];
+//    [self.imagesTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:NO];
+////    [self.imagesTableView setContentOffset:CGPointMake(0, 0)];
+//}
+
+//- (void) scrollToOriginAnimated:(BOOL)animated {
+//    if (animated) {
+//        [UIView animateWithDuration:GFC_ANIMATION_DURATION delay:0.0 options:0 animations:^{
+//            [self scrollToOrigin];
+//        } completion:NULL];
+//    } else {
+//        [self scrollToOrigin];
+//    }
+//}
+
+- (void) scrollToOriginAnimated:(BOOL)animated {
+    [self highlightLabel:NO];
+    [self.imagesTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:animated];
+}
+
+
+//- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+//    NSLog(@"GalleryFeelingCell scrollViewDidScroll, contentOffset=%@", NSStringFromCGPoint(scrollView.contentOffset));
+//}
 
 @end

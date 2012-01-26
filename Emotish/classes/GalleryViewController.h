@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GalleryFeelingCell.h"
 
 @interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIScrollViewDelegate> {
     
@@ -14,6 +15,6 @@
     
 }
 
-@property (unsafe_unretained, nonatomic) UIScrollView * activeFeelingImagesTableView;
+@property (unsafe_unretained, nonatomic) GalleryFeelingCell * activeFeelingCell;
 
 @end
