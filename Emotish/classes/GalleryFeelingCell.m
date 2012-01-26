@@ -59,9 +59,11 @@
         self.feelingLabel.text = @"feeling";
         self.feelingLabel.font = [UIFont boldSystemFontOfSize:36.0];
         self.feelingLabel.adjustsFontSizeToFitWidth = YES;
+//        self.feelingLabel.backgroundColor = [UIColor clearColor];
         [self highlightLabel:NO];
         UIView * feelingLabelContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, labelContainerWidth, selfHeight)];
         feelingLabelContainer.transform = CGAffineTransformMakeRotation(M_PI * 0.5);
+//        feelingLabelContainer.backgroundColor = [UIColor clearColor];
         [feelingLabelContainer addSubview:self.feelingLabel];
         self.imagesTableView.tableHeaderView = feelingLabelContainer;
         
