@@ -153,11 +153,22 @@
     }
 }
 
+- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
+    if (scrollView != self.feelingsTableView &&
+        self.activeFeelingCell.imagesTableView != scrollView &&
+        scrollView.contentOffset.y > 0) {
+        GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+        [cell scrollToOriginAnimated:YES];
+    }
+}
+
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     if (scrollView != self.feelingsTableView) {
         if (self.activeFeelingCell.imagesTableView != scrollView) {
-            GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-            [cell scrollToOriginAnimated:YES];
+            if (!decelerate && scrollView.contentOffset.y > 0) {
+                GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+                [cell scrollToOriginAnimated:YES];
+            }
         }
     }
 }
