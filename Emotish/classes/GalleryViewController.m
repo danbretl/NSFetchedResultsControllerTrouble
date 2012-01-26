@@ -94,8 +94,6 @@
         [cell.imagesTableView reloadData];
         cell.imagesTableView.contentOffset = CGPointMake(0, 0);
         
-        if (indexPath.section == 0 && indexPath.row == 0) { self.activeFeelingCell = cell; }
-        
         return cell;
         
     } else {
@@ -137,17 +135,29 @@
 //            }
         } else {
             if (scrollView.isTracking) {
-                GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-                self.activeFeelingCell = nil;
-                if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-                    [oldActiveFeelingCell scrollToOriginAnimated:YES];
-                } else {
-                    [oldActiveFeelingCell highlightLabel:NO];
+                if (!(self.activeFeelingCell != nil &&
+                      self.activeFeelingCell.imagesTableView.isTracking)) {
+                    GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+                    self.activeFeelingCell = nil;
+                    if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+                        [oldActiveFeelingCell scrollToOriginAnimated:YES];
+                    } else {
+                        [oldActiveFeelingCell highlightLabel:NO];
+                    }
+                    self.activeFeelingCell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+                    [self.activeFeelingCell highlightLabel:YES];
+                    //            [self.activeFeelingCell highlightLabel:YES animated:YES];
                 }
-                self.activeFeelingCell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-                [self.activeFeelingCell highlightLabel:YES];
-                //            [self.activeFeelingCell highlightLabel:YES animated:YES];   
             }
+        }
+    }
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    if (scrollView != self.feelingsTableView) {
+        if (self.activeFeelingCell.imagesTableView != scrollView) {
+            GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+            [cell scrollToOriginAnimated:YES];
         }
     }
 }
