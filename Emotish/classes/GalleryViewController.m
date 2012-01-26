@@ -20,6 +20,7 @@
 @synthesize feelingsTableView=_feelingsTableView;
 @synthesize activeFeelingCell=_activeFeelingCell;
 //@synthesize activeFeelingCells=_activeFeelingCells;
+@synthesize tempFeelingStrings=_tempFeelingStrings;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -73,7 +74,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 20;
+    return tableView == self.feelingsTableView ? self.tempFeelingStrings.count : 20;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -92,7 +93,7 @@
         } else {
             
         }
-        cell.feelingLabel.text = [NSString stringWithFormat:@"feel%ding", indexPath.row];
+        cell.feelingLabel.text = [self.tempFeelingStrings objectAtIndex:indexPath.row];
         cell.imagesTableView.tag = indexPath.row;
         // Can not figure out how to fix the problem where if a row is scrolling horizontally while it goes off screen, then when that row is reused, the starting content offset is all messed up.
 //        NSLog(@"before scrollRectA %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
@@ -103,6 +104,7 @@
 //            cell.imagesTableView.contentOffset = CGPointMake(0, -cell.imagesTableView.contentOffset.y);
 //        }
         [cell.imagesTableView reloadData];
+        [cell scrollToOriginAnimated:NO];
 //        [cell.imagesTableView setContentOffset:CGPointMake(0, 0)];
 //        [cell.imagesTableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
 //        cell.imagesTableView.contentOffset = CGPointMake(0, 0);
@@ -139,18 +141,18 @@
     
 }
 
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-    if (scrollView == self.feelingsTableView) {
-        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-        self.activeFeelingCell = nil;
-        //        NSLog(@"oldActiveFeelingCell.imagesTableView.contentOffset.y = %f", oldActiveFeelingCell.imagesTableView.contentOffset.y);
-        if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-            [oldActiveFeelingCell scrollToOriginAnimated:YES];
-        } else {
-            [oldActiveFeelingCell highlightLabel:NO];
-        }
-    }
-}
+//- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+//    if (scrollView == self.feelingsTableView) {
+//        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+//        self.activeFeelingCell = nil;
+//        //        NSLog(@"oldActiveFeelingCell.imagesTableView.contentOffset.y = %f", oldActiveFeelingCell.imagesTableView.contentOffset.y);
+//        if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+//            [oldActiveFeelingCell scrollToOriginAnimated:YES];
+//        } else {
+//            [oldActiveFeelingCell highlightLabel:NO];
+//        }
+//    }
+//}
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
 //    NSLog(@"scrollView(%d)DidScroll, contentOffset=%@, \nisDecelerating=%d, isTracking=%d, isDragging=%d", scrollView.tag, NSStringFromCGPoint(scrollView.contentOffset), scrollView.isDecelerating, scrollView.isTracking, scrollView.isDragging);
@@ -229,5 +231,12 @@
 ////        NSLog(@"imagesTableView(%d).contentOffset.y=%f", scrollView.tag, scrollView.contentOffset.y);
 //    }
 //}
+
+- (NSArray *)tempFeelingStrings {
+    if (_tempFeelingStrings == nil) {
+        _tempFeelingStrings = [[NSArray arrayWithObjects:@"Content", @"Distracted", @"Lucky", @"Satisfied", @"Aggressive", @"Frustrated", @"Silly", @"Sleepy", @"Excited", @"Too Cool", @"Utter Despair", @"Clever", @"Confused", @"Frantic", @"So Intense", @"Sneaky", @"Vindictive", @"Euphoric", @"Unicorn", @"Unlucky", @"Mellow", @"Desperate", @"Pouting", @"Happy", @"Intrigued", @"Mischievous", @"Mystified", @"Confident", @"Hopeful", @"Pissed Off", @"Disappointed", @"Flabbergasted", @"Meeple", @"On Edge", @"Robotic", @"Thoughtful", @"Bangladesh", @"Hopeless", @"Quixotic", @"Wary", @"Anguish", @"Calm", @"Indifferent", @"Stupid", @"Surprised", @"Tired", @"Astonished", @"Bemused", @"Bored", @"Chaos", @"Delighted", @"Depressed", @"Determined", @"Flummoxed", @"Full", @"Interested", @"Quirky", @"Stressed", @"Triumphant", @"Zen", @"Angry", @"Anxious", nil] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    }
+    return _tempFeelingStrings;
+}
 
 @end

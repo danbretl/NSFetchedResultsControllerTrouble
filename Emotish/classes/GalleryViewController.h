@@ -17,5 +17,6 @@
 
 @property (unsafe_unretained, nonatomic) GalleryFeelingCell * activeFeelingCell;
 //@property (strong, nonatomic) NSMutableArray * activeFeelingCells;
+@property (strong, nonatomic, readonly) NSArray * tempFeelingStrings;
 
 @end
