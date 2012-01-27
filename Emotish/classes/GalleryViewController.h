@@ -20,5 +20,6 @@
 @property (nonatomic) NSInteger activeFeelingCellIndexRow;
 @property (nonatomic) CGPoint activeFeelingCellContentOffsetPreserved;
 @property (strong, nonatomic, readonly) NSArray * tempFeelingStrings;
+@property (strong, nonatomic) UIImageView * floatingImageView;
 
 @end

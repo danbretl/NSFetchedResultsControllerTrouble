@@ -10,6 +10,9 @@
 
 @interface GalleryFeelingImageCell : UITableViewCell
 
-@property (strong, nonatomic) UIImageView * feelingImageView;
+//@property (strong, nonatomic) UIImageView * feelingImageView;
+@property (strong, nonatomic) UIButton * button;
+@property (nonatomic) NSInteger feelingIndex;
+@property (nonatomic) NSInteger imageIndex;
 
 @end

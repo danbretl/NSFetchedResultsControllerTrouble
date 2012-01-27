@@ -12,10 +12,12 @@
 
 @property (strong, nonatomic) UITableView * imagesTableView;
 @property (strong, nonatomic) UILabel * feelingLabel;
+@property (strong, nonatomic) UIButton * feelingLabelButton;
 
 @property (strong, nonatomic) UIColor * feelingLabelColorNormal;
 @property (strong, nonatomic) UIColor * feelingLabelColorHighlight;
-//@property (nonatomic) BOOL feelingLabelHighlighted;
+
+@property (nonatomic) NSInteger feelingIndex;
 
 - (void) highlightLabel:(BOOL)highlight;
 //- (void) highlightLabel:(BOOL)highlight animated:(BOOL)animated;

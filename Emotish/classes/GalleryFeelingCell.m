@@ -18,10 +18,13 @@
 
 @synthesize imagesTableView=_imagesTableView;
 @synthesize feelingLabel=_feelingLabel;
+@synthesize feelingLabelButton=_feelingLabelButton;
 
 @synthesize feelingLabelColorNormal=_feelingLabelColorNormal;
 @synthesize feelingLabelColorHighlight=_feelingLabelColorHighlight;
 //@synthesize feelingLabelHighlighted=_feelingLabelHighlighted;
+
+@synthesize feelingIndex=_feelingIndex;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -55,6 +58,7 @@
         self.imagesTableView.directionalLockEnabled = YES;
         
         self.feelingLabel = [[UILabel alloc] initWithFrame:CGRectMake(GC_FEELING_LABEL_MARGIN_LEFT, 0, labelWidth, selfHeight)];
+        self.feelingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.feelingLabel.textAlignment = UITextAlignmentRight;
         self.feelingLabel.text = @"feeling";
         self.feelingLabel.font = [UIFont boldSystemFontOfSize:30.0];
@@ -65,6 +69,10 @@
         feelingLabelContainer.transform = CGAffineTransformMakeRotation(M_PI * 0.5);
 //        feelingLabelContainer.backgroundColor = [UIColor clearColor];
         [feelingLabelContainer addSubview:self.feelingLabel];
+        self.feelingLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.feelingLabelButton.frame = self.feelingLabel.frame;
+        self.feelingLabelButton.autoresizingMask = self.feelingLabel.autoresizingMask;
+        [feelingLabelContainer addSubview:self.feelingLabelButton];
         self.imagesTableView.tableHeaderView = feelingLabelContainer;
         
         [wrapperScrollView addSubview:self.imagesTableView];
@@ -120,5 +128,11 @@
 //- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
 //    NSLog(@"GalleryFeelingCell scrollViewDidScroll, contentOffset=%@", NSStringFromCGPoint(scrollView.contentOffset));
 //}
+
+- (void)setFeelingIndex:(NSInteger)feelingIndex {
+    _feelingIndex = feelingIndex;
+    self.imagesTableView.tag = self.feelingIndex;
+    self.feelingLabelButton.tag = self.feelingIndex;
+}
 
 @end
