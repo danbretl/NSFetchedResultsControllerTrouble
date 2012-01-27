@@ -7,6 +7,7 @@
 //
 
 #import "GalleryViewController.h"
+#import "ViewConstants.h"
 #import "GalleryConstants.h"
 #import "GalleryFeelingCell.h"
 #import "GalleryFeelingImageCell.h"
@@ -18,8 +19,10 @@
 @implementation GalleryViewController
 
 @synthesize feelingsTableView=_feelingsTableView;
+@synthesize feelingsTableViewContentOffsetPreserved=_feelingsTableViewContentOffsetPreserved;
 @synthesize activeFeelingCell=_activeFeelingCell;
-//@synthesize activeFeelingCells=_activeFeelingCells;
+@synthesize activeFeelingCellIndexRow=_activeFeelingCellIndexRow;
+@synthesize activeFeelingCellContentOffsetPreserved=_activeFeelingCellContentOffsetPreserved;
 @synthesize tempFeelingStrings=_tempFeelingStrings;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -27,7 +30,9 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         debugging = NO;
-//        self.activeFeelingCells = [NSMutableArray array];
+        self.feelingsTableViewContentOffsetPreserved = CGPointMake(0, -(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL));
+        self.activeFeelingCellIndexRow = -1;
+        self.activeFeelingCellContentOffsetPreserved = CGPointZero;
     }
     return self;
 }
@@ -48,8 +53,8 @@
     NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
     
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
-    self.feelingsTableView.contentInset = UIEdgeInsetsMake(self.feelingsTableView.contentInset.top + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0, self.feelingsTableView.contentInset.bottom + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
-    self.feelingsTableView.contentOffset = CGPointMake(0, -self.feelingsTableView.contentInset.top);
+    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
+    self.feelingsTableView.scrollIndicatorInsets = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, 0);
     
     if (debugging) {
         self.feelingsTableView.backgroundColor = [UIColor greenColor];
@@ -59,8 +64,18 @@
 - (void)viewDidUnload
 {
     [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
+    self.feelingsTableView = nil;
+    self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    self.feelingsTableViewContentOffsetPreserved = self.feelingsTableView.contentOffset;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    self.feelingsTableView.contentOffset = self.feelingsTableViewContentOffsetPreserved;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -79,89 +94,69 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-//    NSLog(@"cellForRowAtIndexPath:%d-%d", indexPath.section, indexPath.row);
-    
     if (tableView == self.feelingsTableView) {
         
-        static NSString * FeelingCellID = @"FeelingCellID";
+        NSLog(@"feelingCell forIndexPath.row:%d", indexPath.row);
         
+        // Get / Create the cell
+        static NSString * FeelingCellID = @"FeelingCellID";
         GalleryFeelingCell * cell = (GalleryFeelingCell *)[tableView dequeueReusableCellWithIdentifier:FeelingCellID];
-        if (cell == nil/* || cell.imagesTableView.contentOffset.y > 0*//* bad idea */) {
+        if (cell == nil) {
+            NSLog(@"Brand new cell");
             cell = [[GalleryFeelingCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingCellID];
             cell.imagesTableView.delegate = self;
             cell.imagesTableView.dataSource = self;
         } else {
-            
+            NSLog(@"Dequeued cell with old imagesTableView.tag=%d (%@, %@)", cell.imagesTableView.tag, cell.feelingLabel.text, NSStringFromCGPoint(cell.imagesTableView.contentOffset));
+            if (cell.imagesTableView.tag == self.activeFeelingCellIndexRow) {
+                NSLog(@"Dequeued cell was the activeFeelingCell, preserving its content offset, and setting the activeFeelingCell object to nil.");
+                self.activeFeelingCellContentOffsetPreserved = cell.imagesTableView.contentOffset;
+                self.activeFeelingCell = nil;
+            }
         }
+        
+        // Configure the cell
         cell.feelingLabel.text = [[self.tempFeelingStrings objectAtIndex:indexPath.row] lowercaseString];
         cell.imagesTableView.tag = indexPath.row;
-        // Can not figure out how to fix the problem where if a row is scrolling horizontally while it goes off screen, then when that row is reused, the starting content offset is all messed up.
-//        NSLog(@"before scrollRectA %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
-//        [cell.imagesTableView scrollRectToVisible:CGRectMake(0, cell.imagesTableView.contentOffset.y - 1, 1, 1) animated:NO];
-//        NSLog(@"before reloadData %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
-//        if (cell.imagesTableView.contentOffset.y > 0) {
-//            NSLog(@"Fix needed");
-//            cell.imagesTableView.contentOffset = CGPointMake(0, -cell.imagesTableView.contentOffset.y);
-//        }
         [cell.imagesTableView reloadData];
-        [cell scrollToOriginAnimated:NO];
-//        [cell.imagesTableView setContentOffset:CGPointMake(0, 0)];
-//        [cell.imagesTableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
-//        cell.imagesTableView.contentOffset = CGPointMake(0, 0);
-//        NSLog(@"before scrollRectB %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
-//        [cell.imagesTableView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:NO];
-//        NSLog(@"before setContentOffset %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
-//        [cell.imagesTableView setContentOffset:CGPointMake(0, 0)];
-//        NSLog(@"before .contentOffset %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
-//        cell.imagesTableView.contentOffset = CGPointMake(0, 0);
-//        NSLog(@"before animateWithOptions:UIViewAnimationOptionBeginFromCurrentState %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
-//        [UIView animateWithDuration:0.01 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{ cell.imagesTableView.contentOffset = CGPointMake(0, 0); } completion:NULL];
-//        NSLog(@"at the end %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
-//        NSLog(@"at the end\nisDecelerating=%d, isTracking=%d, isDragging=%d", cell.imagesTableView.isDecelerating, cell.imagesTableView.isTracking, cell.imagesTableView.isDragging);
+
+        // Update active cell view object
+        if (indexPath.row == self.activeFeelingCellIndexRow) {
+            self.activeFeelingCell = cell;
+            [cell highlightLabel:YES];
+            [cell.imagesTableView setContentOffset:self.activeFeelingCellContentOffsetPreserved animated:NO];
+        } else {
+            [cell scrollToOriginAnimated:NO]; // Can not figure out how to fix the problem where if a row is scrolling horizontally while it goes off screen, then when that row is reused, the starting content offset is all messed up.            
+        }
         
+        // Return the cell
         return cell;
         
     } else {
         
+        // Get / Create the cell
         static NSString * FeelingImageCellID = @"FeelingImageCellID";
-        
         GalleryFeelingImageCell * cell = (GalleryFeelingImageCell *)[tableView dequeueReusableCellWithIdentifier:FeelingImageCellID];
         if (cell == nil) {
             cell = [[GalleryFeelingImageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingImageCellID];
         }
-        cell.feelingImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"protoImage%d.jpg", ((indexPath.row + tableView.tag) % 4) + 1]];
-        // Customize cell...
-        // ...
-        // ...
-        // ...
         
+        // Configure the cell
+        cell.feelingImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"protoImage%d.jpg", ((indexPath.row + tableView.tag) % 4) + 1]];
+        
+        // Return the cell
         return cell;
         
     }
     
 }
 
-//- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-//    if (scrollView == self.feelingsTableView) {
-//        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-//        self.activeFeelingCell = nil;
-//        //        NSLog(@"oldActiveFeelingCell.imagesTableView.contentOffset.y = %f", oldActiveFeelingCell.imagesTableView.contentOffset.y);
-//        if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-//            [oldActiveFeelingCell scrollToOriginAnimated:YES];
-//        } else {
-//            [oldActiveFeelingCell highlightLabel:NO];
-//        }
-//    }
-//}
-
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-//    NSLog(@"scrollView(%d)DidScroll, contentOffset=%@, \nisDecelerating=%d, isTracking=%d, isDragging=%d", scrollView.tag, NSStringFromCGPoint(scrollView.contentOffset), scrollView.isDecelerating, scrollView.isTracking, scrollView.isDragging);
     if (scrollView != self.feelingsTableView) {
         if (scrollView == self.activeFeelingCell.imagesTableView) {
-//            if (scrollView.contentOffset.y == 0) {
-//                [self.activeFeelingCell highlightLabel:NO];
-//                self.activeFeelingCell = nil;
-//            }
+            // ...
+            // ...
+            // ...
         } else {
             if (scrollView.isTracking) {
                 if (!(self.activeFeelingCell != nil &&
@@ -175,17 +170,11 @@
                         [oldActiveFeelingCell highlightLabel:NO];
                     }
                     self.activeFeelingCell = newActiveFeelingCell;
+                    self.activeFeelingCellIndexRow = newActiveFeelingCell.imagesTableView.tag;
                     [self.activeFeelingCell highlightLabel:YES];
-                    //            [self.activeFeelingCell highlightLabel:YES animated:YES];
-                    
                 }
             }
         }
-        // Trying something out
-//        GalleryFeelingCell * foo = (GalleryFeelingCell *)scrollView.superview.superview;
-//        CGRect fooFeelingLabelFrame = foo.feelingLabel.frame;
-//        fooFeelingLabelFrame.origin.x = MAX(0, scrollView.contentOffset.y) + GC_FEELING_LABEL_MARGIN_LEFT;
-//        foo.feelingLabel.frame = fooFeelingLabelFrame;
     }
 }
 
@@ -215,22 +204,14 @@
         if (/*self.activeFeelingCell.imagesTableView != scrollView &&*/
             scrollView.contentOffset.y != 0) {
             GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-            if (self.activeFeelingCell == cell) { self.activeFeelingCell = nil; }
+            if (self.activeFeelingCell == cell) { 
+                self.activeFeelingCell = nil;
+                self.activeFeelingCellIndexRow = -1;
+            }
             [cell scrollToOriginAnimated:YES];
         }
     }
 }
-
-//- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-//    if (scrollView == self.feelingsTableView) {
-////        NSLog(@"feelingsTableView.contentOffset.y=%f", scrollView.contentOffset.y);
-//        [self.activeFeelingImagesTableView setContentOffset:CGPointZero animated:YES];
-//        self.activeFeelingImagesTableView = nil;
-//    } else {
-//        self.activeFeelingImagesTableView = scrollView;
-////        NSLog(@"imagesTableView(%d).contentOffset.y=%f", scrollView.tag, scrollView.contentOffset.y);
-//    }
-//}
 
 - (NSArray *)tempFeelingStrings {
     if (_tempFeelingStrings == nil) {

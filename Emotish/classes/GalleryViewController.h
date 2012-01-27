@@ -15,8 +15,10 @@
     
 }
 
+@property (nonatomic) CGPoint feelingsTableViewContentOffsetPreserved;
 @property (unsafe_unretained, nonatomic) GalleryFeelingCell * activeFeelingCell;
-//@property (strong, nonatomic) NSMutableArray * activeFeelingCells;
+@property (nonatomic) NSInteger activeFeelingCellIndexRow;
+@property (nonatomic) CGPoint activeFeelingCellContentOffsetPreserved;
 @property (strong, nonatomic, readonly) NSArray * tempFeelingStrings;
 
 @end
