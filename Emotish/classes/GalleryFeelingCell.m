@@ -30,8 +30,8 @@
         
         BOOL debugging = NO;
         
-        self.feelingLabelColorNormal = [UIColor colorWithWhite:0.8 alpha:1.0];
-        self.feelingLabelColorHighlight = [UIColor colorWithWhite:0.6 alpha:1.0];
+        self.feelingLabelColorNormal = [UIColor colorWithRed:1.0 green:.71 blue:.14 alpha:1.0];
+        self.feelingLabelColorHighlight = [self.feelingLabelColorNormal colorWithAlphaComponent:1.0];
         
         CGFloat selfHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
         CGFloat labelContainerWidth = GC_TABLE_WIDTH - (GC_FEELING_IMAGE_SIDE_LENGTH + GC_FEELING_IMAGE_MARGIN_RIGHT + floorf(GC_FEELING_IMAGE_SIDE_LENGTH * 0.2));
@@ -57,7 +57,7 @@
         self.feelingLabel = [[UILabel alloc] initWithFrame:CGRectMake(GC_FEELING_LABEL_MARGIN_LEFT, 0, labelWidth, selfHeight)];
         self.feelingLabel.textAlignment = UITextAlignmentRight;
         self.feelingLabel.text = @"feeling";
-        self.feelingLabel.font = [UIFont boldSystemFontOfSize:36.0];
+        self.feelingLabel.font = [UIFont boldSystemFontOfSize:30.0];
         self.feelingLabel.adjustsFontSizeToFitWidth = YES;
 //        self.feelingLabel.backgroundColor = [UIColor clearColor];
         [self highlightLabel:NO];

@@ -48,8 +48,8 @@
     NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
     
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
-    self.feelingsTableView.contentOffset = CGPointMake(0, 0);
-    self.feelingsTableView.tag = -1;
+    self.feelingsTableView.contentInset = UIEdgeInsetsMake(self.feelingsTableView.contentInset.top + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0, self.feelingsTableView.contentInset.bottom + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
+    self.feelingsTableView.contentOffset = CGPointMake(0, -self.feelingsTableView.contentInset.top);
     
     if (debugging) {
         self.feelingsTableView.backgroundColor = [UIColor greenColor];
@@ -93,7 +93,7 @@
         } else {
             
         }
-        cell.feelingLabel.text = [self.tempFeelingStrings objectAtIndex:indexPath.row];
+        cell.feelingLabel.text = [[self.tempFeelingStrings objectAtIndex:indexPath.row] lowercaseString];
         cell.imagesTableView.tag = indexPath.row;
         // Can not figure out how to fix the problem where if a row is scrolling horizontally while it goes off screen, then when that row is reused, the starting content offset is all messed up.
 //        NSLog(@"before scrollRectA %@", NSStringFromCGPoint(cell.imagesTableView.contentOffset));
