@@ -12,6 +12,7 @@
 //#define GFC_ANIMATION_DURATION 0.25
 
 @interface GalleryFeelingCell()
+- (void) feelingLabelButtonTouched:(UIButton *)button;
 @end
 
 @implementation GalleryFeelingCell
@@ -25,6 +26,8 @@
 //@synthesize feelingLabelHighlighted=_feelingLabelHighlighted;
 
 @synthesize feelingIndex=_feelingIndex;
+
+@synthesize delegate=_delegate;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -72,6 +75,7 @@
         self.feelingLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
         self.feelingLabelButton.frame = self.feelingLabel.frame;
         self.feelingLabelButton.autoresizingMask = self.feelingLabel.autoresizingMask;
+        [self.feelingLabelButton addTarget:self action:@selector(feelingLabelButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
         [feelingLabelContainer addSubview:self.feelingLabelButton];
         self.imagesTableView.tableHeaderView = feelingLabelContainer;
         
@@ -133,6 +137,10 @@
     _feelingIndex = feelingIndex;
     self.imagesTableView.tag = self.feelingIndex;
     self.feelingLabelButton.tag = self.feelingIndex;
+}
+
+- (void)feelingLabelButtonTouched:(UIButton *)button {
+    [self.delegate feelingCellLabelButtonTouched:self];
 }
 
 @end

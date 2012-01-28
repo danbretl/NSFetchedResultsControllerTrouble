@@ -9,11 +9,17 @@
 #import "GalleryFeelingImageCell.h"
 #import "GalleryConstants.h"
 
+@interface GalleryFeelingImageCell()
+- (void) buttonTouched:(UIButton *)button;
+@end
+
 @implementation GalleryFeelingImageCell
 
 //@synthesize feelingImageView=_feelingImageView;
 @synthesize button=_button;
 @synthesize feelingIndex=_feelingIndex, imageIndex=_imageIndex;
+@synthesize feelingCell=_feelingCell;
+@synthesize delegate=_delegate;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -33,6 +39,7 @@
         self.button.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.button.imageView.contentMode = UIViewContentModeScaleAspectFill;
         self.button.contentEdgeInsets = UIEdgeInsetsMake(GC_FEELING_IMAGE_MARGIN_VERTICAL, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, GC_FEELING_IMAGE_MARGIN_RIGHT);
+        [self.button addTarget:self action:@selector(buttonTouched:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:self.button];
         
         self.transform = CGAffineTransformMakeRotation(M_PI * 0.5);
@@ -43,6 +50,10 @@
         
     }
     return self;
+}
+
+- (void)buttonTouched:(UIButton *)button {
+    [self.delegate feelingImageCellButtonTouched:self];
 }
 
 @end

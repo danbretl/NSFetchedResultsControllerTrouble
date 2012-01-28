@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol GalleryFeelingCellDelegate;
+
 @interface GalleryFeelingCell : UITableViewCell <UITableViewDelegate, UIScrollViewDelegate>
 
 @property (strong, nonatomic) UITableView * imagesTableView;
@@ -19,9 +21,15 @@
 
 @property (nonatomic) NSInteger feelingIndex;
 
+@property (unsafe_unretained, nonatomic) id<GalleryFeelingCellDelegate> delegate;
+
 - (void) highlightLabel:(BOOL)highlight;
 //- (void) highlightLabel:(BOOL)highlight animated:(BOOL)animated;
 //- (void) scrollToOrigin;
 - (void) scrollToOriginAnimated:(BOOL)animated;
 
+@end
+
+@protocol GalleryFeelingCellDelegate <NSObject>
+- (void) feelingCellLabelButtonTouched:(GalleryFeelingCell *)feelingCell;
 @end

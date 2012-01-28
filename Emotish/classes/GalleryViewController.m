@@ -15,9 +15,7 @@
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
 - (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex;
-- (void) feelingLabelButtonTouched:(UIButton *)feelingLabelButton;
-- (void) feelingImageButtonTouched:(UIButton *)imageButton;
-- (void) feelingButtonTouchedWithFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex imageButtonImageViewFrame:(CGRect)imageButtonImageViewFrame;
+- (void) feelingButtonTouchedFromFeelingCell:(GalleryFeelingCell *)feelingCell withFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex imageButtonImageViewFrame:(CGRect)imageButtonImageViewFrame;
 - (void) floatingImageViewTouched:(UITapGestureRecognizer *)tapGestureRecognizer;
 @end
 
@@ -30,6 +28,7 @@
 @synthesize activeFeelingCellContentOffsetPreserved=_activeFeelingCellContentOffsetPreserved;
 @synthesize tempFeelingStrings=_tempFeelingStrings;
 @synthesize floatingImageView=_floatingImageView;
+@synthesize topBar=_topBar;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -64,7 +63,7 @@
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
-    [self.view addSubview:self.floatingImageView];
+    [self.view insertSubview:self.floatingImageView belowSubview:self.topBar];
     self.floatingImageView.alpha = 0.0;
     self.floatingImageView.userInteractionEnabled = NO;
     self.floatingImageView.backgroundColor = [UIColor clearColor];
@@ -82,6 +81,7 @@
     self.feelingsTableView = nil;
     self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
     self.floatingImageView = nil;
+    self.topBar = nil;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -122,11 +122,9 @@
             cell = [[GalleryFeelingCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingCellID];
             cell.imagesTableView.delegate = self;
             cell.imagesTableView.dataSource = self;
-            [cell.feelingLabelButton addTarget:self action:@selector(feelingLabelButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+            cell.delegate = self;
         } else {
-            NSLog(@"Dequeued cell with old imagesTableView.tag=%d (%@, %@)", cell.imagesTableView.tag, cell.feelingLabel.text, NSStringFromCGPoint(cell.imagesTableView.contentOffset));
             if (cell.feelingIndex == self.activeFeelingCellIndexRow) {
-                NSLog(@"Dequeued cell was the activeFeelingCell, preserving its content offset, and setting the activeFeelingCell object to nil.");
                 self.activeFeelingCellContentOffsetPreserved = cell.imagesTableView.contentOffset;
                 self.activeFeelingCell = nil;
             }
@@ -156,13 +154,14 @@
         GalleryFeelingImageCell * cell = (GalleryFeelingImageCell *)[tableView dequeueReusableCellWithIdentifier:FeelingImageCellID];
         if (cell == nil) {
             cell = [[GalleryFeelingImageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingImageCellID];
-            [cell.button addTarget:self action:@selector(feelingImageButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+            cell.delegate = self;
         }
         
         // Configure the cell
         [cell.button setImage:[UIImage imageNamed:[self imageNameForFeelingIndex:tableView.tag imageIndex:indexPath.row]] forState:UIControlStateNormal];
         cell.feelingIndex = tableView.tag;
         cell.imageIndex = indexPath.row;
+        cell.feelingCell = (GalleryFeelingCell *)tableView.superview.superview; // HARD CODED, dangerous.
         
         // Return the cell
         return cell;
@@ -171,18 +170,37 @@
     
 }
 
-- (void) feelingButtonTouchedWithFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex imageButtonImageViewFrame:(CGRect)imageButtonImageViewFrame {
-    NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", [self.tempFeelingStrings objectAtIndex:feelingIndex], imageIndex >= 0 ? [NSString stringWithFormat:@"image with filename '%@' (that was located at index %d)", [self imageNameForFeelingIndex:feelingIndex imageIndex:imageIndex], imageIndex] : @"the first image");
-    if (imageIndex >= 0) {
-        self.floatingImageView.frame = imageButtonImageViewFrame;
-        self.floatingImageView.image = [UIImage imageNamed:[self imageNameForFeelingIndex:feelingIndex imageIndex:imageIndex]];
-        self.floatingImageView.alpha = 1.0;
-        [UIView animateWithDuration:0.25 animations:^{
-            self.floatingImageView.frame = CGRectMake(50, 120, 220, 220);
-            self.feelingsTableView.alpha = 0.0;
-            self.floatingImageView.userInteractionEnabled = YES;
-            self.feelingsTableView.userInteractionEnabled = NO;
-        }];
+- (void) feelingButtonTouchedFromFeelingCell:(GalleryFeelingCell *)feelingCell withFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex imageButtonImageViewFrame:(CGRect)imageButtonImageViewFrame {
+    if (!(self.activeFeelingCell != nil &&
+          self.activeFeelingCell.imagesTableView.isTracking)) {
+        NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", [self.tempFeelingStrings objectAtIndex:feelingIndex], imageIndex >= 0 ? [NSString stringWithFormat:@"image with filename '%@' (that was located at index %d)", [self imageNameForFeelingIndex:feelingIndex imageIndex:imageIndex], imageIndex] : @"the first image");
+        if (imageIndex >= 0) {
+            
+            GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+            GalleryFeelingCell * newActiveFeelingCell = feelingCell;
+            if (oldActiveFeelingCell != newActiveFeelingCell) {
+                self.activeFeelingCell = nil;
+                if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+                    [oldActiveFeelingCell scrollToOriginAnimated:YES];
+                } else {
+                    [oldActiveFeelingCell highlightLabel:NO];
+                }
+                self.activeFeelingCell = newActiveFeelingCell;
+                self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
+                [self.activeFeelingCell highlightLabel:YES];
+            }
+            
+            self.floatingImageView.frame = imageButtonImageViewFrame;
+            self.floatingImageView.image = [UIImage imageNamed:[self imageNameForFeelingIndex:feelingIndex imageIndex:imageIndex]];
+            self.floatingImageView.alpha = 1.0;
+            [UIView animateWithDuration:0.25 animations:^{
+                self.floatingImageView.frame = CGRectMake(50, 120, 220, 220);
+                self.feelingsTableView.alpha = 0.0;
+                self.floatingImageView.userInteractionEnabled = YES;
+                self.feelingsTableView.userInteractionEnabled = NO;
+            }];
+            
+        }
     }
 }
 
@@ -195,13 +213,12 @@
     }];
 }
 
-- (void) feelingLabelButtonTouched:(UIButton *)feelingButton {
-    [self feelingButtonTouchedWithFeelingIndex:feelingButton.tag imageIndex:-1 imageButtonImageViewFrame:CGRectZero];
+- (void)feelingCellLabelButtonTouched:(GalleryFeelingCell *)feelingCell {
+    [self feelingButtonTouchedFromFeelingCell:feelingCell withFeelingIndex:feelingCell.feelingIndex imageIndex:-1 imageButtonImageViewFrame:CGRectZero];
 }
 
-- (void) feelingImageButtonTouched:(UIButton *)imageButton {
-    GalleryFeelingImageCell * cell = (GalleryFeelingImageCell *)imageButton.superview; // HARD CODED! Totally unsafe assumption! Be careful!
-    [self feelingButtonTouchedWithFeelingIndex:cell.feelingIndex imageIndex:cell.imageIndex imageButtonImageViewFrame:[imageButton convertRect:imageButton.imageView.frame toView:self.floatingImageView.superview]];
+- (void)feelingImageCellButtonTouched:(GalleryFeelingImageCell *)feelingImageCell {
+    [self feelingButtonTouchedFromFeelingCell:feelingImageCell.feelingCell withFeelingIndex:feelingImageCell.feelingIndex imageIndex:feelingImageCell.imageIndex imageButtonImageViewFrame:[feelingImageCell.button convertRect:feelingImageCell.button.imageView.frame toView:self.floatingImageView.superview]];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -223,7 +240,7 @@
                         [oldActiveFeelingCell highlightLabel:NO];
                     }
                     self.activeFeelingCell = newActiveFeelingCell;
-                    self.activeFeelingCellIndexRow = newActiveFeelingCell.imagesTableView.tag;
+                    self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
                     [self.activeFeelingCell highlightLabel:YES];
                 }
             }
@@ -253,7 +270,6 @@
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
     if (scrollView != self.feelingsTableView) {
-        NSLog(@"scrollViewDidEndScrollingAnimation(%d)(%d)", scrollView.tag, self.activeFeelingCell == scrollView.superview.superview);
         if (/*self.activeFeelingCell.imagesTableView != scrollView &&*/
             scrollView.contentOffset.y != 0) {
             GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.

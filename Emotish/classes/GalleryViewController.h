@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "GalleryFeelingCell.h"
+#import "GalleryFeelingImageCell.h"
 
-@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIScrollViewDelegate> {
+@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIScrollViewDelegate, GalleryFeelingCellDelegate, GalleryFeelingImageCellDelegate> {
     
     BOOL debugging;
     
@@ -21,5 +22,6 @@
 @property (nonatomic) CGPoint activeFeelingCellContentOffsetPreserved;
 @property (strong, nonatomic, readonly) NSArray * tempFeelingStrings;
 @property (strong, nonatomic) UIImageView * floatingImageView;
+@property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
 
 @end
