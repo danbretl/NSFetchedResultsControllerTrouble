@@ -43,10 +43,17 @@
                 photosCount = (arc4random() % 10) + 1;
             }
             NSArray * filenamesArray = [imageFilenamesToChooseFrom allObjects];
+            NSLog(@"    Adding photos");
             for (int i=0; i<photosCount; i++) {
                 int imageIndex = appropriateFilenamesAvailable ? i : (arc4random() % filenamesArray.count);
                 NSString * imageFilename = [filenamesArray objectAtIndex:imageIndex];
-                [self.coreDataManager addPhotoWithFilename:imageFilename forFeelingWord:feelingWord fromUsername:[self.tempSeedUsernames anyObject]];
+                NSRange hyphenRange = [imageFilename rangeOfString:@"-"];
+                NSString * userIndicatorString = [[imageFilename substringFromIndex:hyphenRange.location + 1] stringByReplacingOccurrencesOfString:@".jpg" withString:@""];
+                int suggestedUserIndex = userIndicatorString.intValue - 1;
+                int userIndex = suggestedUserIndex < self.tempSeedUsernames.count ? suggestedUserIndex : (arc4random() % self.tempSeedUsernames.count);
+                NSString * username = [self.tempSeedUsernames objectAtIndex:userIndex];
+                NSLog(@"      Adding %@ for user %@", imageFilename, username);
+                [self.coreDataManager addPhotoWithFilename:imageFilename forFeelingWord:feelingWord fromUsername:username];
             }
             NSLog(@"    Added %d %@ %@ photos", photosCount, appropriateFilenamesAvailable ? @"fitting" : @"random", feelingWord);
         }
@@ -229,9 +236,9 @@
     return _tempSeedFeelings;
 }
              
-- (NSSet *)tempSeedUsernames {
+- (NSArray *)tempSeedUsernames {
     if (_tempSeedUsernames == nil) {
-        _tempSeedUsernames = [NSSet setWithObjects:@"danbretl", @"lockett", @"catiealaska", @"nishita", @"mattyh", @"ryguy", @"prudiemcgucken", @"adriane", @"feierabend", @"mitchellbrooks", @"tilatequila", nil];
+        _tempSeedUsernames = [NSArray arrayWithObjects:@"beccaschall", @"catiealaska", @"danbretl", @"mitchellbrooks", @"lockett", @"nishita", @"mattyh", @"ryguy", @"prudiemcgucken", @"adriane", @"feierabend", @"tilatequila", nil];
     }
     return _tempSeedUsernames;
 }

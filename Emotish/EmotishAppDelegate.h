@@ -25,7 +25,7 @@
 - (NSURL *)applicationDocumentsDirectory;
 
 @property (strong, nonatomic, readonly) NSArray * tempSeedFeelings;
-@property (strong, nonatomic, readonly) NSSet * tempSeedUsernames;
+@property (strong, nonatomic, readonly) NSArray * tempSeedUsernames;
 @property (strong, nonatomic, readonly) NSSet * tempSeedImageFilenames;
 - (NSSet *) tempSeedImageFilenamesForFeelingWord:(NSString *)feelingWord;
 
