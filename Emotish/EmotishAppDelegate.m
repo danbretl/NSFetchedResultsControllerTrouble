@@ -10,19 +10,59 @@
 
 @implementation EmotishAppDelegate
 
+@synthesize coreDataManager=_coreDataManager;
 @synthesize galleryViewController = _galleryViewController;
 @synthesize window = _window;
 @synthesize managedObjectContext = __managedObjectContext;
 @synthesize managedObjectModel = __managedObjectModel;
 @synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
+@synthesize tempSeedFeelings=_tempSeedFeelings;
+@synthesize tempSeedUsernames=_tempSeedUsernames;
+@synthesize tempSeedImageFilenames=_tempSeedImageFilenames;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
+    NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
+    BOOL onlyAllowFeelingsWithAppropriateImages = YES;
+    if (allFeelings == nil || allFeelings.count == 0) {
+        NSLog(@"Starting to seed database");
+        for (NSString * feelingWord in self.tempSeedFeelings) {
+            NSLog(@"  Adding %@", feelingWord);
+            NSSet * imageFilenamesToChooseFrom = [self tempSeedImageFilenamesForFeelingWord:feelingWord];
+            BOOL appropriateFilenamesAvailable = imageFilenamesToChooseFrom.count > 0;
+            if (onlyAllowFeelingsWithAppropriateImages && !appropriateFilenamesAvailable) {
+                NSLog(@"    No photos available, skipping.");
+                continue;
+            }
+            int photosCount = 0;
+            if (appropriateFilenamesAvailable) {
+                photosCount = imageFilenamesToChooseFrom.count;
+            } else {
+                imageFilenamesToChooseFrom = self.tempSeedImageFilenames;
+                photosCount = (arc4random() % 10) + 1;
+            }
+            NSArray * filenamesArray = [imageFilenamesToChooseFrom allObjects];
+            for (int i=0; i<photosCount; i++) {
+                int imageIndex = appropriateFilenamesAvailable ? i : (arc4random() % filenamesArray.count);
+                NSString * imageFilename = [filenamesArray objectAtIndex:imageIndex];
+                [self.coreDataManager addPhotoWithFilename:imageFilename forFeelingWord:feelingWord fromUsername:[self.tempSeedUsernames anyObject]];
+            }
+            NSLog(@"    Added %d %@ %@ photos", photosCount, appropriateFilenamesAvailable ? @"fitting" : @"random", feelingWord);
+        }
+        NSLog(@"Finished seeding database");
+    }
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
+    
     self.galleryViewController = [[GalleryViewController alloc] initWithNibName:@"GalleryViewController" bundle:[NSBundle mainBundle]];
+    self.galleryViewController.coreDataManager = self.coreDataManager;
+
     self.window.rootViewController = self.galleryViewController;
     [self.window makeKeyAndVisible];
+    
     return YES;
 }
 
@@ -180,6 +220,36 @@
 - (NSURL *)applicationDocumentsDirectory
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+- (NSArray *)tempSeedFeelings {
+    if (_tempSeedFeelings == nil) {
+        _tempSeedFeelings = [NSArray arrayWithObjects:@"Abridged", @"Absent", @"Accomplished", @"Aggressive", @"Amateurish", @"Ambiguous", @"Ambitious", @"Amused", @"Angry", @"Anguish", @"Anticipatory", @"Anxious", @"Apathetic", @"Apologetic", @"Arctic", @"Arrrggressive", @"Astonished", @"Attacked", @"Awake", @"Awesome", @"Bad Sport", @"Baffled", @"Bangladesh", @"Bedraggled", @"Befogged", @"Befuddled", @"Behind", @"Bemused", @"Better", @"Bewildered", @"Blessed", @"Blocked", @"Bologna", @"Bored", @"Bouncy", @"British", @"Broke", @"Businesslike", @"Busy", @"Caffeinated", @"Calculating", @"Calm", @"Cantankerous", @"Captivated", @"Catching Up", @"Challenged", @"Chaos", @"Cheerful", @"Cheesy", @"Chilly", @"Chipper", @"Clever", @"Clueless", @"Cocky", @"Comfortable", @"Competitive", @"Complex", @"Concerned", @"Confident", @"Conflicted", @"Confused", @"Confuzzled", @"Congested", @"Contemplative", @"Content", @"Cooperative", @"Corny", @"Counterclockwise", @"Cozy", @"Crampy", @"Crushed", @"Curious", @"Daring", @"Defeated", @"Defensive", @"Deflated", @"Delighted", @"Delirious", @"Demoralized", @"Depressed", @"Desperate", @"Determined", @"Devastated", @"Disappointed", @"Disgruntled", @"Disgusted", @"Disinterested", @"Dismal", @"Dismayed", @"Dissatisfied", @"Distracted", @"Distraught", @"Doubtful", @"Dreamy", @"Driven", @"Drunk", @"Dry", @"Dumb", @"Dumbfounded", @"Dunderhead", @"Eager", @"Ebullient", @"Ecstatic", @"Edgy", @"Elated", @"Embarassed", @"Emboldened", @"Entertained", @"Enthusiastic", @"Entranced", @"Envious", @"Epic", @"Euphoric", @"Excitable", @"Excited", @"Exhausted", @"Exhilarated", @"Exuberant", @"Exultant", @"Fair", @"Fallow", @"Fantastic", @"Fatigued", @"Flabbergasted", @"Flauty", @"Flighty", @"Fluctuating", @"Fluid", @"Flummoxed", @"Flustered", @"Focused", @"Foiled", @"Foolish", @"Fortunate", @"Frantic", @"Fried", @"Frustrated", @"Full", @"Fumbling", @"Funky", @"Futile", @"Fuzzy Muzzle", @"Gassy", @"German", @"Giggly", @"Glorious", @"Good", @"Grumpy", @"Happy", @"Happyful", @"Heartbroken", @"Hesitant", @"Hobbit-Like", @"Homicidal", @"Hoodwinked", @"Hopeful", @"Hopeless", @"Horrified", @"Hot", @"Hungry", @"Hypnotized", @"Icky", @"Idiotic", @"Ill", @"Impatient", @"Impressed", @"Incredulous", @"Indifferent", @"Indomitable", @"Inept", @"Intellectual", @"Interested", @"Intrigued", @"Inventive", @"Jittery", @"Joyous", @"Jumpy", @"Kissy", @"Lackluster", @"Learned", @"Lighthearted", @"Limited", @"Lively", @"Lost", @"Lounging", @"Lovely", @"Lucky", @"Lugubrious", @"Malaise", @"Maple Candy", @"Martyred", @"Meeple", @"Mellisugent", @"Mellow", @"Merlot", @"Merry", @"Miffed", @"Mischievous", @"Mystified", @"Nervous", @"No Regrets", @"No Regrets", @"Nonchalant", @"Nostalgic", @"Numb", @"Observant", @"On Edge", @"Oppressed", @"Optimistic", @"Oriental", @"Out of Sorts", @"Overwhelmed", @"Panicky", @"Parental", @"Pathetic", @"Pensive", @"Perfectly Happy", @"Peripatetic", @"Perplexed", @"Persevering", @"Persistent", @"Pessimistic", @"Pissed Off", @"Pizza", @"Playful", @"Pleased", @"Plintzy", @"Positive", @"Postlapsarian", @"Pouting", @"Power Hungry", @"Pumpkinhead", @"Puzzled", @"Quick", @"Quirky", @"Quixotic", @"Quizzical", @"Reborn", @"Reinvigorated", @"Relaxed", @"Relieved", @"Resigned", @"Robotic", @"Roller Coaster", @"Rushed", @"Sad", @"Salty", @"Sarcastic", @"Satisfied", @"Scatterbrained", @"Scattered", @"Schoolboy", @"Sensitive", @"Shifty", @"Shmoosh", @"Sick", @"Silly", @"Skeptical", @"Sleepy", @"Small Ball", @"Smart", @"Smitten", @"Snarky", @"Sneaky", @"So Close", @"So Intense", @"Somnambulant", @"Sonorous", @"Speedy", @"Spirited", @"Spunky", @"Sputtering", @"Stalled", @"Steady", @"Stellar", @"Stoked", @"Stomach Ache", @"Stratified", @"Stressed", @"Stroagish", @"Struggling", @"Studious", @"Stumped", @"Stunted", @"Stupefied", @"Stupid", @"Stymied", @"Sublime", @"Subtle", @"Suffering", @"Sulky", @"Surgical", @"Surprised", @"Sweaty", @"Sweet", @"Swindled", @"Taken Aback", @"Tense", @"Thoughtful", @"Thrilled", @"Tired", @"Toasted", @"Too Cool", @"Tranquil", @"Transcendent", @"Triumphant", @"Trudging", @"Trusting", @"Umtagati", @"Uncertain", @"Uncomfortable", @"Unfocused", @"Unforgiving", @"Unicorn", @"Unlucky", @"Unmotivated", @"Unsettled", @"Unsophisticated", @"Unstoppable", @"Unwavering", @"Upset", @"Utter Despair", @"Vengeful", @"Victimized", @"Victorious", @"Vindictive", @"Wanderlust", @"Warm & Fuzzy", @"Wary", @"Weary", @"Western", @"Whimsical", @"Whingeing", @"Witch", @"Witch Doctor", @"Withdrawn", @"Woggly", @"Worried", @"Zen", nil];
+    }
+    return _tempSeedFeelings;
+}
+             
+- (NSSet *)tempSeedUsernames {
+    if (_tempSeedUsernames == nil) {
+        _tempSeedUsernames = [NSSet setWithObjects:@"danbretl", @"lockett", @"catiealaska", @"nishita", @"mattyh", @"ryguy", @"prudiemcgucken", @"adriane", @"feierabend", @"mitchellbrooks", @"tilatequila", nil];
+    }
+    return _tempSeedUsernames;
+}
+
+- (NSSet *)tempSeedImageFilenames {
+    if (_tempSeedImageFilenames == nil) {
+        _tempSeedImageFilenames = [NSSet setWithObjects:@"aggressive-1.jpg", @"aggressive-2.jpg", @"aggressive-3.jpg", @"aggressive-4.jpg", @"aggressive-5.jpg", @"aggressive-6.jpg", @"aggressive-7.jpg", @"aggressive-8.jpg", @"aggressive-9.jpg", @"aggressive-10.jpg", @"aggressive-11.jpg", @"bored-1.jpg", @"bored-2.jpg", @"bored-3.jpg", @"bored-4.jpg", @"bored-5.jpg", @"bored-6.jpg", @"bored-7.jpg", @"bored-8.jpg", @"bored-9.jpg", @"bored-10.jpg", @"bored-11.jpg", @"bored-12.jpg", @"clever-1.jpg", @"clever-2.jpg", @"clever-3.jpg", @"clever-4.jpg", @"content-1.jpg", @"content-2.jpg", @"content-3.jpg", @"content-4.jpg", @"euphoric-1.jpg", @"euphoric-2.jpg", @"euphoric-3.jpg", @"euphoric-4.jpg", @"frantic-1.jpg", @"frantic-2.jpg", @"frantic-3.jpg", @"frantic-4.jpg", @"frustrated-1.jpg", @"frustrated-2.jpg", @"frustrated-4.jpg", @"lucky-1.jpg", @"lucky-2.jpg", @"lucky-3.jpg", @"lucky-4.jpg", @"pissedoff-1.jpg", @"pissedoff-2.jpg", @"pissedoff-3.jpg", @"pissedoff-4.jpg", @"pouting-1.jpg", @"pouting-2.jpg", @"pouting-3.jpg", @"pouting-4.jpg", @"silly-1.jpg", @"silly-2.jpg", @"silly-3.jpg", @"silly-4.jpg", @"sneaky-1.jpg", @"sneaky-2.jpg", @"sneaky-3.jpg", @"sneaky-4.jpg", @"sointense-1.jpg", @"sointense-2.jpg", @"sointense-3.jpg", @"sointense-4.jpg", @"toocool-1.jpg", @"toocool-2.jpg", @"toocool-3.jpg", @"toocool-4.jpg", @"unicorn-1.jpg", @"unicorn-2.jpg", @"unicorn-3.jpg", @"unicorn-4.jpg", @"unlucky-1.jpg", @"unlucky-3.jpg", @"unlucky-4.jpg", @"utterdespair-1.jpg", @"utterdespair-2.jpg", @"utterdespair-3.jpg", @"utterdespair-4.jpg", @"vindictive-1.jpg", @"vindictive-2.jpg", @"vindictive-3.jpg", @"vindictive-4.jpg", nil];
+    }
+    return _tempSeedImageFilenames;
+}
+
+- (NSSet *)tempSeedImageFilenamesForFeelingWord:(NSString *)feelingWord {
+    NSString * feelingWordFormatted = [feelingWord.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""];
+    NSSet * filteredSet = [self.tempSeedImageFilenames filteredSetUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary * bindings){
+        NSString * evaluatedString = (NSString *)evaluatedObject;
+        return evaluatedString.length >= feelingWordFormatted.length && [[evaluatedObject substringToIndex:feelingWordFormatted.length] isEqualToString:feelingWordFormatted];
+    }]];
+    return filteredSet;
 }
 
 @end

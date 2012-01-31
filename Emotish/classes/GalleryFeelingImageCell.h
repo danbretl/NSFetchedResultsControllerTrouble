@@ -7,8 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "GalleryFeelingCell.h"
 
+@class GalleryFeelingCell;
 @protocol GalleryFeelingImageCellDelegate;
 
 @interface GalleryFeelingImageCell : UITableViewCell

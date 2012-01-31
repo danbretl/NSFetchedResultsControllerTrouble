@@ -14,19 +14,20 @@
 
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
-- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex;
-- (void) feelingButtonTouchedFromFeelingCell:(GalleryFeelingCell *)feelingCell withFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex imageButtonImageViewFrame:(CGRect)imageButtonImageViewFrame;
+//- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex;
 - (void) floatingImageViewTouched:(UITapGestureRecognizer *)tapGestureRecognizer;
 @end
 
 @implementation GalleryViewController
 
+@synthesize coreDataManager=_coreDataManager;
+@synthesize fetchedResultsController=_fetchedResultsController;
 @synthesize feelingsTableView=_feelingsTableView;
 @synthesize feelingsTableViewContentOffsetPreserved=_feelingsTableViewContentOffsetPreserved;
 @synthesize activeFeelingCell=_activeFeelingCell;
 @synthesize activeFeelingCellIndexRow=_activeFeelingCellIndexRow;
 @synthesize activeFeelingCellContentOffsetPreserved=_activeFeelingCellContentOffsetPreserved;
-@synthesize tempFeelingStrings=_tempFeelingStrings;
+//@synthesize tempFeelingStrings=_tempFeelingStrings;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize topBar=_topBar;
 
@@ -55,11 +56,12 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
+//    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
     
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
     self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
     self.feelingsTableView.scrollIndicatorInsets = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, 0);
+    self.feelingsTableView.scrollsToTop = YES;
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -73,15 +75,23 @@
     if (debugging) {
         self.feelingsTableView.backgroundColor = [UIColor greenColor];
     }
+    
+    NSError * error;
+	if (![self.fetchedResultsController performFetch:&error]) {
+		// Handle the error appropriately...
+		NSLog(@"GalleryViewController - Unresolved error %@, %@", error, [error userInfo]);
+		exit(-1);  // Fail
+	}
+    
 }
 
-- (void)viewDidUnload
-{
+- (void)viewDidUnload {
     [super viewDidUnload];
     self.feelingsTableView = nil;
     self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
     self.floatingImageView = nil;
     self.topBar = nil;
+    self.fetchedResultsController = nil;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -100,28 +110,32 @@
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return tableView == self.feelingsTableView ? self.tempFeelingStrings.count : 20;
+    
+    NSInteger rowCount = 0;
+    if (tableView == self.feelingsTableView) {
+        rowCount = [[[self.fetchedResultsController sections] objectAtIndex:section] numberOfObjects];
+    }/* else {
+        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:tableView.tag inSection:0]];
+        rowCount = feeling.photos.count; // NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT, HOW TO USE THE ACTUAL DATA. DO WE HAVE A BUNCH OF NSFETCHEDRESULTSCONTROLLERS, IF SO WHERE DO THEY GO, WHEN DO THEY FETCH, ETC. RIGHT NOW I JUST KNOW THAT FOR MY DUMMY DATA, THERE ARE ALWAYS AT LEAST 2. // NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT, HOW TO USE THE ACTUAL DATA. DO WE HAVE A BUNCH OF NSFETCHEDRESULTSCONTROLLERS, IF SO WHERE DO THEY GO, WHEN DO THEY FETCH, ETC. RIGHT NOW I JUST KNOW THAT FOR MY DUMMY DATA, THERE ARE ALWAYS AT LEAST 2. // NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT, HOW TO USE THE ACTUAL DATA. DO WE HAVE A BUNCH OF NSFETCHEDRESULTSCONTROLLERS, IF SO WHERE DO THEY GO, WHEN DO THEY FETCH, ETC. RIGHT NOW I JUST KNOW THAT FOR MY DUMMY DATA, THERE ARE ALWAYS AT LEAST 2.
+    }*/
+    return rowCount;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     if (tableView == self.feelingsTableView) {
         
-        NSLog(@"feelingCell forIndexPath.row:%d", indexPath.row);
+//        NSLog(@"feelingCell forIndexPath.row:%d", indexPath.row);
         
         // Get / Create the cell
         static NSString * FeelingCellID = @"FeelingCellID";
         GalleryFeelingCell * cell = (GalleryFeelingCell *)[tableView dequeueReusableCellWithIdentifier:FeelingCellID];
         if (cell == nil) {
-            NSLog(@"Brand new cell");
+//            NSLog(@"Brand new cell");
             cell = [[GalleryFeelingCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingCellID];
             cell.imagesTableView.delegate = self;
-            cell.imagesTableView.dataSource = self;
+//            cell.imagesTableView.dataSource = self;
             cell.delegate = self;
         } else {
             if (cell.feelingIndex == self.activeFeelingCellIndexRow) {
@@ -131,8 +145,10 @@
         }
         
         // Configure the cell
-        cell.feelingLabel.text = [[self.tempFeelingStrings objectAtIndex:indexPath.row] lowercaseString];
+        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        cell.feelingLabel.text = feeling.word.lowercaseString;
         cell.feelingIndex = indexPath.row;
+        cell.photos = feeling.mostRecentPhotos;
         [cell.imagesTableView reloadData];
 
         // Update active cell view object
@@ -147,7 +163,7 @@
         // Return the cell
         return cell;
         
-    } else {
+    }/* else {
         
         // Get / Create the cell
         static NSString * FeelingImageCellID = @"FeelingImageCellID";
@@ -158,6 +174,14 @@
         }
         
         // Configure the cell
+        
+        // Configure the cell
+        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        cell.feelingLabel.text = feeling.word.lowercaseString;
+        cell.feelingIndex = indexPath.row;
+        [cell.imagesTableView reloadData];
+        
+        Photo * photo = [
         [cell.button setImage:[UIImage imageNamed:[self imageNameForFeelingIndex:tableView.tag imageIndex:indexPath.row]] forState:UIControlStateNormal];
         cell.feelingIndex = tableView.tag;
         cell.imageIndex = indexPath.row;
@@ -166,15 +190,27 @@
         // Return the cell
         return cell;
         
-    }
+    }*/
+    
+    return nil;
     
 }
 
-- (void) feelingButtonTouchedFromFeelingCell:(GalleryFeelingCell *)feelingCell withFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex imageButtonImageViewFrame:(CGRect)imageButtonImageViewFrame {
+- (void)floatingImageViewTouched:(UITapGestureRecognizer *)tapGestureRecognizer {
+    [UIView animateWithDuration:0.25 animations:^{
+        self.floatingImageView.alpha = 0.0;
+        self.feelingsTableView.alpha = 1.0;
+        self.floatingImageView.userInteractionEnabled = NO;
+        self.feelingsTableView.userInteractionEnabled = YES;
+    }];
+}
+
+- (void) feelingCellSelected:(GalleryFeelingCell *)feelingCell fromImageCell:(GalleryFeelingImageCell *)imageCell {
+    
     if (!(self.activeFeelingCell != nil &&
           self.activeFeelingCell.imagesTableView.isTracking)) {
-        NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", [self.tempFeelingStrings objectAtIndex:feelingIndex], imageIndex >= 0 ? [NSString stringWithFormat:@"image with filename '%@' (that was located at index %d)", [self imageNameForFeelingIndex:feelingIndex imageIndex:imageIndex], imageIndex] : @"the first image");
-        if (imageIndex >= 0) {
+        NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", feelingCell.feelingLabel.text, imageCell != nil ? [NSString stringWithFormat:@"the image that was located at index %d)",  imageCell.imageIndex] : @"the first image");
+        if (imageCell != nil) {
             
             GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
             GalleryFeelingCell * newActiveFeelingCell = feelingCell;
@@ -190,8 +226,8 @@
                 [self.activeFeelingCell highlightLabel:YES];
             }
             
-            self.floatingImageView.frame = imageButtonImageViewFrame;
-            self.floatingImageView.image = [UIImage imageNamed:[self imageNameForFeelingIndex:feelingIndex imageIndex:imageIndex]];
+            self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
+            self.floatingImageView.image = imageCell.button.imageView.image;
             self.floatingImageView.alpha = 1.0;
             [UIView animateWithDuration:0.25 animations:^{
                 self.floatingImageView.frame = CGRectMake(50, 120, 220, 220);
@@ -202,23 +238,7 @@
             
         }
     }
-}
-
-- (void)floatingImageViewTouched:(UITapGestureRecognizer *)tapGestureRecognizer {
-    [UIView animateWithDuration:0.25 animations:^{
-        self.floatingImageView.alpha = 0.0;
-        self.feelingsTableView.alpha = 1.0;
-        self.floatingImageView.userInteractionEnabled = NO;
-        self.feelingsTableView.userInteractionEnabled = YES;
-    }];
-}
-
-- (void)feelingCellLabelButtonTouched:(GalleryFeelingCell *)feelingCell {
-    [self feelingButtonTouchedFromFeelingCell:feelingCell withFeelingIndex:feelingCell.feelingIndex imageIndex:-1 imageButtonImageViewFrame:CGRectZero];
-}
-
-- (void)feelingImageCellButtonTouched:(GalleryFeelingImageCell *)feelingImageCell {
-    [self feelingButtonTouchedFromFeelingCell:feelingImageCell.feelingCell withFeelingIndex:feelingImageCell.feelingIndex imageIndex:feelingImageCell.imageIndex imageButtonImageViewFrame:[feelingImageCell.button convertRect:feelingImageCell.button.imageView.frame toView:self.floatingImageView.superview]];
+    
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -282,15 +302,33 @@
     }
 }
 
-- (NSArray *)tempFeelingStrings {
-    if (_tempFeelingStrings == nil) {
-        _tempFeelingStrings = [[NSArray arrayWithObjects:@"Content", @"Distracted", @"Lucky", @"Satisfied", @"Aggressive", @"Frustrated", @"Silly", @"Sleepy", @"Excited", @"Too Cool", @"Utter Despair", @"Clever", @"Confused", @"Frantic", @"So Intense", @"Sneaky", @"Vindictive", @"Euphoric", @"Unicorn", @"Unlucky", @"Mellow", @"Desperate", @"Pouting", @"Happy", @"Intrigued", @"Mischievous", @"Mystified", @"Confident", @"Hopeful", @"Pissed Off", @"Disappointed", @"Flabbergasted", @"Meeple", @"On Edge", @"Robotic", @"Thoughtful", @"Bangladesh", @"Hopeless", @"Quixotic", @"Wary", @"Anguish", @"Calm", @"Indifferent", @"Stupid", @"Surprised", @"Tired", @"Astonished", @"Bemused", @"Bored", @"Chaos", @"Delighted", @"Depressed", @"Determined", @"Flummoxed", @"Full", @"Interested", @"Quirky", @"Stressed", @"Triumphant", @"Zen", @"Angry", @"Anxious", nil] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+- (NSFetchedResultsController *)fetchedResultsController {
+    
+    if (_fetchedResultsController != nil) {
+        return _fetchedResultsController;
     }
-    return _tempFeelingStrings;
+    
+    NSFetchRequest * fetchRequest = [[NSFetchRequest alloc] init];
+    fetchRequest.entity = [NSEntityDescription entityForName:@"Feeling" inManagedObjectContext:self.coreDataManager.managedObjectContext];
+    fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES]];
+    fetchRequest.fetchBatchSize = 20;
+    
+    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:@"Gallery"];
+    _fetchedResultsController.delegate = self;
+    
+    return _fetchedResultsController;
+    
 }
 
-- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex {
-    return [NSString stringWithFormat:@"protoImage%d.jpg", ((imageIndex + feelingIndex) % 4) + 1];
-}
+//- (NSArray *)tempFeelingStrings {
+//    if (_tempFeelingStrings == nil) {
+//        _tempFeelingStrings = [[NSArray arrayWithObjects:@"Content", @"Distracted", @"Lucky", @"Satisfied", @"Aggressive", @"Frustrated", @"Silly", @"Sleepy", @"Excited", @"Too Cool", @"Utter Despair", @"Clever", @"Confused", @"Frantic", @"So Intense", @"Sneaky", @"Vindictive", @"Euphoric", @"Unicorn", @"Unlucky", @"Mellow", @"Desperate", @"Pouting", @"Happy", @"Intrigued", @"Mischievous", @"Mystified", @"Confident", @"Hopeful", @"Pissed Off", @"Disappointed", @"Flabbergasted", @"Meeple", @"On Edge", @"Robotic", @"Thoughtful", @"Bangladesh", @"Hopeless", @"Quixotic", @"Wary", @"Anguish", @"Calm", @"Indifferent", @"Stupid", @"Surprised", @"Tired", @"Astonished", @"Bemused", @"Bored", @"Chaos", @"Delighted", @"Depressed", @"Determined", @"Flummoxed", @"Full", @"Interested", @"Quirky", @"Stressed", @"Triumphant", @"Zen", @"Angry", @"Anxious", nil] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+//    }
+//    return _tempFeelingStrings;
+//}
+//
+//- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex {
+//    return [NSString stringWithFormat:@"protoImage%d.jpg", ((imageIndex + feelingIndex) % 4) + 1];
+//}
 
 @end

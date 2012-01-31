@@ -7,10 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GalleryFeelingImageCell.h"
+#import "Photo.h"
 
 @protocol GalleryFeelingCellDelegate;
 
-@interface GalleryFeelingCell : UITableViewCell <UITableViewDelegate, UIScrollViewDelegate>
+@interface GalleryFeelingCell : UITableViewCell <UITableViewDataSource, GalleryFeelingImageCellDelegate>
+
+@property (strong, nonatomic) NSArray * photos;
 
 @property (strong, nonatomic) UITableView * imagesTableView;
 @property (strong, nonatomic) UILabel * feelingLabel;
@@ -31,5 +35,5 @@
 @end
 
 @protocol GalleryFeelingCellDelegate <NSObject>
-- (void) feelingCellLabelButtonTouched:(GalleryFeelingCell *)feelingCell;
+- (void) feelingCellSelected:(GalleryFeelingCell *)feelingCell fromImageCell:(GalleryFeelingImageCell *)imageCell;
 @end

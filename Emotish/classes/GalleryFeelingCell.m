@@ -8,6 +8,8 @@
 
 #import "GalleryFeelingCell.h"
 #import "GalleryConstants.h"
+#import "UIColor+Emotish.h"
+#import "GalleryFeelingImageCell.h"
 
 //#define GFC_ANIMATION_DURATION 0.25
 
@@ -17,6 +19,7 @@
 
 @implementation GalleryFeelingCell
 
+@synthesize photos=_photos;
 @synthesize imagesTableView=_imagesTableView;
 @synthesize feelingLabel=_feelingLabel;
 @synthesize feelingLabelButton=_feelingLabelButton;
@@ -36,18 +39,20 @@
         
         BOOL debugging = NO;
         
-        self.feelingLabelColorNormal = [UIColor colorWithRed:1.0 green:.71 blue:.14 alpha:1.0];
-        self.feelingLabelColorHighlight = [self.feelingLabelColorNormal colorWithAlphaComponent:1.0];
+        self.feelingLabelColorNormal = [UIColor feelingColor];
+        self.feelingLabelColorHighlight = self.feelingLabelColorNormal;
         
         CGFloat selfHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
         CGFloat labelContainerWidth = GC_TABLE_WIDTH - (GC_FEELING_IMAGE_SIDE_LENGTH + GC_FEELING_IMAGE_MARGIN_RIGHT + floorf(GC_FEELING_IMAGE_SIDE_LENGTH * 0.2));
         CGFloat labelWidth = labelContainerWidth - (GC_FEELING_LABEL_MARGIN_LEFT + GC_FEELING_LABEL_MARGIN_RIGHT);
         
         UIScrollView * wrapperScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, GC_TABLE_WIDTH, selfHeight)]; // This fixes a bug where bouncing does not work from the edge of the table view.
+        wrapperScrollView.scrollsToTop = NO;
         [self addSubview:wrapperScrollView];
         
         self.imagesTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, selfHeight, GC_TABLE_WIDTH)];
 //        self.imagesTableView.delegate = self;
+        self.imagesTableView.dataSource = self;
         self.imagesTableView.alwaysBounceVertical = YES;
         self.imagesTableView.showsHorizontalScrollIndicator = NO;
         self.imagesTableView.showsVerticalScrollIndicator = NO;
@@ -59,6 +64,7 @@
         self.imagesTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         self.imagesTableView.allowsSelection = NO;
         self.imagesTableView.directionalLockEnabled = YES;
+        self.imagesTableView.scrollsToTop = NO;
         
         self.feelingLabel = [[UILabel alloc] initWithFrame:CGRectMake(GC_FEELING_LABEL_MARGIN_LEFT, 0, labelWidth, selfHeight)];
         self.feelingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -140,7 +146,44 @@
 }
 
 - (void)feelingLabelButtonTouched:(UIButton *)button {
-    [self.delegate feelingCellLabelButtonTouched:self];
+    [self.delegate feelingCellSelected:self fromImageCell:nil];
 }
+
+- (void)setPhotos:(NSArray *)photos {
+    _photos = photos;
+    [self.imagesTableView reloadData];
+}
+
+- (void)feelingImageCellButtonTouched:(GalleryFeelingImageCell *)feelingImageCell {
+    [self.delegate feelingCellSelected:self fromImageCell:feelingImageCell];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.photos.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    // Get / Create the cell
+    static NSString * FeelingImageCellID = @"FeelingImageCellID";
+    GalleryFeelingImageCell * cell = (GalleryFeelingImageCell *)[tableView dequeueReusableCellWithIdentifier:FeelingImageCellID];
+    if (cell == nil) {
+        cell = [[GalleryFeelingImageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingImageCellID];
+        cell.delegate = self;
+    }
+    
+    // Configure the cell
+    Photo * photo = [self.photos objectAtIndex:indexPath.row];
+    [cell.button setImage:[UIImage imageNamed:photo.filename] forState:UIControlStateNormal];
+    cell.feelingIndex = self.feelingIndex;
+    cell.imageIndex = indexPath.row;
+    cell.feelingCell = self;
+                     
+    // Return the cell
+    return cell;
+
+}
+                     
+
 
 @end
