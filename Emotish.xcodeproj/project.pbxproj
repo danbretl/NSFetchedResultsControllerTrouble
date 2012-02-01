@@ -17,6 +17,8 @@
 		3241E5EB14D32F9400D46F63 /* btn_add_photo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3241E5E914D32F9400D46F63 /* btn_add_photo@2x.png */; };
 		3244017414D99D950056DC81 /* top_bar_with_branding_rounded.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017214D99D950056DC81 /* top_bar_with_branding_rounded.png */; };
 		3244017514D99D950056DC81 /* top_bar_with_branding_rounded@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017314D99D950056DC81 /* top_bar_with_branding_rounded@2x.png */; };
+		3244017B14D9A0F30056DC81 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017A14D9A0F30056DC81 /* icon.png */; };
+		3244017D14D9A0F80056DC81 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017C14D9A0F80056DC81 /* icon@2x.png */; };
 		327BE6E814D74EAE0051C549 /* PhotosStripViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */; };
 		327BE6E914D74EAE0051C549 /* PhotosStripViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */; };
 		328A4B6D14D86D7500D07DCB /* aggressive-1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 328A4B1814D86D7500D07DCB /* aggressive-1.jpg */; };
@@ -137,6 +139,8 @@
 		3241E5EC14D3340B00D46F63 /* ViewConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ViewConstants.h; path = classes/ViewConstants.h; sourceTree = "<group>"; };
 		3244017214D99D950056DC81 /* top_bar_with_branding_rounded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = top_bar_with_branding_rounded.png; sourceTree = "<group>"; };
 		3244017314D99D950056DC81 /* top_bar_with_branding_rounded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "top_bar_with_branding_rounded@2x.png"; sourceTree = "<group>"; };
+		3244017A14D9A0F30056DC81 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
+		3244017C14D9A0F80056DC81 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
 		327BE6E514D74EAE0051C549 /* PhotosStripViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhotosStripViewController.h; path = classes/PhotosStripViewController.h; sourceTree = "<group>"; };
 		327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotosStripViewController.m; path = classes/PhotosStripViewController.m; sourceTree = "<group>"; };
 		327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = PhotosStripViewController.xib; path = classes/PhotosStripViewController.xib; sourceTree = "<group>"; };
@@ -380,6 +384,8 @@
 		3279F84C14D0BDE900169BB0 /* icons */ = {
 			isa = PBXGroup;
 			children = (
+				3244017A14D9A0F30056DC81 /* icon.png */,
+				3244017C14D9A0F80056DC81 /* icon@2x.png */,
 			);
 			name = icons;
 			sourceTree = "<group>";
@@ -632,6 +638,8 @@
 				328A4BC114D86D7500D07DCB /* vindictive-4.jpg in Resources */,
 				3244017414D99D950056DC81 /* top_bar_with_branding_rounded.png in Resources */,
 				3244017514D99D950056DC81 /* top_bar_with_branding_rounded@2x.png in Resources */,
+				3244017B14D9A0F30056DC81 /* icon.png in Resources */,
+				3244017D14D9A0F80056DC81 /* icon@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
