@@ -206,44 +206,46 @@
     if (!(self.activeFeelingCell != nil &&
           self.activeFeelingCell.imagesTableView.isTracking)) {
         NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", feelingCell.feelingLabel.text, imageCell != nil ? [NSString stringWithFormat:@"the image that was located at index %d)",  imageCell.imageIndex] : @"the first image");
-        if (imageCell != nil) {
             
-            GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-            GalleryFeelingCell * newActiveFeelingCell = feelingCell;
-            if (oldActiveFeelingCell != newActiveFeelingCell) {
-                self.activeFeelingCell = nil;
-                if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-                    [oldActiveFeelingCell scrollToOriginAnimated:YES];
-                } else {
-                    [oldActiveFeelingCell highlightLabel:NO];
-                }
-                self.activeFeelingCell = newActiveFeelingCell;
-                self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
-                [self.activeFeelingCell highlightLabel:YES];
+        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+        GalleryFeelingCell * newActiveFeelingCell = feelingCell;
+        if (oldActiveFeelingCell != newActiveFeelingCell) {
+            self.activeFeelingCell = nil;
+            if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+                [oldActiveFeelingCell scrollToOriginAnimated:YES];
+            } else {
+                [oldActiveFeelingCell highlightLabel:NO];
             }
-            
-            PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-            feelingStripViewController.delegate = self;
-            feelingStripViewController.coreDataManager = self.coreDataManager;
-            Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:feelingCell.feelingIndex inSection:0]];
-            [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
-            
-            self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
-            self.floatingImageView.image = imageCell.button.imageView.image;
-            self.floatingImageView.alpha = 1.0;
-            
-            [UIView animateWithDuration:0.25 animations:^{
-                self.floatingImageView.frame = /*[self.floatingImageView.superview convertRect:*/CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)/* fromView:nil]*/;
-                NSLog(@"self.floatingImageView.frame = %@", NSStringFromCGRect(self.floatingImageView.frame));
-                NSLog(@"galleryViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
-                self.feelingsTableView.alpha = 0.0;
-                self.floatingImageView.userInteractionEnabled = YES;
-                self.feelingsTableView.userInteractionEnabled = NO;
-            } completion:^(BOOL finished){
-                [self.navigationController pushViewController:feelingStripViewController animated:NO];
-            }];
-            
+            self.activeFeelingCell = newActiveFeelingCell;
+            self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
+            [self.activeFeelingCell highlightLabel:YES];
         }
+    
+        if (imageCell == nil) {   
+            imageCell = [self.activeFeelingCell.imagesTableView.visibleCells objectAtIndex:0];
+        }
+        
+        PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+        feelingStripViewController.delegate = self;
+        feelingStripViewController.coreDataManager = self.coreDataManager;
+        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:feelingCell.feelingIndex inSection:0]];
+        [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
+        
+        self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
+        self.floatingImageView.image = imageCell.button.imageView.image;
+        self.floatingImageView.alpha = 1.0;
+        
+        [UIView animateWithDuration:0.25 animations:^{
+            self.floatingImageView.frame = /*[self.floatingImageView.superview convertRect:*/CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)/* fromView:nil]*/;
+            NSLog(@"self.floatingImageView.frame = %@", NSStringFromCGRect(self.floatingImageView.frame));
+            NSLog(@"galleryViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
+            self.feelingsTableView.alpha = 0.0;
+            self.floatingImageView.userInteractionEnabled = YES;
+            self.feelingsTableView.userInteractionEnabled = NO;
+        } completion:^(BOOL finished){
+            [self.navigationController pushViewController:feelingStripViewController animated:NO];
+        }];
+    
     }
     
 }
