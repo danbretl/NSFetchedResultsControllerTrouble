@@ -10,6 +10,8 @@
 #import "CoreDataManager.h"
 #import "Feeling.h"
 #import "User.h"
+#import "PhotoView.h"
+#import "ClipView.h"
 
 typedef enum {
     NoFocus = 0,
@@ -19,7 +21,7 @@ typedef enum {
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;
@@ -28,11 +30,18 @@ typedef enum {
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerUser;
 
-@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *topBar;
-@property (unsafe_unretained, nonatomic) IBOutlet UIButton *headerButton;
-@property (unsafe_unretained, nonatomic) IBOutlet UITableView *photosTableView;
+@property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton * headerButton;
+@property (unsafe_unretained, nonatomic) IBOutlet ClipView * photosClipView;
+@property (unsafe_unretained, nonatomic) IBOutlet UIScrollView * photosScrollView;
+@property (strong, nonatomic) IBOutlet UIView *photosContainer;
+@property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewLeftmost;
+@property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewLeftCenter;
+@property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewCenter;
+@property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewRightCenter;
+@property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewRightmost;
 @property (strong, nonatomic) UIImageView * floatingImageView;
-@property (unsafe_unretained, nonatomic) IBOutlet UILabel *addPhotoLabel;
+@property (unsafe_unretained, nonatomic) IBOutlet UILabel * addPhotoLabel;
 
 @property (strong, nonatomic) UIPinchGestureRecognizer * zoomOutGestureRecognizer;
 

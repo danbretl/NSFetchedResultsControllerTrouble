@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		323B2FD214D75F200035BF74 /* PhotoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FD114D75F200035BF74 /* PhotoCell.m */; };
 		323B2FD614D765250035BF74 /* UIColor+Emotish.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FD514D765250035BF74 /* UIColor+Emotish.m */; };
 		323B2FDD14D77B0E0035BF74 /* CoreDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */; };
 		323B2FE014D77C4A0035BF74 /* User.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FDF14D77C4A0035BF74 /* User.m */; };
@@ -110,6 +109,8 @@
 		328A4BC114D86D7500D07DCB /* vindictive-4.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 328A4B6C14D86D7500D07DCB /* vindictive-4.jpg */; };
 		3299A14614D0967A0017FAEF /* GalleryFeelingCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3299A14514D0967A0017FAEF /* GalleryFeelingCell.m */; };
 		3299A14914D096890017FAEF /* GalleryFeelingImageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */; };
+		329D112F14D9B0BD00F69263 /* PhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D112E14D9B0BD00F69263 /* PhotoView.m */; };
+		329D113214D9DBF900F69263 /* ClipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D113114D9DBF900F69263 /* ClipView.m */; };
 		32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EB14D0929F00191C6F /* UIKit.framework */; };
 		32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1ED14D0929F00191C6F /* Foundation.framework */; };
 		32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */; };
@@ -124,8 +125,6 @@
 
 /* Begin PBXFileReference section */
 		323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 001.xcdatamodel"; sourceTree = "<group>"; };
-		323B2FD014D75F200035BF74 /* PhotoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhotoCell.h; path = classes/PhotoCell.h; sourceTree = "<group>"; };
-		323B2FD114D75F200035BF74 /* PhotoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotoCell.m; path = classes/PhotoCell.m; sourceTree = "<group>"; };
 		323B2FD414D765250035BF74 /* UIColor+Emotish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIColor+Emotish.h"; path = "classes/UIColor+Emotish.h"; sourceTree = "<group>"; };
 		323B2FD514D765250035BF74 /* UIColor+Emotish.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIColor+Emotish.m"; path = "classes/UIColor+Emotish.m"; sourceTree = "<group>"; };
 		323B2FDB14D77B0E0035BF74 /* CoreDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CoreDataManager.h; path = classes/CoreDataManager.h; sourceTree = "<group>"; };
@@ -238,6 +237,10 @@
 		3299A14514D0967A0017FAEF /* GalleryFeelingCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GalleryFeelingCell.m; path = classes/GalleryFeelingCell.m; sourceTree = "<group>"; };
 		3299A14714D096890017FAEF /* GalleryFeelingImageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryFeelingImageCell.h; path = classes/GalleryFeelingImageCell.h; sourceTree = "<group>"; };
 		3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GalleryFeelingImageCell.m; path = classes/GalleryFeelingImageCell.m; sourceTree = "<group>"; };
+		329D112D14D9B0BD00F69263 /* PhotoView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhotoView.h; path = classes/PhotoView.h; sourceTree = "<group>"; };
+		329D112E14D9B0BD00F69263 /* PhotoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotoView.m; path = classes/PhotoView.m; sourceTree = "<group>"; };
+		329D113014D9DBF900F69263 /* ClipView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ClipView.h; path = classes/ClipView.h; sourceTree = "<group>"; };
+		329D113114D9DBF900F69263 /* ClipView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ClipView.m; path = classes/ClipView.m; sourceTree = "<group>"; };
 		32E2F1E714D0929F00191C6F /* Emotish.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Emotish.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32E2F1EB14D0929F00191C6F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		32E2F1ED14D0929F00191C6F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -276,8 +279,10 @@
 				327BE6E514D74EAE0051C549 /* PhotosStripViewController.h */,
 				327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */,
 				327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */,
-				323B2FD014D75F200035BF74 /* PhotoCell.h */,
-				323B2FD114D75F200035BF74 /* PhotoCell.m */,
+				329D112D14D9B0BD00F69263 /* PhotoView.h */,
+				329D112E14D9B0BD00F69263 /* PhotoView.m */,
+				329D113014D9DBF900F69263 /* ClipView.h */,
+				329D113114D9DBF900F69263 /* ClipView.m */,
 			);
 			name = PhotosStripViewController;
 			sourceTree = "<group>";
@@ -657,12 +662,13 @@
 				3299A14614D0967A0017FAEF /* GalleryFeelingCell.m in Sources */,
 				3299A14914D096890017FAEF /* GalleryFeelingImageCell.m in Sources */,
 				327BE6E814D74EAE0051C549 /* PhotosStripViewController.m in Sources */,
-				323B2FD214D75F200035BF74 /* PhotoCell.m in Sources */,
 				323B2FD614D765250035BF74 /* UIColor+Emotish.m in Sources */,
 				323B2FDD14D77B0E0035BF74 /* CoreDataManager.m in Sources */,
 				323B2FE014D77C4A0035BF74 /* User.m in Sources */,
 				323B2FE314D77C4A0035BF74 /* Photo.m in Sources */,
 				323B2FE614D77C4A0035BF74 /* Feeling.m in Sources */,
+				329D112F14D9B0BD00F69263 /* PhotoView.m in Sources */,
+				329D113214D9DBF900F69263 /* ClipView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

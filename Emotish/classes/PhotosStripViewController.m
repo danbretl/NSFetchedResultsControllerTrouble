@@ -20,7 +20,12 @@
 - (NSFetchedResultsController *)fetchedResultsControllerForFocus:(PhotosStripFocus)focus;
 - (void) performFetchForCurrentFocus;
 - (void) updateViewsForCurrentFocus;
+- (void) reloadPhotoViewsFocusedOnPhoto:(Photo *)photo;
+- (void) reloadPhotoView:(PhotoView *)photoView givenFocusOnIndexPath:(NSIndexPath *)centerIndexPath;
+- (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus;
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
+- (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
+- (void) photoInViewTouched;
 @end
 
 @implementation PhotosStripViewController
@@ -32,7 +37,14 @@
 @synthesize fetchedResultsControllerForCurrentFocus=_fetchedResultsControllerForCurrentFocus;
 @synthesize topBar=_topBar;
 @synthesize headerButton=_headerButton;
-@synthesize photosTableView=_photosTableView;
+@synthesize photosClipView = _photosClipView;
+@synthesize photosScrollView=_photosScrollView;
+@synthesize photosContainer = _photosContainer;
+@synthesize photoViewLeftmost = _photoViewLeftmost;
+@synthesize photoViewLeftCenter = _photoViewLeftCenter;
+@synthesize photoViewCenter = _photoViewCenter;
+@synthesize photoViewRightCenter = _photoViewRightCenter;
+@synthesize photoViewRightmost = _photoViewRightmost;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize addPhotoLabel = _addPhotoLabel;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer;
@@ -63,16 +75,30 @@
     
     self.headerButton.titleLabel.adjustsFontSizeToFitWidth = YES;
 
-    self.photosTableView.frame = CGRectMake( PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2); // I don't know why this line is necessary, but apparently it is.
-    self.photosTableView.transform = CGAffineTransformMakeRotation(-M_PI * 0.5);
-    CGRect photosTableViewFrameInWindow = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT);
-    self.photosTableView.frame = /*[self.view convertRect:*/photosTableViewFrameInWindow/* fromView:nil]*/;
+//    self.photosTableView.frame = CGRectMake( PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2); // I don't know why this line is necessary, but apparently it is.
+//    self.photosTableView.transform = CGAffineTransformMakeRotation(-M_PI * 0.5);
+//    CGRect photosScrollViewFrameInWindow = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT);
+    self.photosClipView.scrollView = self.photosScrollView;
+    self.photosClipView.frame = CGRectMake(0, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, 320, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT);
+    self.photosScrollView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, self.photosClipView.frame.size.height);///*[self.view convertRect:*/photosScrollViewFrameInWindow/* fromView:nil]*/;
 //    self.photosTableView.frame = CGRectOffset(photosTableViewFrameInWindow, 0, -(self.view.frame.origin.y + [UIApplication sharedApplication].statusBarFrame.size.height)); // I have no idea why this hack is necessary. I think it has something to do with the fact that this view controller is shown modally currently... Will probably have to revisit this and clean it up.
-    NSLog(@"self.photosTableView.frame = %@", NSStringFromCGRect(self.photosTableView.frame));
-    NSLog(@"photosStripViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
-    self.photosTableView.rowHeight = PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2;
-    self.photosTableView.scrollsToTop = NO;
-    self.photosTableView.allowsSelection = YES;
+//    NSLog(@"self.photosTableView.frame = %@", NSStringFromCGRect(self.photosTableView.frame));
+//    NSLog(@"photosStripViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
+//    self.photosTableView.rowHeight = PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2;
+    self.photosScrollView.scrollsToTop = NO;
+//    self.photosTableView.allowsSelection = YES;
+//    UIImage * photoPlaceholderImage = [UIImage imageNamed:@""];
+//    self.photoViewLeftmost.photoImageView.image = photoPlaceholderImage;
+//    self.photoViewRightmost.photoImageView.image = photoPlaceholderImage;
+    [self.photosScrollView addSubview:self.photosContainer];
+    self.photosScrollView.contentSize = self.photosContainer.frame.size;
+//    self.photoViewCenter.delegate = self;
+//    self.photoViewLeftCenter.delegate = self;
+//    self.photoViewLeftmost.delegate = self;
+//    self.photoViewRightCenter.delegate = self;
+//    self.photoViewRightmost.delegate = self;
+    UITapGestureRecognizer * tapToSelectPhotoViewGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tappedToSelectPhotoView:)];
+    [self.photosScrollView addGestureRecognizer:tapToSelectPhotoViewGestureRecognizer];
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -90,7 +116,7 @@
     
     BOOL debugging = NO;
     if (debugging) {
-        self.photosTableView.backgroundColor = [UIColor redColor];
+        self.photosScrollView.backgroundColor = [UIColor redColor];
     }
 
 }
@@ -98,12 +124,19 @@
 - (void)viewDidUnload
 {
     [self setHeaderButton:nil];
-    [self setPhotosTableView:nil];
+    [self setPhotosScrollView:nil];
     self.floatingImageView = nil;
     self.fetchedResultsControllerFeeling = nil;
     self.fetchedResultsControllerUser = nil;
     [self setTopBar:nil];
     [self setAddPhotoLabel:nil];
+    [self setPhotosContainer:nil];
+    [self setPhotoViewLeftmost:nil];
+    [self setPhotoViewLeftCenter:nil];
+    [self setPhotoViewCenter:nil];
+    [self setPhotoViewRightCenter:nil];
+    [self setPhotoViewRightmost:nil];
+    [self setPhotosClipView:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -113,6 +146,26 @@
 {
     // Return YES for supported orientations
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
+}
+
+- (void)setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo {
+    self.focus = FeelingFocus;
+    self.feelingFocus = feeling;
+    self.photoInView = photo;
+    if (self.view.window) {
+        [self updateViewsForCurrentFocus];
+    }
+//    NSLog(@"Should scroll to photo %@", photo);
+}
+
+- (void)setFocusToUser:(User *)user photo:(Photo *)photo {
+    self.focus = UserFocus;
+    self.userFocus = user;
+    self.photoInView = photo;
+    if (self.view.window) {
+        [self updateViewsForCurrentFocus];
+    }
+//    NSLog(@"Should scroll to photo %@", photo);
 }
 
 - (void) updateViewsForCurrentFocus {
@@ -141,85 +194,95 @@
     NSPredicate * fetchPredicate = self.focus == FeelingFocus ? [NSPredicate predicateWithFormat:@"feeling == %@", self.feelingFocus] : [NSPredicate predicateWithFormat:@"user == %@", self.userFocus];
     self.fetchedResultsControllerForCurrentFocus.fetchRequest.predicate = fetchPredicate;
     [self performFetchForCurrentFocus];
-    [self.photosTableView reloadData];
-    [self.photosTableView scrollToRowAtIndexPath:[self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoInView] atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
+    self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
+    
+    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
+    self.photosScrollView.contentOffset = CGPointMake(self.photosScrollView.frame.size.width * [self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoInView].row, 0);
+//    [self.photosTableView reloadData];
+//    [self.photosTableView scrollToRowAtIndexPath:[self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoInView] atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
 }
 
-- (void)setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo {
-    self.focus = FeelingFocus;
-    self.feelingFocus = feeling;
-    self.photoInView = photo;
-    if (self.view.window) {
-        [self updateViewsForCurrentFocus];
-    }
-    NSLog(@"Should scroll to photo %@", photo);
+- (void) reloadPhotoViewsFocusedOnPhoto:(Photo *)photo {
+    
+    NSIndexPath * photoCenterIndexPath = [self.fetchedResultsControllerForCurrentFocus indexPathForObject:photo];
+    
+    [self reloadPhotoView:self.photoViewCenter givenFocusOnIndexPath:photoCenterIndexPath];
+    [self reloadPhotoView:self.photoViewLeftCenter givenFocusOnIndexPath:photoCenterIndexPath];
+    [self reloadPhotoView:self.photoViewLeftmost givenFocusOnIndexPath:photoCenterIndexPath];
+    [self reloadPhotoView:self.photoViewRightCenter givenFocusOnIndexPath:photoCenterIndexPath];
+    [self reloadPhotoView:self.photoViewRightmost givenFocusOnIndexPath:photoCenterIndexPath];
+    
+    CGFloat contentOffsetX = self.photosScrollView.frame.size.width * photoCenterIndexPath.row;
+    CGRect photosContainerFrame = self.photosContainer.frame;
+    photosContainerFrame.origin.x = contentOffsetX - self.photoViewCenter.frame.origin.x;
+    self.photosContainer.frame = photosContainerFrame;
+//    self.photosScrollView.contentOffset = CGPointMake(contentOffsetX, 0);
+    
 }
 
-- (void)setFocusToUser:(User *)user photo:(Photo *)photo {
-    self.focus = UserFocus;
-    self.userFocus = user;
-    self.photoInView = photo;
-    if (self.view.window) {
-        [self updateViewsForCurrentFocus];
+- (void) reloadPhotoView:(PhotoView *)photoView givenFocusOnIndexPath:(NSIndexPath *)centerIndexPath {
+    
+    NSUInteger fetchedPhotosCount = self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count;
+    
+    NSIndexPath * validIndexPathForPhotoView = nil;
+    if (photoView == self.photoViewCenter) {
+        validIndexPathForPhotoView = centerIndexPath;
+    } else {
+        int rowBump = 0;
+        if (photoView == self.photoViewLeftCenter ||
+            photoView == self.photoViewLeftmost) {
+            rowBump = -1;
+            if (photoView == self.photoViewLeftmost) { rowBump *= 2; }
+        } else {
+            rowBump = 1;
+            if (photoView == self.photoViewRightmost) { rowBump *= 2; }
+        }
+        if (!(centerIndexPath.row + rowBump < 0 || 
+              centerIndexPath.row + rowBump >= fetchedPhotosCount)) {
+            validIndexPathForPhotoView = [NSIndexPath indexPathForRow:centerIndexPath.row + rowBump inSection:0];
+        }
     }
-    NSLog(@"Should scroll to photo %@", photo);
+    
+    Photo * photo = validIndexPathForPhotoView == nil ? nil : [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:validIndexPathForPhotoView];
+    photoView.photoImageView.image = photo == nil ? nil : [UIImage imageNamed:photo.filename];
+    [self updatePhotoViewCaption:photoView withDataFromPhoto:photo oppositeOfFocus:self.focus];
+    
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    NSInteger rowCount = 0;
-    if (self.focus != NoFocus) {
-        rowCount = [[self.fetchedResultsControllerForCurrentFocus.sections objectAtIndex:section] numberOfObjects];
-    }
-    NSLog(@"photosTableView numberOfRows=%d", rowCount);
-    return rowCount;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-
-    // Get / Create the cell
-    static NSString * PhotoCellID = @"PhotoCellID";
-    PhotoCell * cell = (PhotoCell *)[tableView dequeueReusableCellWithIdentifier:PhotoCellID];
-    if (cell == nil) {
-        cell = [[PhotoCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PhotoCellID];
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    }
-
-    // Configure the cell
-    Photo * photo = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:indexPath];
-    cell.photoImageView.image = [UIImage imageNamed:photo.filename];
+- (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus {
     NSString * captionText = nil;
     UIColor * captionColor = nil;
-    if (self.focus == FeelingFocus) {
-        captionText = photo.user.name;
-        captionColor = [UIColor userColor];
-    } else {
-        captionText = photo.feeling.word.lowercaseString;
-        captionColor = [UIColor feelingColor];
+    if (photo != nil) {
+        if (mainViewDataFocus == FeelingFocus) {
+            captionText = photo.user.name;
+            captionColor = [UIColor userColor];
+        } else {
+            captionText = photo.feeling.word.lowercaseString;
+            captionColor = [UIColor feelingColor];
+        }
     }
-    cell.photoCaptionLabel.text = captionText;
-    cell.photoCaptionLabel.textColor = captionColor;
-//    [cell.photoCaptionLabel sizeToFit];
-//    NSLog(@"%@", NSStringFromCGRect(cell.photoCaptionLabel.frame));
-
-    // Return the cell
-    return cell;
-    
+    photoView.photoCaptionLabel.text = captionText;
+    photoView.photoCaptionLabel.textColor = captionColor;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    
-    PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-    oppositeFocusStripViewController.delegate = self.delegate;
-    oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
-    
-    Photo * photo = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:indexPath];
-    if (self.focus == FeelingFocus) {
-        [oppositeFocusStripViewController setFocusToUser:photo.user photo:photo];
-    } else {
-        [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    CGFloat contentOffsetToMiddleX = scrollView.contentOffset.x + (scrollView.frame.size.width / 2.0);
+    contentOffsetToMiddleX = MAX(contentOffsetToMiddleX, 0);
+    contentOffsetToMiddleX = MIN(contentOffsetToMiddleX, self.photosScrollView.contentSize.width - self.photosScrollView.frame.size.width);
+    NSUInteger indexOfPhotoInView = (int)contentOffsetToMiddleX / (int)self.photosScrollView.frame.size.width;
+    Photo * photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
+    if (!decelerate) {
+        self.photoInView = photoInView;
     }
-    [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
-    
+    [self reloadPhotoViewsFocusedOnPhoto:photoInView];
+//    self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
+//    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    NSUInteger indexOfPhotoInView = (int)scrollView.contentOffset.x / (int)self.photosScrollView.frame.size.width;
+    self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
+//    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
 }
 
 - (NSFetchedResultsController *)fetchedResultsControllerForCurrentFocus {
@@ -289,5 +352,61 @@
     NSLog(@"pinchedToZoomOut");
     [self.delegate photosStripViewControllerFinished:self];
 }
+
+- (void)tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer {
+//    NSLog(@"tappedToSelectPhotoView");
+    CGPoint locationInScrollView = [tapGestureRecognizer locationInView:self.photosScrollView];
+    if (CGRectContainsPoint(CGRectInset(self.photosScrollView.bounds, PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0), locationInScrollView)) {
+//        NSLog(@"tappedToSelectMiddlePhotoView");
+        [self photoInViewTouched];
+//        PhotoView * photoViewTapped = self.photoViewCenter;
+//        CGPoint locationInPhotosContainer = [tapGestureRecognizer locationInView:self.photosContainer];
+//        if (CGRectContainsPoint(self.photoViewLeftCenter.frame, locationInPhotosContainer)) {
+//            photoViewTapped = self.photoViewLeftCenter;
+//        } else if (CGRectContainsPoint(self.photoViewRightCenter.frame, locationInPhotosContainer)) {
+//            photoViewTapped = self.photoViewRightCenter;
+//        }
+//        [self photoViewTouched:photoViewTapped];
+    }
+}
+
+- (void)photoInViewTouched {
+//    NSLog(@"photoInViewTouched");
+//    NSLog(@"self.photoInView.(feeling, user):(%@, %@)", self.photoInView.feeling.word, self.photoInView.user.name);
+//    if (!self.photosScrollView.isTracking) {
+//        NSLog(@"photosScrollView is not tracking");
+        
+        PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+        oppositeFocusStripViewController.delegate = self.delegate;
+        oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
+        
+        if (self.focus == FeelingFocus) {
+            [oppositeFocusStripViewController setFocusToUser:self.photoInView.user photo:self.photoInView];
+        } else {
+            [oppositeFocusStripViewController setFocusToFeeling:self.photoInView.feeling photo:self.photoInView];
+        }
+        [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
+//    }   
+}
+
+//- (void)photoViewTouched:(PhotoView *)photoView {
+//    NSLog(@"photoViewTouched:%@", photoView);
+////    NSLog(@"self.photoViewCenter:%@", self.photoViewCenter);
+//    NSLog(@"self.photoInView.(feeling, user):(%@, %@)", self.photoInView.feeling.word, self.photoInView.user.name);
+//    if (!self.photosScrollView.isTracking) {
+//        NSLog(@"photosScrollView is not tracking");
+//        
+//        PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+//        oppositeFocusStripViewController.delegate = self.delegate;
+//        oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
+//        
+//        if (self.focus == FeelingFocus) {
+//            [oppositeFocusStripViewController setFocusToUser:self.photoInView.user photo:self.photoInView];
+//        } else {
+//            [oppositeFocusStripViewController setFocusToFeeling:self.photoInView.feeling photo:self.photoInView];
+//        }
+//        [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
+//    }
+//}
 
 @end

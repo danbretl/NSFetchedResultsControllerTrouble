@@ -259,6 +259,7 @@
 }
 
 - (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
+    NSLog(@"photosStripViewController:requestedReplacementWithPhotosStripViewController:");
     [self.navigationController popViewControllerAnimated:NO];
     [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];
 }
