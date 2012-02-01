@@ -26,6 +26,7 @@
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
 - (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
 - (void) photoInViewTouched;
+- (IBAction)headerButtonTouched:(UIButton *)button;
 @property (nonatomic) BOOL shouldAnimateIn;
 @property (strong, nonatomic) UIImage * animationInPersistentImage;
 @end
@@ -433,6 +434,10 @@
 - (void)setShouldAnimateIn:(BOOL)shouldAnimateIn withPersistentImage:(UIImage *)image {
     self.shouldAnimateIn = shouldAnimateIn;
     self.animationInPersistentImage = image;
+}
+
+- (void)headerButtonTouched:(UIButton *)button {
+    [self.delegate photosStripViewControllerFinished:self];
 }
 
 @end

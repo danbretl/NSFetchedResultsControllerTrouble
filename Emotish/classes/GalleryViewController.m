@@ -254,13 +254,17 @@
 }
 
 - (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController {
+    //    [UIView animateWithDuration:0.25 animations:^{
+    self.floatingImageView.alpha = 0.0;
+    self.feelingsTableView.alpha = 1.0;
+    self.floatingImageView.userInteractionEnabled = NO;
+    self.feelingsTableView.userInteractionEnabled = YES;
+    //    }];
 //    [UIView animateWithDuration:0.25 animations:^{
-        self.floatingImageView.alpha = 0.0;
-        self.feelingsTableView.alpha = 1.0;
-        self.floatingImageView.userInteractionEnabled = NO;
-        self.feelingsTableView.userInteractionEnabled = YES;
+//        photosStripViewController.view.alpha = 0.0;
+//    } completion:^(BOOL finished){
+        [self.navigationController popToRootViewControllerAnimated:NO];
 //    }];
-    [self.navigationController popToRootViewControllerAnimated:NO];
 }
 
 - (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
