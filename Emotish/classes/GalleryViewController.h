@@ -10,8 +10,9 @@
 #import "GalleryFeelingCell.h"
 #import "GalleryFeelingImageCell.h"
 #import "CoreDataManager.h"
+#import "PhotosStripViewController.h"
 
-@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate> {
+@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate> {
     
     BOOL debugging;
     

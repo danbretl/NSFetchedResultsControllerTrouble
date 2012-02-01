@@ -111,14 +111,10 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    
     NSInteger rowCount = 0;
     if (tableView == self.feelingsTableView) {
         rowCount = [[[self.fetchedResultsController sections] objectAtIndex:section] numberOfObjects];
-    }/* else {
-        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:tableView.tag inSection:0]];
-        rowCount = feeling.photos.count; // NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT, HOW TO USE THE ACTUAL DATA. DO WE HAVE A BUNCH OF NSFETCHEDRESULTSCONTROLLERS, IF SO WHERE DO THEY GO, WHEN DO THEY FETCH, ETC. RIGHT NOW I JUST KNOW THAT FOR MY DUMMY DATA, THERE ARE ALWAYS AT LEAST 2. // NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT, HOW TO USE THE ACTUAL DATA. DO WE HAVE A BUNCH OF NSFETCHEDRESULTSCONTROLLERS, IF SO WHERE DO THEY GO, WHEN DO THEY FETCH, ETC. RIGHT NOW I JUST KNOW THAT FOR MY DUMMY DATA, THERE ARE ALWAYS AT LEAST 2. // NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT NEED TO FIGURE THIS OUT, HOW TO USE THE ACTUAL DATA. DO WE HAVE A BUNCH OF NSFETCHEDRESULTSCONTROLLERS, IF SO WHERE DO THEY GO, WHEN DO THEY FETCH, ETC. RIGHT NOW I JUST KNOW THAT FOR MY DUMMY DATA, THERE ARE ALWAYS AT LEAST 2.
-    }*/
+    }
     return rowCount;
 }
 
@@ -226,19 +222,40 @@
                 [self.activeFeelingCell highlightLabel:YES];
             }
             
+            PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+            feelingStripViewController.delegate = self;
+            feelingStripViewController.coreDataManager = self.coreDataManager;
+            Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:feelingCell.feelingIndex inSection:0]];
+            [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
+            
             self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
             self.floatingImageView.image = imageCell.button.imageView.image;
             self.floatingImageView.alpha = 1.0;
+            
             [UIView animateWithDuration:0.25 animations:^{
-                self.floatingImageView.frame = CGRectMake(50, 120, 220, 220);
+                self.floatingImageView.frame = /*[self.floatingImageView.superview convertRect:*/CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)/* fromView:nil]*/;
+                NSLog(@"self.floatingImageView.frame = %@", NSStringFromCGRect(self.floatingImageView.frame));
+                NSLog(@"galleryViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
                 self.feelingsTableView.alpha = 0.0;
                 self.floatingImageView.userInteractionEnabled = YES;
                 self.feelingsTableView.userInteractionEnabled = NO;
+            } completion:^(BOOL finished){
+                [self.navigationController pushViewController:feelingStripViewController animated:NO];
             }];
             
         }
     }
     
+}
+
+- (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController {
+//    [UIView animateWithDuration:0.25 animations:^{
+        self.floatingImageView.alpha = 0.0;
+        self.feelingsTableView.alpha = 1.0;
+        self.floatingImageView.userInteractionEnabled = NO;
+        self.feelingsTableView.userInteractionEnabled = YES;
+//    }];
+    [self.navigationController popViewControllerAnimated:NO];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {

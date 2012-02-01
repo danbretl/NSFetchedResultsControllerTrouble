@@ -66,8 +66,11 @@
     
     self.galleryViewController = [[GalleryViewController alloc] initWithNibName:@"GalleryViewController" bundle:[NSBundle mainBundle]];
     self.galleryViewController.coreDataManager = self.coreDataManager;
+    
+    UINavigationController * navigationController = [[UINavigationController alloc] initWithRootViewController:self.galleryViewController];
+    navigationController.navigationBarHidden = YES;
 
-    self.window.rootViewController = self.galleryViewController;
+    self.window.rootViewController = navigationController;
     [self.window makeKeyAndVisible];
     
     return YES;
