@@ -12,5 +12,6 @@
 
 + (UIColor *) feelingColor;
 + (UIColor *) userColor;
++ (UIColor *) emotishColor;
 
 @end

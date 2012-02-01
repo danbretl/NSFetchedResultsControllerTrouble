@@ -11,11 +11,15 @@
 @implementation UIColor (Emotish)
 
 + (UIColor *)feelingColor {
-    return [UIColor colorWithRed:1.0 green:.71 blue:.14 alpha:1.0];
+    return [UIColor colorWithRed:252.0/255.0 green:179.0/255.0 blue:36.0/255.0 alpha:1.0];
 }
 
 + (UIColor *)userColor {
-    return [UIColor colorWithRed:.51 green:.80 blue:.96 alpha:1.0];
+    return [UIColor colorWithRed:116.0/255.0 green:205.0/255.0 blue:244.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)emotishColor {
+    return [UIColor colorWithRed:129.0/255.0 green:151.0/255.0 blue:170.0/255.0 alpha:1.0];
 }
 
 @end
