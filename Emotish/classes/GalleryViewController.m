@@ -255,7 +255,12 @@
         self.floatingImageView.userInteractionEnabled = NO;
         self.feelingsTableView.userInteractionEnabled = YES;
 //    }];
+    [self.navigationController popToRootViewControllerAnimated:NO];
+}
+
+- (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
     [self.navigationController popViewControllerAnimated:NO];
+    [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {

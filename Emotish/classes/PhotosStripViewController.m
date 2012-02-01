@@ -72,6 +72,7 @@
     NSLog(@"photosStripViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
     self.photosTableView.rowHeight = PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2;
     self.photosTableView.scrollsToTop = NO;
+    self.photosTableView.allowsSelection = YES;
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -180,6 +181,7 @@
     PhotoCell * cell = (PhotoCell *)[tableView dequeueReusableCellWithIdentifier:PhotoCellID];
     if (cell == nil) {
         cell = [[PhotoCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PhotoCellID];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
 
     // Configure the cell
@@ -201,6 +203,22 @@
 
     // Return the cell
     return cell;
+    
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+    oppositeFocusStripViewController.delegate = self.delegate;
+    oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
+    
+    Photo * photo = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:indexPath];
+    if (self.focus == FeelingFocus) {
+        [oppositeFocusStripViewController setFocusToUser:photo.user photo:photo];
+    } else {
+        [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
+    }
+    [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
     
 }
 

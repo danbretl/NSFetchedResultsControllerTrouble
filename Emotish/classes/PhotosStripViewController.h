@@ -42,4 +42,5 @@ typedef enum {
 
 @protocol PhotosStripViewControllerDelegate <NSObject>
 - (void) photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController;
+- (void) photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController;
 @end
