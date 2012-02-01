@@ -230,12 +230,14 @@
         feelingStripViewController.coreDataManager = self.coreDataManager;
         Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:feelingCell.feelingIndex inSection:0]];
         [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
+        [feelingStripViewController setShouldAnimateIn:YES withPersistentImage:imageCell.button.imageView.image];
         
         self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
         self.floatingImageView.image = imageCell.button.imageView.image;
         self.floatingImageView.alpha = 1.0;
+        imageCell.alpha = 0.0;
         
-        [UIView animateWithDuration:0.25 animations:^{
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
             self.floatingImageView.frame = /*[self.floatingImageView.superview convertRect:*/CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)/* fromView:nil]*/;
             NSLog(@"self.floatingImageView.frame = %@", NSStringFromCGRect(self.floatingImageView.frame));
             NSLog(@"galleryViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
@@ -244,6 +246,7 @@
             self.feelingsTableView.userInteractionEnabled = NO;
         } completion:^(BOOL finished){
             [self.navigationController pushViewController:feelingStripViewController animated:NO];
+            imageCell.alpha = 1.0;
         }];
     
     }

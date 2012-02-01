@@ -26,11 +26,14 @@
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
 - (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
 - (void) photoInViewTouched;
+@property (nonatomic) BOOL shouldAnimateIn;
+@property (strong, nonatomic) UIImage * animationInPersistentImage;
 @end
 
 @implementation PhotosStripViewController
 @synthesize focus=_focus;
 @synthesize feelingFocus=_feelingFocus, userFocus=_userFocus, photoInView=_photoInView;
+@synthesize shouldAnimateIn=_shouldAnimateIn, animationInPersistentImage=_animationInPersistentImage;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize fetchedResultsControllerFeeling=_fetchedResultsControllerFeeling;
 @synthesize fetchedResultsControllerUser=_fetchedResultsControllerUser;
@@ -75,30 +78,15 @@
     
     self.headerButton.titleLabel.adjustsFontSizeToFitWidth = YES;
 
-//    self.photosTableView.frame = CGRectMake( PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2); // I don't know why this line is necessary, but apparently it is.
-//    self.photosTableView.transform = CGAffineTransformMakeRotation(-M_PI * 0.5);
-//    CGRect photosScrollViewFrameInWindow = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT);
     self.photosClipView.scrollView = self.photosScrollView;
     self.photosClipView.frame = CGRectMake(0, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, 320, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT);
-    self.photosScrollView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, self.photosClipView.frame.size.height);///*[self.view convertRect:*/photosScrollViewFrameInWindow/* fromView:nil]*/;
-//    self.photosTableView.frame = CGRectOffset(photosTableViewFrameInWindow, 0, -(self.view.frame.origin.y + [UIApplication sharedApplication].statusBarFrame.size.height)); // I have no idea why this hack is necessary. I think it has something to do with the fact that this view controller is shown modally currently... Will probably have to revisit this and clean it up.
-//    NSLog(@"self.photosTableView.frame = %@", NSStringFromCGRect(self.photosTableView.frame));
-//    NSLog(@"photosStripViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
-//    self.photosTableView.rowHeight = PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2;
+    self.photosScrollView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, self.photosClipView.frame.size.height);
     self.photosScrollView.scrollsToTop = NO;
-//    self.photosTableView.allowsSelection = YES;
-//    UIImage * photoPlaceholderImage = [UIImage imageNamed:@""];
-//    self.photoViewLeftmost.photoImageView.image = photoPlaceholderImage;
-//    self.photoViewRightmost.photoImageView.image = photoPlaceholderImage;
     [self.photosScrollView addSubview:self.photosContainer];
     self.photosScrollView.contentSize = self.photosContainer.frame.size;
-//    self.photoViewCenter.delegate = self;
-//    self.photoViewLeftCenter.delegate = self;
-//    self.photoViewLeftmost.delegate = self;
-//    self.photoViewRightCenter.delegate = self;
-//    self.photoViewRightmost.delegate = self;
     UITapGestureRecognizer * tapToSelectPhotoViewGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tappedToSelectPhotoView:)];
     [self.photosScrollView addGestureRecognizer:tapToSelectPhotoViewGestureRecognizer];
+    self.photosClipView.backgroundColor = [UIColor whiteColor];
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -141,6 +129,40 @@
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
 }
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (self.shouldAnimateIn) {
+        
+        self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
+        self.floatingImageView.image = self.animationInPersistentImage;
+        self.floatingImageView.alpha = 1.0;
+        
+        self.headerButton.alpha = 0.0;
+        self.addPhotoLabel.alpha = 0.0;
+        self.photosScrollView.alpha = 0.0;
+        
+        self.view.userInteractionEnabled = NO;
+        
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    if (self.shouldAnimateIn) {
+        self.shouldAnimateIn = NO;
+        self.animationInPersistentImage = nil;
+        [UIView animateWithDuration:0.4 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            self.headerButton.alpha = 1.0;
+            self.addPhotoLabel.alpha = 1.0;
+            self.photosScrollView.alpha = 1.0;
+        } completion:^(BOOL finished){
+            self.floatingImageView.alpha = 0.0;
+            self.view.userInteractionEnabled = YES;
+        }];
+    }
+}
+
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     // Return YES for supported orientations
@@ -407,5 +429,10 @@
 //        [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
 //    }
 //}
+
+- (void)setShouldAnimateIn:(BOOL)shouldAnimateIn withPersistentImage:(UIImage *)image {
+    self.shouldAnimateIn = shouldAnimateIn;
+    self.animationInPersistentImage = image;
+}
 
 @end
