@@ -34,6 +34,10 @@ typedef enum {
 
 - (void) setShouldAnimateIn:(BOOL)shouldAnimateIn fromSource:(PhotosStripAnimationInSource)source withPersistentImage:(UIImage *)image;
 
+@property (strong, nonatomic) UIImage * galleryScreenshot;
+@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *galleryImageView;
+@property (unsafe_unretained, nonatomic) IBOutlet UIView *backgroundView;
+
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerUser;

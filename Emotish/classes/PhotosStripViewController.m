@@ -20,6 +20,8 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @property (strong, nonatomic) Feeling * feelingFocus;
 @property (strong, nonatomic) User * userFocus;
 @property (strong, nonatomic) Photo * photoInView;
+//@property (unsafe_unretained, nonatomic) PhotoView * photoViewInView;
+@property (strong, nonatomic, readonly) PhotoView * photoViewInView;
 @property (strong, nonatomic, readonly) NSFetchedResultsController * fetchedResultsControllerForCurrentFocus;
 - (NSFetchedResultsController *)fetchedResultsControllerForFocus:(PhotosStripFocus)focus;
 - (void) performFetchForCurrentFocus;
@@ -29,7 +31,8 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 - (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus;
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
 - (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
-- (void)photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView;
+- (void) photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView;
+- (void) viewControllerFinished;
 - (IBAction)headerButtonTouched:(UIButton *)button;
 @property (nonatomic) BOOL shouldAnimateIn;
 @property (nonatomic) PhotosStripAnimationInSource animationInSource;
@@ -40,6 +43,9 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @synthesize focus=_focus;
 @synthesize feelingFocus=_feelingFocus, userFocus=_userFocus, photoInView=_photoInView;
 @synthesize shouldAnimateIn=_shouldAnimateIn, animationInSource=_animationInSource, animationInPersistentImage=_animationInPersistentImage;
+@synthesize galleryScreenshot=_galleryScreenshot;
+@synthesize galleryImageView = _galleryImageView;
+@synthesize backgroundView = _backgroundView;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize fetchedResultsControllerFeeling=_fetchedResultsControllerFeeling;
 @synthesize fetchedResultsControllerUser=_fetchedResultsControllerUser;
@@ -54,6 +60,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @synthesize photoViewCenter = _photoViewCenter;
 @synthesize photoViewRightCenter = _photoViewRightCenter;
 @synthesize photoViewRightmost = _photoViewRightmost;
+@synthesize photoViewInView = _photoViewInView;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize addPhotoLabel = _addPhotoLabel;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer;
@@ -64,6 +71,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         self.focus = NoFocus;
+//        self.photoViewInView = nil;
     }
     return self;
 }
@@ -78,8 +86,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 
 #pragma mark - View lifecycle
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     
     self.headerButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -94,7 +101,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     self.photosScrollView.contentSize = self.photosContainer.frame.size;
     UITapGestureRecognizer * tapToSelectPhotoViewGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tappedToSelectPhotoView:)];
     [self.photosScrollView addGestureRecognizer:tapToSelectPhotoViewGestureRecognizer];
-    self.photosClipView.backgroundColor = [UIColor whiteColor];
+    self.photosClipView.backgroundColor = [UIColor clearColor];
     
     self.headerButton.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photosClipView.frame));
     self.headerButton.contentEdgeInsets = UIEdgeInsetsMake(0, self.photosScrollView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, self.headerButton.contentEdgeInsets.bottom, 320 - (CGRectGetMaxX(self.photosScrollView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
@@ -109,6 +116,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 //    [self.floatingImageView addGestureRecognizer:floatingImageViewTempTapGestureRecognizer];
     
     [self updateViewsForCurrentFocus];
+//    self.photoViewInView = self.photoViewCenter;
     
     self.zoomOutGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchedToZoomOut:)];
     [self.view addGestureRecognizer:self.zoomOutGestureRecognizer];
@@ -120,13 +128,12 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 
 }
 
-- (void)viewDidUnload
-{
+- (void)viewDidUnload {
     [self setHeaderButton:nil];
     [self setPhotosScrollView:nil];
-    self.floatingImageView = nil;
-    self.fetchedResultsControllerFeeling = nil;
-    self.fetchedResultsControllerUser = nil;
+    [self setFloatingImageView:nil];
+    [self setFetchedResultsControllerFeeling:nil];
+    [self setFetchedResultsControllerUser:nil];
     [self setTopBar:nil];
     [self setAddPhotoLabel:nil];
     [self setPhotosContainer:nil];
@@ -136,9 +143,9 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     [self setPhotoViewRightCenter:nil];
     [self setPhotoViewRightmost:nil];
     [self setPhotosClipView:nil];
+    [self setGalleryImageView:nil];
+    [self setBackgroundView:nil];
     [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -221,6 +228,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     self.photoInView = photo;
     if (self.view.window) {
         [self updateViewsForCurrentFocus];
+//        self.photoViewInView = self.photoViewCenter;
     }
 //    NSLog(@"Should scroll to photo %@", photo);
 }
@@ -231,6 +239,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     self.photoInView = photo;
     if (self.view.window) {
         [self updateViewsForCurrentFocus];
+//        self.photoViewInView = self.photoViewCenter;
     }
 //    NSLog(@"Should scroll to photo %@", photo);
 }
@@ -419,11 +428,6 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     
 }
 
-- (void)pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer {
-    NSLog(@"pinchedToZoomOut");
-    [self.delegate photosStripViewControllerFinished:self];
-}
-
 - (void)tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer {
     CGPoint locationInScrollView = [tapGestureRecognizer locationInView:self.photosScrollView];
     if (CGRectContainsPoint(CGRectInset(self.photosScrollView.bounds, PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0), locationInScrollView)) {
@@ -453,6 +457,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
         [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
     }
     [oppositeFocusStripViewController setShouldAnimateIn:YES fromSource:PhotosStripOpposite withPersistentImage:photoView.photoImageView.image];
+    oppositeFocusStripViewController.galleryScreenshot = self.galleryScreenshot;
 
     // Animate the transition
 //    CGRect headerFrame = self.headerButton.frame;
@@ -486,7 +491,64 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 }
 
 - (void)headerButtonTouched:(UIButton *)button {
-    [self.delegate photosStripViewControllerFinished:self];
+    [self viewControllerFinished];
+}
+
+- (void)pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer {
+    if (pinchGestureRecognizer.velocity < 0.0) {
+        [self viewControllerFinished];
+    }
+}
+
+- (void)viewControllerFinished {
+    
+    self.galleryImageView.image = self.galleryScreenshot;
+    NSLog(@"self.galleryScreenshot.size = %@", NSStringFromCGSize(self.galleryScreenshot.size));
+    self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
+    self.floatingImageView.image = self.photoViewInView.photoImageView.image;
+    self.floatingImageView.alpha = 1.0;
+//    [UIView animateWithDuration:0.5 animations:^{
+//        self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
+//        self.floatingImageView.alpha = 0.0;
+//    }];
+    self.photoViewInView.photoImageView.alpha = 0.0;
+    [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        
+        self.headerButton.alpha = 0.0;
+        self.addPhotoLabel.alpha = 0.0;
+        self.photosScrollView.alpha = 0.0;
+        self.backgroundView.alpha = 0.0;            
+        self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
+        self.floatingImageView.alpha = 0.0;
+        
+    } completion:^(BOOL finished){
+        
+        [self.delegate photosStripViewControllerFinished:self];
+        
+//        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+//            self.backgroundView.alpha = 0.0;            
+////            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
+////            self.floatingImageView.alpha = 0.0;
+//        } completion:^(BOOL finished){
+//            [self.delegate photosStripViewControllerFinished:self];
+//        }];
+        
+    }];
+    
+}
+
+- (PhotoView *)photoViewInView {
+    int indexOfPhotoView = (int)(self.photosScrollView.contentOffset.x - self.photosContainer.frame.origin.x) / self.photosScrollView.frame.size.width;
+    PhotoView * photoView = nil;
+    switch (indexOfPhotoView) {
+        case 2: photoView = self.photoViewCenter; break;
+        case 1: photoView = self.photoViewLeftCenter; break;
+        case 3: photoView = self.photoViewRightCenter; break;
+        case 0: photoView = self.photoViewLeftmost; break;
+        case 4: photoView = self.photoViewRightmost; break;
+        default: break;
+    }
+    return photoView;
 }
 
 @end

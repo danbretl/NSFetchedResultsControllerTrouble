@@ -50,6 +50,7 @@ const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
     self.photoCaptionLabel = [[UILabel alloc] initWithFrame:CGRectMake(self.photoImageView.frame.origin.x, CGRectGetMaxY(self.photoImageView.frame) + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM, self.photoImageView.frame.size.width, PC_PHOTO_CELL_LABEL_HEIGHT)];
     self.photoCaptionLabel.textAlignment = UITextAlignmentRight;
     self.photoCaptionLabel.font = [UIFont boldSystemFontOfSize:PC_PHOTO_CELL_LABEL_FONT_SIZE];
+    self.photoCaptionLabel.backgroundColor = [UIColor clearColor];
     [self addSubview:self.photoCaptionLabel];
     
     self.button = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -65,7 +66,7 @@ const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
         self.photoImageView.backgroundColor = [UIColor blueColor];
         self.photoCaptionLabel.backgroundColor = [UIColor greenColor];
     } else {
-        self.backgroundColor = [UIColor whiteColor];
+        self.backgroundColor = [UIColor clearColor];
     }
     
 }

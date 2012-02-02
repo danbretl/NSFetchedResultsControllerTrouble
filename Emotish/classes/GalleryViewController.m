@@ -11,6 +11,7 @@
 #import "GalleryConstants.h"
 #import "GalleryFeelingCell.h"
 #import "GalleryFeelingImageCell.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
@@ -97,6 +98,7 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     self.feelingsTableViewContentOffsetPreserved = self.feelingsTableView.contentOffset;
+    self.activeFeelingCellContentOffsetPreserved = self.activeFeelingCell != nil ? self.activeFeelingCell.imagesTableView.contentOffset : CGPointZero;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -232,6 +234,17 @@
         [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
         [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:imageCell.button.imageView.image];
         
+        // Render the view layer of this view controller, for fading back to it from other views
+        if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
+            UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, NO, [UIScreen mainScreen].scale);
+        } else {
+            UIGraphicsBeginImageContext(self.view.bounds.size);
+        }
+        [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+        UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        feelingStripViewController.galleryScreenshot = image;
+                
         self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
         self.floatingImageView.image = imageCell.button.imageView.image;
         self.floatingImageView.alpha = 1.0;
