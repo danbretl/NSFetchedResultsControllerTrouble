@@ -209,22 +209,35 @@
           self.activeFeelingCell.imagesTableView.isTracking)) {
         NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", feelingCell.feelingLabel.text, imageCell != nil ? [NSString stringWithFormat:@"the image that was located at index %d)",  imageCell.imageIndex] : @"the first image");
             
+        // Old behavior, arguably 'slicker' - if a feeling cell is pulled out (and is thus the active feeling cell), but the user then taps the label or image from a different (not pulled out) feeling cell, while that new tapped feeling cell is being pushed to a view controller etc, the old active cell is deactivated (and starts to scroll towards the origin), and the new tapped cell is offically the new active one.
+//        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+//        GalleryFeelingCell * newActiveFeelingCell = feelingCell;
+//        if (oldActiveFeelingCell != newActiveFeelingCell) {
+//            self.activeFeelingCell = nil;
+//            if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+//                [oldActiveFeelingCell scrollToOriginAnimated:YES];
+//            } else {
+//                [oldActiveFeelingCell highlightLabel:NO];
+//            }
+//            self.activeFeelingCell = newActiveFeelingCell;
+//            self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
+//            [self.activeFeelingCell highlightLabel:YES];
+//        }
+        // New behavior, works with my galleryScreenshot technique - in the situation described above, the new tapped feeling cell does not become the new official active cell. In all other situations, it does. (The problem was that the screenshot would be taken before the potentially old active feeling cell was finished scrolling back to its origin, and thus the transition back to the Gallery, whenever that might happen, would not look right.)
         GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
         GalleryFeelingCell * newActiveFeelingCell = feelingCell;
         if (oldActiveFeelingCell != newActiveFeelingCell) {
-            self.activeFeelingCell = nil;
             if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-                [oldActiveFeelingCell scrollToOriginAnimated:YES];
-            } else {
+                self.activeFeelingCell = nil;
                 [oldActiveFeelingCell highlightLabel:NO];
+                self.activeFeelingCell = newActiveFeelingCell;
+                self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
+                [self.activeFeelingCell highlightLabel:YES];
             }
-            self.activeFeelingCell = newActiveFeelingCell;
-            self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
-            [self.activeFeelingCell highlightLabel:YES];
         }
     
         if (imageCell == nil) {   
-            imageCell = [self.activeFeelingCell.imagesTableView.visibleCells objectAtIndex:0];
+            imageCell = [feelingCell.imagesTableView.visibleCells objectAtIndex:0];
         }
         
         PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];

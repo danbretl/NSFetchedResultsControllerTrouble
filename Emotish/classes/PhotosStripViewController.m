@@ -37,6 +37,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @property (nonatomic) BOOL shouldAnimateIn;
 @property (nonatomic) PhotosStripAnimationInSource animationInSource;
 @property (strong, nonatomic) UIImage * animationInPersistentImage;
+@property (nonatomic) BOOL finishing;
 @end
 
 @implementation PhotosStripViewController
@@ -64,6 +65,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize addPhotoLabel = _addPhotoLabel;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer;
+@synthesize finishing=_finishing;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -435,12 +437,12 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
         CGPoint locationInPhotosContainer = [tapGestureRecognizer locationInView:self.photosContainer];
         if (CGRectContainsPoint(self.photoViewLeftCenter.frame, locationInPhotosContainer)) {
             photoViewTapped = self.photoViewLeftCenter;
-            NSLog(@"self.photoViewLeftCenter");
+//            NSLog(@"self.photoViewLeftCenter");
         } else if (CGRectContainsPoint(self.photoViewRightCenter.frame, locationInPhotosContainer)) {
             photoViewTapped = self.photoViewRightCenter;
-            NSLog(@"self.photoViewRightCenter");
+//            NSLog(@"self.photoViewRightCenter");
         } else {
-            NSLog(@"self.photoViewCenter");
+//            NSLog(@"self.photoViewCenter");
         }
         [self photoInView:self.photoInView selectedFromPhotoView:photoViewTapped];
     }
@@ -465,7 +467,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
         CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
         CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
-        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
+//        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
         self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
         photoView.photoCaptionLabel.frame = CGRectOffset(photoView.photoCaptionLabel.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
         void(^photoViewAlpha)(PhotoView *)=^(PhotoView * photoViewInQuestion){
@@ -497,43 +499,49 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 - (void)pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer {
     if (pinchGestureRecognizer.velocity < 0.0) {
         [self viewControllerFinished];
+        self.finishing = YES;
     }
 }
 
 - (void)viewControllerFinished {
+//    NSLog(@"viewControllerFinished");
     
-    self.galleryImageView.image = self.galleryScreenshot;
-    NSLog(@"self.galleryScreenshot.size = %@", NSStringFromCGSize(self.galleryScreenshot.size));
-    self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
-    self.floatingImageView.image = self.photoViewInView.photoImageView.image;
-    self.floatingImageView.alpha = 1.0;
-//    [UIView animateWithDuration:0.5 animations:^{
-//        self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
-//        self.floatingImageView.alpha = 0.0;
-//    }];
-    self.photoViewInView.photoImageView.alpha = 0.0;
-    [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+    if (!self.finishing) {
+    
+        self.galleryImageView.image = self.galleryScreenshot;
+//        NSLog(@"self.galleryScreenshot.size = %@", NSStringFromCGSize(self.galleryScreenshot.size));
+        self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
+        self.floatingImageView.image = self.photoViewInView.photoImageView.image;
+        self.floatingImageView.alpha = 1.0;
+    //    [UIView animateWithDuration:0.5 animations:^{
+    //        self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
+    //        self.floatingImageView.alpha = 0.0;
+    //    }];
+        self.photoViewInView.photoImageView.alpha = 0.0;
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            
+            self.headerButton.alpha = 0.0;
+            self.addPhotoLabel.alpha = 0.0;
+            self.photosScrollView.alpha = 0.0;
+            self.backgroundView.alpha = 0.0;            
+            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
+            self.floatingImageView.alpha = 0.0;
+            
+        } completion:^(BOOL finished){
+            
+            [self.delegate photosStripViewControllerFinished:self];
+            
+    //        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+    //            self.backgroundView.alpha = 0.0;            
+    ////            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
+    ////            self.floatingImageView.alpha = 0.0;
+    //        } completion:^(BOOL finished){
+    //            [self.delegate photosStripViewControllerFinished:self];
+    //        }];
+            
+        }];
         
-        self.headerButton.alpha = 0.0;
-        self.addPhotoLabel.alpha = 0.0;
-        self.photosScrollView.alpha = 0.0;
-        self.backgroundView.alpha = 0.0;            
-        self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
-        self.floatingImageView.alpha = 0.0;
-        
-    } completion:^(BOOL finished){
-        
-        [self.delegate photosStripViewControllerFinished:self];
-        
-//        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-//            self.backgroundView.alpha = 0.0;            
-////            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
-////            self.floatingImageView.alpha = 0.0;
-//        } completion:^(BOOL finished){
-//            [self.delegate photosStripViewControllerFinished:self];
-//        }];
-        
-    }];
+    }
     
 }
 
