@@ -230,7 +230,7 @@
         feelingStripViewController.coreDataManager = self.coreDataManager;
         Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:feelingCell.feelingIndex inSection:0]];
         [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
-        [feelingStripViewController setShouldAnimateIn:YES withPersistentImage:imageCell.button.imageView.image];
+        [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:imageCell.button.imageView.image];
         
         self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
         self.floatingImageView.image = imageCell.button.imageView.image;
@@ -254,17 +254,11 @@
 }
 
 - (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController {
-    //    [UIView animateWithDuration:0.25 animations:^{
     self.floatingImageView.alpha = 0.0;
     self.feelingsTableView.alpha = 1.0;
     self.floatingImageView.userInteractionEnabled = NO;
     self.feelingsTableView.userInteractionEnabled = YES;
-    //    }];
-//    [UIView animateWithDuration:0.25 animations:^{
-//        photosStripViewController.view.alpha = 0.0;
-//    } completion:^(BOOL finished){
-        [self.navigationController popToRootViewControllerAnimated:NO];
-//    }];
+    [self.navigationController popToRootViewControllerAnimated:NO];
 }
 
 - (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {

@@ -10,6 +10,9 @@
 #import "PhotoCell.h"
 #import "ViewConstants.h"
 #import "UIColor+Emotish.h"
+#import <QuartzCore/QuartzCore.h>
+
+const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 
 @interface PhotosStripViewController()
 @property (nonatomic) PhotosStripFocus focus;
@@ -25,16 +28,17 @@
 - (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus;
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
 - (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
-- (void) photoInViewTouched;
+- (void)photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView;
 - (IBAction)headerButtonTouched:(UIButton *)button;
 @property (nonatomic) BOOL shouldAnimateIn;
+@property (nonatomic) PhotosStripAnimationInSource animationInSource;
 @property (strong, nonatomic) UIImage * animationInPersistentImage;
 @end
 
 @implementation PhotosStripViewController
 @synthesize focus=_focus;
 @synthesize feelingFocus=_feelingFocus, userFocus=_userFocus, photoInView=_photoInView;
-@synthesize shouldAnimateIn=_shouldAnimateIn, animationInPersistentImage=_animationInPersistentImage;
+@synthesize shouldAnimateIn=_shouldAnimateIn, animationInSource=_animationInSource, animationInPersistentImage=_animationInPersistentImage;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize fetchedResultsControllerFeeling=_fetchedResultsControllerFeeling;
 @synthesize fetchedResultsControllerUser=_fetchedResultsControllerUser;
@@ -138,12 +142,29 @@
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
         self.floatingImageView.image = self.animationInPersistentImage;
         self.floatingImageView.alpha = 1.0;
-        
-        self.headerButton.alpha = 0.0;
         self.addPhotoLabel.alpha = 0.0;
-        self.photosScrollView.alpha = 0.0;
-        
         self.view.userInteractionEnabled = NO;
+        self.photoViewLeftCenter.alpha = 0.0;
+        self.photoViewRightCenter.alpha = 0.0;
+        
+        if (self.animationInSource == Gallery) {
+            
+            self.headerButton.alpha = 0.0;
+            self.photoViewCenter.alpha = 0.0;
+            
+        } else if (self.animationInSource == PhotosStripOpposite) {
+            
+            CGRect headerFrame = self.headerButton.frame;
+            CGRect captionFrame = self.photoViewCenter.photoCaptionLabel.frame;
+            CGFloat headerTextWidth = MIN([self.headerButton.titleLabel.text sizeWithFont:self.headerButton.titleLabel.font].width, self.headerButton.frame.size.width - (self.headerButton.contentEdgeInsets.left + self.headerButton.contentEdgeInsets.right));
+            CGFloat captionTextWidth = MIN([self.photoViewCenter.photoCaptionLabel.text sizeWithFont:self.photoViewCenter.photoCaptionLabel.font].width, self.photoViewCenter.photoCaptionLabel.frame.size.width);
+            CGRect headerOffscreenFrame = CGRectMake(-(self.headerButton.contentEdgeInsets.left + headerTextWidth + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), headerFrame.origin.y, headerFrame.size.width, headerFrame.size.height);
+            CGPoint offscreenPointToCaptionLabel = [self.photoViewCenter.photoCaptionLabel.superview convertPoint:CGPointMake(self.view.frame.size.width, 0) fromView:self.view];
+            CGRect captionOffscreenFrame = CGRectMake(offscreenPointToCaptionLabel.x + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN - (captionFrame.size.width - captionTextWidth), captionFrame.origin.y, captionFrame.size.width, captionFrame.size.height);
+            self.headerButton.frame = headerOffscreenFrame;
+            self.photoViewCenter.photoCaptionLabel.frame = captionOffscreenFrame;
+            
+        }
         
     }
 }
@@ -151,16 +172,34 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     if (self.shouldAnimateIn) {
-        self.shouldAnimateIn = NO;
-        self.animationInPersistentImage = nil;
+        
         [UIView animateWithDuration:0.4 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            self.headerButton.alpha = 1.0;
+            
             self.addPhotoLabel.alpha = 1.0;
-            self.photosScrollView.alpha = 1.0;
+            self.photoViewLeftCenter.alpha = 1.0;
+            self.photoViewRightCenter.alpha = 1.0;
+            
+            if (self.animationInSource == Gallery) {
+                self.headerButton.alpha = 1.0;
+                self.photoViewCenter.alpha = 1.0;
+            } else if (self.animationInSource == PhotosStripOpposite) {
+                CGRect headerFrame = self.headerButton.frame;
+                headerFrame.origin.x = 0;
+                self.headerButton.frame = headerFrame;
+                CGRect captionFrame = self.photoViewCenter.photoCaptionLabel.frame;
+                captionFrame.origin.x = self.photoViewCenter.photoImageView.frame.origin.x;
+                self.photoViewCenter.photoCaptionLabel.frame = captionFrame;
+            }
+            
         } completion:^(BOOL finished){
             self.floatingImageView.alpha = 0.0;
             self.view.userInteractionEnabled = YES;
         }];
+        
+        self.shouldAnimateIn = NO;
+        self.animationInSource = NoSource;
+        self.animationInPersistentImage = nil;
+        
     }
 }
 
@@ -190,6 +229,13 @@
 //    NSLog(@"Should scroll to photo %@", photo);
 }
 
+- (void) setHeaderLabelText:(NSString *)headerString color:(UIColor *)headerColor {
+    [self.headerButton setTitle:headerString forState:UIControlStateNormal];
+    [self.headerButton setTitle:headerString forState:UIControlStateHighlighted];
+    [self.headerButton setTitleColor:headerColor forState:UIControlStateNormal];
+    [self.headerButton setTitleColor:headerColor forState:UIControlStateHighlighted];
+}
+
 - (void) updateViewsForCurrentFocus {
     
     NSString * headerString = nil;
@@ -206,10 +252,7 @@
     } else {
         headerString = @"";
     }
-    [self.headerButton setTitle:headerString forState:UIControlStateNormal];
-    [self.headerButton setTitle:headerString forState:UIControlStateHighlighted];
-    [self.headerButton setTitleColor:headerColor forState:UIControlStateNormal];
-    [self.headerButton setTitleColor:headerColor forState:UIControlStateHighlighted];
+    [self setHeaderLabelText:headerString color:headerColor];
     self.addPhotoLabel.text = addPhotoString;
     
     [NSFetchedResultsController deleteCacheWithName:self.fetchedResultsControllerForCurrentFocus.cacheName];
@@ -376,63 +419,62 @@
 }
 
 - (void)tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer {
-//    NSLog(@"tappedToSelectPhotoView");
     CGPoint locationInScrollView = [tapGestureRecognizer locationInView:self.photosScrollView];
     if (CGRectContainsPoint(CGRectInset(self.photosScrollView.bounds, PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0), locationInScrollView)) {
-//        NSLog(@"tappedToSelectMiddlePhotoView");
-        [self photoInViewTouched];
-//        PhotoView * photoViewTapped = self.photoViewCenter;
-//        CGPoint locationInPhotosContainer = [tapGestureRecognizer locationInView:self.photosContainer];
-//        if (CGRectContainsPoint(self.photoViewLeftCenter.frame, locationInPhotosContainer)) {
-//            photoViewTapped = self.photoViewLeftCenter;
-//        } else if (CGRectContainsPoint(self.photoViewRightCenter.frame, locationInPhotosContainer)) {
-//            photoViewTapped = self.photoViewRightCenter;
-//        }
-//        [self photoViewTouched:photoViewTapped];
+        PhotoView * photoViewTapped = self.photoViewCenter;
+        CGPoint locationInPhotosContainer = [tapGestureRecognizer locationInView:self.photosContainer];
+        if (CGRectContainsPoint(self.photoViewLeftCenter.frame, locationInPhotosContainer)) {
+            photoViewTapped = self.photoViewLeftCenter;
+            NSLog(@"self.photoViewLeftCenter");
+        } else if (CGRectContainsPoint(self.photoViewRightCenter.frame, locationInPhotosContainer)) {
+            photoViewTapped = self.photoViewRightCenter;
+            NSLog(@"self.photoViewRightCenter");
+        } else {
+            NSLog(@"self.photoViewCenter");
+        }
+        [self photoInView:self.photoInView selectedFromPhotoView:photoViewTapped];
     }
 }
 
-- (void)photoInViewTouched {
-//    NSLog(@"photoInViewTouched");
-//    NSLog(@"self.photoInView.(feeling, user):(%@, %@)", self.photoInView.feeling.word, self.photoInView.user.name);
-//    if (!self.photosScrollView.isTracking) {
-//        NSLog(@"photosScrollView is not tracking");
+- (void)photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView {
         
-        PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-        oppositeFocusStripViewController.delegate = self.delegate;
-        oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
-        
-        if (self.focus == FeelingFocus) {
-            [oppositeFocusStripViewController setFocusToUser:self.photoInView.user photo:self.photoInView];
-        } else {
-            [oppositeFocusStripViewController setFocusToFeeling:self.photoInView.feeling photo:self.photoInView];
-        }
+    PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+    oppositeFocusStripViewController.delegate = self.delegate;
+    oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
+    if (self.focus == FeelingFocus) {
+        [oppositeFocusStripViewController setFocusToUser:photo.user photo:photo];
+    } else {
+        [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
+    }
+    [oppositeFocusStripViewController setShouldAnimateIn:YES fromSource:PhotosStripOpposite withPersistentImage:photoView.photoImageView.image];
+
+    // Animate the transition
+//    CGRect headerFrame = self.headerButton.frame;
+//    CGRect captionFrame = photoView.photoCaptionLabel.frame;
+    [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
+        CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
+        CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
+        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
+        self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
+        photoView.photoCaptionLabel.frame = CGRectOffset(photoView.photoCaptionLabel.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
+        void(^photoViewAlpha)(PhotoView *)=^(PhotoView * photoViewInQuestion){
+            photoViewInQuestion.alpha = photoView == photoViewInQuestion ? 1.0 : 0.0;
+        };
+        photoViewAlpha(self.photoViewCenter);
+        photoViewAlpha(self.photoViewLeftCenter);
+        photoViewAlpha(self.photoViewRightCenter);
+        photoViewAlpha(self.photoViewLeftmost);
+        photoViewAlpha(self.photoViewRightmost);
+    } completion:^(BOOL finished){
+        // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
         [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
-//    }   
+    }];
+    
 }
 
-//- (void)photoViewTouched:(PhotoView *)photoView {
-//    NSLog(@"photoViewTouched:%@", photoView);
-////    NSLog(@"self.photoViewCenter:%@", self.photoViewCenter);
-//    NSLog(@"self.photoInView.(feeling, user):(%@, %@)", self.photoInView.feeling.word, self.photoInView.user.name);
-//    if (!self.photosScrollView.isTracking) {
-//        NSLog(@"photosScrollView is not tracking");
-//        
-//        PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-//        oppositeFocusStripViewController.delegate = self.delegate;
-//        oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
-//        
-//        if (self.focus == FeelingFocus) {
-//            [oppositeFocusStripViewController setFocusToUser:self.photoInView.user photo:self.photoInView];
-//        } else {
-//            [oppositeFocusStripViewController setFocusToFeeling:self.photoInView.feeling photo:self.photoInView];
-//        }
-//        [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
-//    }
-//}
-
-- (void)setShouldAnimateIn:(BOOL)shouldAnimateIn withPersistentImage:(UIImage *)image {
+- (void)setShouldAnimateIn:(BOOL)shouldAnimateIn fromSource:(PhotosStripAnimationInSource)source withPersistentImage:(UIImage *)image {
     self.shouldAnimateIn = shouldAnimateIn;
+    self.animationInSource = source;
     self.animationInPersistentImage = image;
 }
 

@@ -19,6 +19,12 @@ typedef enum {
     UserFocus = 2,
 } PhotosStripFocus;
 
+typedef enum {
+    NoSource = 0,
+    Gallery = 1,
+    PhotosStripOpposite = 2,
+} PhotosStripAnimationInSource;
+
 @protocol PhotosStripViewControllerDelegate;
 
 @interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/>
@@ -26,7 +32,7 @@ typedef enum {
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;
 
-- (void) setShouldAnimateIn:(BOOL)shouldAnimateIn withPersistentImage:(UIImage *)image;
+- (void) setShouldAnimateIn:(BOOL)shouldAnimateIn fromSource:(PhotosStripAnimationInSource)source withPersistentImage:(UIImage *)image;
 
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
