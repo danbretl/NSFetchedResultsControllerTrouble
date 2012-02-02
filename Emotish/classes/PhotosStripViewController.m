@@ -13,6 +13,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
+const int PSVC_PHOTO_VIEWS_COUNT = 5;
 
 @interface PhotosStripViewController()
 @property (nonatomic) PhotosStripFocus focus;
@@ -85,13 +86,18 @@ const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 
     self.photosClipView.scrollView = self.photosScrollView;
     self.photosClipView.frame = CGRectMake(0, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, 320, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT);
-    self.photosScrollView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, self.photosClipView.frame.size.height);
+    CGFloat photoViewWidth = PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2;
+    self.photosScrollView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, photoViewWidth, self.photosClipView.frame.size.height);
     self.photosScrollView.scrollsToTop = NO;
     [self.photosScrollView addSubview:self.photosContainer];
+    self.photosContainer.frame = CGRectMake(0, 0, PSVC_PHOTO_VIEWS_COUNT * photoViewWidth, self.photosContainer.frame.size.height);
     self.photosScrollView.contentSize = self.photosContainer.frame.size;
     UITapGestureRecognizer * tapToSelectPhotoViewGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tappedToSelectPhotoView:)];
     [self.photosScrollView addGestureRecognizer:tapToSelectPhotoViewGestureRecognizer];
     self.photosClipView.backgroundColor = [UIColor whiteColor];
+    
+    self.headerButton.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photosClipView.frame));
+    self.headerButton.contentEdgeInsets = UIEdgeInsetsMake(0, self.photosScrollView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, self.headerButton.contentEdgeInsets.bottom, 320 - (CGRectGetMaxX(self.photosScrollView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -465,6 +471,7 @@ const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
         photoViewAlpha(self.photoViewRightCenter);
         photoViewAlpha(self.photoViewLeftmost);
         photoViewAlpha(self.photoViewRightmost);
+        self.addPhotoLabel.alpha = 0.0;
     } completion:^(BOOL finished){
         // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
         [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
