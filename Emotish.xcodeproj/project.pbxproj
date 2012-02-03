@@ -144,6 +144,7 @@
 		3244017C14D9A0F80056DC81 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
 		3244017E14D9A47D0056DC81 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		3244018014D9A4810056DC81 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		3263210C14DC7AE400E2E10A /* Emotish 002.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 002.xcdatamodel"; sourceTree = "<group>"; };
 		327BE6E514D74EAE0051C549 /* PhotosStripViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhotosStripViewController.h; path = classes/PhotosStripViewController.h; sourceTree = "<group>"; };
 		327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotosStripViewController.m; path = classes/PhotosStripViewController.m; sourceTree = "<group>"; };
 		327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = PhotosStripViewController.xib; path = classes/PhotosStripViewController.xib; sourceTree = "<group>"; };
@@ -786,10 +787,11 @@
 		32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				3263210C14DC7AE400E2E10A /* Emotish 002.xcdatamodel */,
 				323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */,
 				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
 			);
-			currentVersion = 323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */;
+			currentVersion = 3263210C14DC7AE400E2E10A /* Emotish 002.xcdatamodel */;
 			path = Emotish.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

@@ -21,6 +21,10 @@
 - (NSArray *) getAllObjectsForEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors;
 - (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors;
 
+//- (NSArray *) getFeelings;
+//- (Feeling *) getFeelingAlphabeticallyBeforeFeeling:(Feeling *)feeling;
+//- (Feeling *) getFeelingAlphabeticallyAfterFeeling:(Feeling *)feeling;
+
 - (Photo *) addPhotoWithFilename:(NSString *)filename forFeelingWord:(NSString *)feelingWord fromUsername:(NSString *)username; // This method will add a new Photo object to the database. It will connect that Photo to an existing Feeling object in the database for the given feeling word, or else create one. Likewise, it will connect the Photo to an existing User object matching the given username, or else create a new one.
 
 @end

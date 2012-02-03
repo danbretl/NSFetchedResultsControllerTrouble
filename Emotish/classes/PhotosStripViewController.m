@@ -30,6 +30,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 - (void) reloadPhotoView:(PhotoView *)photoView givenFocusOnIndexPath:(NSIndexPath *)centerIndexPath;
 - (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus;
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
+- (void) swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
 - (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
 - (void) photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView;
 - (void) viewControllerFinished;
@@ -52,8 +53,10 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize fetchedResultsControllerFeeling=_fetchedResultsControllerFeeling;
 @synthesize fetchedResultsControllerUser=_fetchedResultsControllerUser;
+@synthesize fetchedResultsControllerFeelings=_fetchedResultsControllerFeelings;
 @synthesize fetchedResultsControllerForCurrentFocus=_fetchedResultsControllerForCurrentFocus;
 @synthesize topBar=_topBar;
+@synthesize contentView = _contentView;
 @synthesize headerButton=_headerButton;
 @synthesize photosClipView = _photosClipView;
 @synthesize photosScrollView=_photosScrollView;
@@ -65,8 +68,9 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @synthesize photoViewRightmost = _photoViewRightmost;
 @synthesize photoViewInView = _photoViewInView;
 @synthesize floatingImageView=_floatingImageView;
+@synthesize addPhotoButton = _addPhotoButton;
 @synthesize addPhotoLabel = _addPhotoLabel;
-@synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer;
+@synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer;
 @synthesize finishing=_finishing;
 @synthesize delegate=_delegate;
 
@@ -100,7 +104,6 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     CGFloat photoViewWidth = PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2;
     self.photosScrollView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, photoViewWidth, self.photosClipView.frame.size.height);
     self.photosScrollView.scrollsToTop = NO;
-    [self.photosScrollView addSubview:self.photosContainer];
     self.photosContainer.frame = CGRectMake(0, 0, PSVC_PHOTO_VIEWS_COUNT * photoViewWidth, self.photosContainer.frame.size.height);
     self.photosScrollView.contentSize = self.photosContainer.frame.size;
     UITapGestureRecognizer * tapToSelectPhotoViewGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tappedToSelectPhotoView:)];
@@ -125,6 +128,13 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     self.zoomOutGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchedToZoomOut:)];
     [self.view addGestureRecognizer:self.zoomOutGestureRecognizer];
     
+    self.swipeUpGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedVertically:)];
+    self.swipeUpGestureRecognizer.direction = UISwipeGestureRecognizerDirectionUp;
+    [self.view addGestureRecognizer:self.swipeUpGestureRecognizer];
+    self.swipeDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedVertically:)];
+    self.swipeDownGestureRecognizer.direction = UISwipeGestureRecognizerDirectionDown;
+    [self.view addGestureRecognizer:self.swipeDownGestureRecognizer];
+    
     BOOL debugging = NO;
     if (debugging) {
         self.photosScrollView.backgroundColor = [UIColor redColor];
@@ -138,6 +148,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     [self setFloatingImageView:nil];
     [self setFetchedResultsControllerFeeling:nil];
     [self setFetchedResultsControllerUser:nil];
+    [self setFetchedResultsControllerFeelings:nil];
     [self setTopBar:nil];
     [self setAddPhotoLabel:nil];
     [self setPhotosContainer:nil];
@@ -149,11 +160,17 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     [self setPhotosClipView:nil];
     [self setGalleryImageView:nil];
     [self setBackgroundView:nil];
+    [self setZoomOutGestureRecognizer:nil];
+    [self setSwipeUpGestureRecognizer:nil];
+    [self setSwipeDownGestureRecognizer:nil];
+    [self setContentView:nil];
+    [self setAddPhotoButton:nil];
     [super viewDidUnload];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    NSLog(@"%@ PhotosStripViewController viewWillAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
     if (self.shouldAnimateIn) {
         
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
@@ -188,6 +205,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+    NSLog(@"%@ PhotosStripViewController viewDidAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
     if (self.shouldAnimateIn) {
         
         [UIView animateWithDuration:0.4 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
@@ -463,6 +481,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
     oppositeFocusStripViewController.delegate = self.delegate;
     oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
+    oppositeFocusStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
     if (self.focus == FeelingFocus) {
         [oppositeFocusStripViewController setFocusToUser:photo.user photo:photo];
     } else {
@@ -470,6 +489,8 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     }
     [oppositeFocusStripViewController setShouldAnimateIn:YES fromSource:PhotosStripOpposite withPersistentImage:photoView.photoImageView.image];
     oppositeFocusStripViewController.galleryScreenshot = self.galleryScreenshot;
+    
+    self.view.userInteractionEnabled = NO;
 
     // Animate the transition
 //    CGRect headerFrame = self.headerButton.frame;
@@ -587,6 +608,85 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 
 - (void)emotishLogoTouched:(UIButton *)button {
     [self viewControllerFinished];
+}
+
+- (void)swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
+    
+    // Test if current focus is on a Feeling
+    if (self.focus == FeelingFocus) {
+        
+        NSLog(@"Swiped %@", swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? @"up" : @"down");
+        NSIndexPath * indexPath = [self.fetchedResultsControllerFeelings indexPathForObject:self.feelingFocus];
+        int indexAdjustment = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? 1 : -1; // Swiping up means that you are pushing the content of the view up, trying to bring up the content that is "below". That content belongs to the next alphabetical feeling. In contrast, swiping down would bring in the previous alphabetical feeling.
+        if (!(indexPath.row + indexAdjustment < 0 || 
+              indexPath.row + indexAdjustment >= self.fetchedResultsControllerFeelings.fetchedObjects.count)) {
+            Feeling * nextFeeling = [self.fetchedResultsControllerFeelings objectAtIndexPath:[NSIndexPath indexPathForRow:indexPath.row + indexAdjustment inSection:indexPath.section]]; // Keep in mind that the "next" feeling might actually be the "previous" feeling alphabetically - it is "next" in the sense that it is now the "next" Feeling that will be displayed on screen.
+            
+            PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+            feelingViewController.delegate = self.delegate;
+            feelingViewController.coreDataManager = self.coreDataManager;
+            feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
+            [feelingViewController setFocusToFeeling:nextFeeling photo:[nextFeeling.mostRecentPhotos objectAtIndex:0]];
+            feelingViewController.galleryScreenshot = self.galleryScreenshot;
+            
+            feelingViewController.galleryImageView.alpha = 0.0;
+            feelingViewController.backgroundView.alpha = 0.0;
+            feelingViewController.topBar.alpha = 0.0;
+            feelingViewController.addPhotoButton.alpha = 0.0;
+            feelingViewController.addPhotoLabel.alpha = 0.0;
+            
+//            [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
+            
+            [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
+            int direction = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? -1 : 1;
+            feelingViewController.view.frame = CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
+            CGFloat originYAdjustment = direction * self.view.frame.size.height;
+            [UIView animateWithDuration:0.125 animations:^{
+                self.addPhotoLabel.alpha = 0.0;
+            } completion:^(BOOL finished){
+                [UIView animateWithDuration:0.125 animations:^{
+                    feelingViewController.addPhotoLabel.alpha = 1.0;
+                }];
+            }];
+            [UIView animateWithDuration:0.25 animations:^{
+                self.contentView.frame = CGRectOffset(self.contentView.frame, 0, originYAdjustment);
+                feelingViewController.view.frame = CGRectOffset(feelingViewController.view.frame, 0, originYAdjustment);
+            } completion:^(BOOL finished){
+                feelingViewController.galleryImageView.alpha = 1.0;
+                feelingViewController.backgroundView.alpha = 1.0;
+                feelingViewController.topBar.alpha = 1.0;
+                feelingViewController.addPhotoButton.alpha = 1.0;
+                feelingViewController.addPhotoLabel.alpha = 1.0;
+                [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
+            }];
+            
+//            // Animate the transition
+//            //    CGRect headerFrame = self.headerButton.frame;
+//            //    CGRect captionFrame = photoView.photoCaptionLabel.frame;
+//            [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
+//                CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
+//                CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
+//                //        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
+//                self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
+//                photoView.photoCaptionLabel.frame = CGRectOffset(photoView.photoCaptionLabel.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
+//                void(^photoViewAlpha)(PhotoView *)=^(PhotoView * photoViewInQuestion){
+//                    photoViewInQuestion.alpha = photoView == photoViewInQuestion ? 1.0 : 0.0;
+//                };
+//                photoViewAlpha(self.photoViewCenter);
+//                photoViewAlpha(self.photoViewLeftCenter);
+//                photoViewAlpha(self.photoViewRightCenter);
+//                photoViewAlpha(self.photoViewLeftmost);
+//                photoViewAlpha(self.photoViewRightmost);
+//                self.addPhotoLabel.alpha = 0.0;
+//            } completion:^(BOOL finished){
+//                // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
+//                [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
+//            }];
+            
+        }
+        
+    }
+    
 }
 
 @end

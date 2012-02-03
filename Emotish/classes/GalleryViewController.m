@@ -248,6 +248,7 @@
         PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
         feelingStripViewController.delegate = self;
         feelingStripViewController.coreDataManager = self.coreDataManager;
+        feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
         Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:feelingCell.feelingIndex inSection:0]];
         [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
         [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:imageCell.button.imageView.image];
@@ -294,7 +295,7 @@
 
 - (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
     NSLog(@"photosStripViewController:requestedReplacementWithPhotosStripViewController:");
-    [self.navigationController popViewControllerAnimated:NO];
+    [self.navigationController popToRootViewControllerAnimated:NO];
     [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];
 }
 

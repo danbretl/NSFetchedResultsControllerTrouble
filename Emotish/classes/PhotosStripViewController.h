@@ -41,8 +41,10 @@ typedef enum {
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerUser;
+@property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeelings;
 
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
+@property (unsafe_unretained, nonatomic) IBOutlet UIView *contentView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * headerButton;
 @property (unsafe_unretained, nonatomic) IBOutlet ClipView * photosClipView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIScrollView * photosScrollView;
@@ -53,9 +55,12 @@ typedef enum {
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewRightCenter;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewRightmost;
 @property (strong, nonatomic) UIImageView * floatingImageView;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton * addPhotoButton;
 @property (unsafe_unretained, nonatomic) IBOutlet UILabel * addPhotoLabel;
 
 @property (strong, nonatomic) UIPinchGestureRecognizer * zoomOutGestureRecognizer;
+@property (strong, nonatomic) UISwipeGestureRecognizer * swipeUpGestureRecognizer;
+@property (strong, nonatomic) UISwipeGestureRecognizer * swipeDownGestureRecognizer;
 
 @property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate> delegate;
 
