@@ -17,6 +17,7 @@
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
 //- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex;
 - (void) floatingImageViewTouched:(UITapGestureRecognizer *)tapGestureRecognizer;
+- (IBAction)emotishLogoTouched:(UIButton *)button;
 @end
 
 @implementation GalleryViewController
@@ -386,5 +387,9 @@
 //- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex {
 //    return [NSString stringWithFormat:@"protoImage%d.jpg", ((imageIndex + feelingIndex) % 4) + 1];
 //}
+
+- (void)emotishLogoTouched:(UIButton *)button {
+    [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+}
 
 @end

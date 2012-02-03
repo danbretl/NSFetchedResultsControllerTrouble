@@ -39,6 +39,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @property (strong, nonatomic) UIImage * animationInPersistentImage;
 @property (nonatomic) BOOL finishing;
 - (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView;
+- (IBAction)emotishLogoTouched:(UIButton *)button;
 @end
 
 @implementation PhotosStripViewController
@@ -582,6 +583,10 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
         photoViewName = @"photoViewRightmost";
     } 
     return photoViewName;
+}
+
+- (void)emotishLogoTouched:(UIButton *)button {
+    [self viewControllerFinished];
 }
 
 @end
