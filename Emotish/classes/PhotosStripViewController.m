@@ -38,6 +38,7 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 @property (nonatomic) PhotosStripAnimationInSource animationInSource;
 @property (strong, nonatomic) UIImage * animationInPersistentImage;
 @property (nonatomic) BOOL finishing;
+- (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView;
 @end
 
 @implementation PhotosStripViewController
@@ -355,6 +356,8 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     Photo * photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
     if (!decelerate) {
         self.photoInView = photoInView;
+//        NSLog(@"Photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
+//        NSLog(@"Photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
     }
     [self reloadPhotoViewsFocusedOnPhoto:photoInView];
 //    self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
@@ -364,6 +367,8 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     NSUInteger indexOfPhotoInView = (int)scrollView.contentOffset.x / (int)self.photosScrollView.frame.size.width;
     self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
+//    NSLog(@"Photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
+//    NSLog(@"Photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
 //    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
 }
 
@@ -433,22 +438,26 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 - (void)tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer {
     CGPoint locationInScrollView = [tapGestureRecognizer locationInView:self.photosScrollView];
     if (CGRectContainsPoint(CGRectInset(self.photosScrollView.bounds, PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0), locationInScrollView)) {
-        PhotoView * photoViewTapped = self.photoViewCenter;
-        CGPoint locationInPhotosContainer = [tapGestureRecognizer locationInView:self.photosContainer];
-        if (CGRectContainsPoint(self.photoViewLeftCenter.frame, locationInPhotosContainer)) {
-            photoViewTapped = self.photoViewLeftCenter;
-//            NSLog(@"self.photoViewLeftCenter");
-        } else if (CGRectContainsPoint(self.photoViewRightCenter.frame, locationInPhotosContainer)) {
-            photoViewTapped = self.photoViewRightCenter;
-//            NSLog(@"self.photoViewRightCenter");
-        } else {
-//            NSLog(@"self.photoViewCenter");
-        }
-        [self photoInView:self.photoInView selectedFromPhotoView:photoViewTapped];
+//        PhotoView * photoViewTapped = self.photoViewCenter;
+//        CGPoint locationInPhotosContainer = [tapGestureRecognizer locationInView:self.photosContainer];
+//        if (CGRectContainsPoint(self.photoViewLeftCenter.frame, locationInPhotosContainer)) {
+//            photoViewTapped = self.photoViewLeftCenter;
+////            NSLog(@"self.photoViewLeftCenter");
+//        } else if (CGRectContainsPoint(self.photoViewRightCenter.frame, locationInPhotosContainer)) {
+//            photoViewTapped = self.photoViewRightCenter;
+////            NSLog(@"self.photoViewRightCenter");
+//        } else {
+////            NSLog(@"self.photoViewCenter");
+//        }
+        [self photoInView:self.photoInView selectedFromPhotoView:self.photoViewInView];
+//        [self photoInView:self.photoInView selectedFromPhotoView:photoViewTapped];
     }
 }
 
 - (void)photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView {
+    
+//    NSLog(@"Selected photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
+//    NSLog(@"Selected photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
         
     PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
     oppositeFocusStripViewController.delegate = self.delegate;
@@ -557,6 +566,22 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
         default: break;
     }
     return photoView;
+}
+
+- (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView {
+    NSString * photoViewName = @"photoViewUnknown";
+    if (photoView == self.photoViewLeftmost) {
+        photoViewName = @"photoViewLeftmost";
+    } else if (photoView == self.photoViewLeftCenter) {
+        photoViewName = @"photoViewLeftCenter";
+    } else if (photoView == self.photoViewCenter) {
+        photoViewName = @"photoViewCenter";
+    } else if (photoView == self.photoViewRightCenter) {
+        photoViewName = @"photoViewRightCenter";
+    } else if (photoView == self.photoViewRightmost) {
+        photoViewName = @"photoViewRightmost";
+    } 
+    return photoViewName;
 }
 
 @end
