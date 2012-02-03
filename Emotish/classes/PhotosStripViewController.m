@@ -540,7 +540,6 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
     if (!self.finishing) {
     
         self.galleryImageView.image = self.galleryScreenshot;
-//        NSLog(@"self.galleryScreenshot.size = %@", NSStringFromCGSize(self.galleryScreenshot.size));
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
         self.floatingImageView.image = self.photoViewInView.photoImageView.image;
         self.floatingImageView.alpha = 1.0;
