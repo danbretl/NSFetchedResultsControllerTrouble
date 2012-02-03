@@ -227,7 +227,11 @@
         GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
         GalleryFeelingCell * newActiveFeelingCell = feelingCell;
         if (oldActiveFeelingCell != newActiveFeelingCell) {
-            if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+            if (oldActiveFeelingCell.imagesTableView.isDecelerating) {
+                NSLog(@"oldActiveFeelingCell.imagesTableView.isDecelerating");
+                [oldActiveFeelingCell.imagesTableView scrollRectToVisible:CGRectMake(0, oldActiveFeelingCell.imagesTableView.contentOffset.y-1, 1, 1) animated:NO];
+            }
+            if (oldActiveFeelingCell.imagesTableView.contentOffset.y <= 0) {
                 self.activeFeelingCell = nil;
                 [oldActiveFeelingCell highlightLabel:NO];
                 self.activeFeelingCell = newActiveFeelingCell;
