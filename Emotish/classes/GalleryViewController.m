@@ -63,14 +63,15 @@
 //    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
     
     self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
+        
+    self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
+    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
+    self.feelingsTableView.scrollsToTop = YES;
     
     self.flagStretchView.frame = CGRectMake(0, 0, self.flagStretchView.frame.size.width, self.flagStretchView.frame.size.height + GC_FEELING_IMAGE_MARGIN_VERTICAL);
     self.flagStretchView.paddingBottom = GC_FEELING_IMAGE_MARGIN_VERTICAL;
     self.flagStretchView.arrow.opacity = 0.75;
-    
-    self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
-    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
-    self.feelingsTableView.scrollsToTop = YES;
+    self.flagStretchView.arrowDistanceFromBottom = floorf(self.feelingsTableView.rowHeight / 3.0);
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -411,7 +412,8 @@
 //}
 
 - (void)emotishLogoTouched:(UIButton *)button {
-    [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+//    [self.feelingsTableView setContentOffset:CGPointMake(0, -(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL)) animated:YES];
+    [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
 }
 
 @end

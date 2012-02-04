@@ -41,7 +41,7 @@
     
     self.clipsToBounds = NO;
     self.paddingBottom = 0.0;
-    self.arrowDistanceFromBottom = 15.0;
+    self.arrowDistanceFromBottom = 20.0;
     _arrowFlipped = NO;
     self.arrowFlipDistanceAdjustment = -5.0;
     self.arrowFlipAnimationDuration = 0.2;
