@@ -28,5 +28,6 @@
 //@property (strong, nonatomic, readonly) NSArray * tempFeelingStrings;
 @property (strong, nonatomic) UIImageView * floatingImageView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton *addPhotoButton;
 
 @end

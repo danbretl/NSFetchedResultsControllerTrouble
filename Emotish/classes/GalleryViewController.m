@@ -32,6 +32,7 @@
 //@synthesize tempFeelingStrings=_tempFeelingStrings;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize topBar=_topBar;
+@synthesize addPhotoButton = _addPhotoButton;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -59,6 +60,8 @@
 {
     [super viewDidLoad];
 //    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
+    
+    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
     
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
     self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
@@ -88,6 +91,7 @@
 }
 
 - (void)viewDidUnload {
+    [self setAddPhotoButton:nil];
     [super viewDidUnload];
     self.feelingsTableView = nil;
     self.activeFeelingCell = nil; // Not retained, but should nil this pointer.

@@ -14,6 +14,7 @@
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int PSVC_PHOTO_VIEWS_COUNT = 5;
+const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 
 @interface PhotosStripViewController()
 @property (nonatomic) PhotosStripFocus focus;
@@ -97,10 +98,13 @@ const int PSVC_PHOTO_VIEWS_COUNT = 5;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
+    self.addPhotoLabel.frame = CGRectMake(CGRectGetMaxX(self.addPhotoButton.frame) + PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT, self.addPhotoButton.frame.origin.y, self.view.frame.size.width - CGRectGetMaxX(self.addPhotoButton.frame), self.addPhotoButton.frame.size.height);
+    
     self.headerButton.titleLabel.adjustsFontSizeToFitWidth = YES;
 
     self.photosClipView.scrollView = self.photosScrollView;
-    self.photosClipView.frame = CGRectMake(0, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, 320, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT);
+    self.photosClipView.frame = CGRectMake(0, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, 320, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT + PC_PHOTO_CELL_PADDING_BOTTOM);
     CGFloat photoViewWidth = PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2;
     self.photosScrollView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, photoViewWidth, self.photosClipView.frame.size.height);
     self.photosScrollView.scrollsToTop = NO;
