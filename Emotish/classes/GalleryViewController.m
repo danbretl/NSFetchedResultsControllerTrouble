@@ -30,6 +30,7 @@
 @synthesize activeFeelingCellIndexRow=_activeFeelingCellIndexRow;
 @synthesize activeFeelingCellContentOffsetPreserved=_activeFeelingCellContentOffsetPreserved;
 //@synthesize tempFeelingStrings=_tempFeelingStrings;
+@synthesize flagStretchView = _flagStretchView;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize topBar=_topBar;
 @synthesize addPhotoButton = _addPhotoButton;
@@ -63,9 +64,12 @@
     
     self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
     
+    self.flagStretchView.frame = CGRectMake(0, 0, self.flagStretchView.frame.size.width, self.flagStretchView.frame.size.height + GC_FEELING_IMAGE_MARGIN_VERTICAL);
+    self.flagStretchView.paddingBottom = GC_FEELING_IMAGE_MARGIN_VERTICAL;
+    self.flagStretchView.arrow.opacity = 0.75;
+    
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
-    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
-    self.feelingsTableView.scrollIndicatorInsets = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, 0);
+    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
     self.feelingsTableView.scrollsToTop = YES;
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -92,6 +96,7 @@
 
 - (void)viewDidUnload {
     [self setAddPhotoButton:nil];
+    [self setFlagStretchView:nil];
     [super viewDidUnload];
     self.feelingsTableView = nil;
     self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
@@ -303,6 +308,32 @@
     [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];
 }
 
+- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
+    if (scrollView != self.feelingsTableView &&
+        self.activeFeelingCell.imagesTableView != scrollView &&
+        scrollView.contentOffset.y > 0) {
+        GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+        [cell scrollToOriginAnimated:YES];
+    }
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    if (scrollView != self.feelingsTableView) {
+        if (self.activeFeelingCell.imagesTableView != scrollView) {
+            if (!decelerate && scrollView.contentOffset.y > 0) {
+                GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+                [cell scrollToOriginAnimated:YES];
+            }
+        }
+    } else {
+        if (-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance) {
+//            scrollView.contentInset = UIEdgeInsetsMake(scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance, scrollView.contentInset.left, scrollView.contentInset.bottom, scrollView.contentInset.right);
+//            scrollView.userInteractionEnabled = NO;
+//            [self.flagStretchView startAnimatingStripes];
+        }
+    }
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     if (scrollView != self.feelingsTableView) {
         if (scrollView == self.activeFeelingCell.imagesTableView) {
@@ -327,26 +358,12 @@
                 }
             }
         }
-    }
-}
-
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
-    if (scrollView != self.feelingsTableView &&
-        self.activeFeelingCell.imagesTableView != scrollView &&
-        scrollView.contentOffset.y > 0) {
-        GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-        [cell scrollToOriginAnimated:YES];
-    }
-}
-
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-    if (scrollView != self.feelingsTableView) {
-        if (self.activeFeelingCell.imagesTableView != scrollView) {
-            if (!decelerate && scrollView.contentOffset.y > 0) {
-                GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-                [cell scrollToOriginAnimated:YES];
-            }
-        }
+    } else {
+        [self.flagStretchView setArrowFlipped:-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance animated:YES];
+        //        if (-scrollView.contentOffset.y < scrollView.contentInset.top) {
+        //            [self.flagStretchView setArrowFlipped:YES animated:YES];
+        //        }
+        //        NSLog(@"%f >? %f", -scrollView.contentOffset.y, scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance);
     }
 }
 

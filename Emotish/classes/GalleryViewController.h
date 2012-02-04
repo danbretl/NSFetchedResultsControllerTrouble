@@ -11,6 +11,7 @@
 #import "GalleryFeelingImageCell.h"
 #import "CoreDataManager.h"
 #import "PhotosStripViewController.h"
+#import "FlagStretchView.h"
 
 @interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate> {
     
@@ -26,6 +27,7 @@
 @property (nonatomic) NSInteger activeFeelingCellIndexRow;
 @property (nonatomic) CGPoint activeFeelingCellContentOffsetPreserved;
 //@property (strong, nonatomic, readonly) NSArray * tempFeelingStrings;
+@property (unsafe_unretained, nonatomic) IBOutlet FlagStretchView *flagStretchView;
 @property (strong, nonatomic) UIImageView * floatingImageView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton *addPhotoButton;

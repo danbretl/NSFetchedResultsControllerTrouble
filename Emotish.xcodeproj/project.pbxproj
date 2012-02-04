@@ -20,6 +20,9 @@
 		3244017D14D9A0F80056DC81 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017C14D9A0F80056DC81 /* icon@2x.png */; };
 		3244017F14D9A47D0056DC81 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017E14D9A47D0056DC81 /* Default.png */; };
 		3244018114D9A4810056DC81 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244018014D9A4810056DC81 /* Default@2x.png */; };
+		326127CA14DCC25E001FD065 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 326127C914DCC25E001FD065 /* QuartzCore.framework */; };
+		326127CE14DCCCA4001FD065 /* flag_stretch_arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 326127CC14DCCCA4001FD065 /* flag_stretch_arrow.png */; };
+		326127CF14DCCCA4001FD065 /* flag_stretch_arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 326127CD14DCCCA4001FD065 /* flag_stretch_arrow@2x.png */; };
 		327BE6E814D74EAE0051C549 /* PhotosStripViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */; };
 		327BE6E914D74EAE0051C549 /* PhotosStripViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */; };
 		328A4B6D14D86D7500D07DCB /* aggressive-1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 328A4B1814D86D7500D07DCB /* aggressive-1.jpg */; };
@@ -111,6 +114,7 @@
 		3299A14914D096890017FAEF /* GalleryFeelingImageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */; };
 		329D112F14D9B0BD00F69263 /* PhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D112E14D9B0BD00F69263 /* PhotoView.m */; };
 		329D113214D9DBF900F69263 /* ClipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D113114D9DBF900F69263 /* ClipView.m */; };
+		329E2C4314DCBCE5004AE89D /* FlagStretchView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329E2C4214DCBCE5004AE89D /* FlagStretchView.m */; };
 		32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EB14D0929F00191C6F /* UIKit.framework */; };
 		32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1ED14D0929F00191C6F /* Foundation.framework */; };
 		32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */; };
@@ -144,6 +148,9 @@
 		3244017C14D9A0F80056DC81 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
 		3244017E14D9A47D0056DC81 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		3244018014D9A4810056DC81 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		326127C914DCC25E001FD065 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		326127CC14DCCCA4001FD065 /* flag_stretch_arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = flag_stretch_arrow.png; sourceTree = "<group>"; };
+		326127CD14DCCCA4001FD065 /* flag_stretch_arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flag_stretch_arrow@2x.png"; sourceTree = "<group>"; };
 		3263210C14DC7AE400E2E10A /* Emotish 002.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 002.xcdatamodel"; sourceTree = "<group>"; };
 		327BE6E514D74EAE0051C549 /* PhotosStripViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhotosStripViewController.h; path = classes/PhotosStripViewController.h; sourceTree = "<group>"; };
 		327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotosStripViewController.m; path = classes/PhotosStripViewController.m; sourceTree = "<group>"; };
@@ -242,6 +249,8 @@
 		329D112E14D9B0BD00F69263 /* PhotoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotoView.m; path = classes/PhotoView.m; sourceTree = "<group>"; };
 		329D113014D9DBF900F69263 /* ClipView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ClipView.h; path = classes/ClipView.h; sourceTree = "<group>"; };
 		329D113114D9DBF900F69263 /* ClipView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ClipView.m; path = classes/ClipView.m; sourceTree = "<group>"; };
+		329E2C4114DCBCE5004AE89D /* FlagStretchView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FlagStretchView.h; path = classes/FlagStretchView.h; sourceTree = "<group>"; };
+		329E2C4214DCBCE5004AE89D /* FlagStretchView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FlagStretchView.m; path = classes/FlagStretchView.m; sourceTree = "<group>"; };
 		32E2F1E714D0929F00191C6F /* Emotish.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Emotish.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32E2F1EB14D0929F00191C6F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		32E2F1ED14D0929F00191C6F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -264,6 +273,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				326127CA14DCC25E001FD065 /* QuartzCore.framework in Frameworks */,
 				32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */,
 				32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */,
 				32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */,
@@ -387,6 +397,8 @@
 				3244017314D99D950056DC81 /* top_bar_with_branding_rounded@2x.png */,
 				3241E5E814D32F9400D46F63 /* btn_add_photo.png */,
 				3241E5E914D32F9400D46F63 /* btn_add_photo@2x.png */,
+				326127CC14DCCCA4001FD065 /* flag_stretch_arrow.png */,
+				326127CD14DCCCA4001FD065 /* flag_stretch_arrow@2x.png */,
 			);
 			name = Elements;
 			sourceTree = "<group>";
@@ -414,6 +426,7 @@
 		32E2F1DC14D0929E00191C6F = {
 			isa = PBXGroup;
 			children = (
+				326127C914DCC25E001FD065 /* QuartzCore.framework */,
 				32E2F1F314D0929F00191C6F /* Emotish */,
 				32E2F1EA14D0929F00191C6F /* Frameworks */,
 				32E2F1E814D0929F00191C6F /* Products */,
@@ -496,6 +509,8 @@
 				3299A14514D0967A0017FAEF /* GalleryFeelingCell.m */,
 				3299A14714D096890017FAEF /* GalleryFeelingImageCell.h */,
 				3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */,
+				329E2C4114DCBCE5004AE89D /* FlagStretchView.h */,
+				329E2C4214DCBCE5004AE89D /* FlagStretchView.m */,
 			);
 			name = GalleryViewController;
 			sourceTree = "<group>";
@@ -646,6 +661,8 @@
 				3244017D14D9A0F80056DC81 /* icon@2x.png in Resources */,
 				3244017F14D9A47D0056DC81 /* Default.png in Resources */,
 				3244018114D9A4810056DC81 /* Default@2x.png in Resources */,
+				326127CE14DCCCA4001FD065 /* flag_stretch_arrow.png in Resources */,
+				326127CF14DCCCA4001FD065 /* flag_stretch_arrow@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -670,6 +687,7 @@
 				323B2FE614D77C4A0035BF74 /* Feeling.m in Sources */,
 				329D112F14D9B0BD00F69263 /* PhotoView.m in Sources */,
 				329D113214D9DBF900F69263 /* ClipView.m in Sources */,
+				329E2C4314DCBCE5004AE89D /* FlagStretchView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
