@@ -61,6 +61,7 @@ typedef enum {
 @property (strong, nonatomic) UIPinchGestureRecognizer * zoomOutGestureRecognizer;
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeUpGestureRecognizer;
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeDownGestureRecognizer;
+@property (strong, nonatomic) UISwipeGestureRecognizer * swipeRightHeaderGestureRecognizer;
 
 @property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate> delegate;
 

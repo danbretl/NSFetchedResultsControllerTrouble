@@ -33,6 +33,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
 - (void) swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
 - (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
+- (void) swipedRightOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
 - (void) photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView;
 - (void) viewControllerFinished;
 - (IBAction)headerButtonTouched:(UIButton *)button;
@@ -71,7 +72,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize addPhotoButton = _addPhotoButton;
 @synthesize addPhotoLabel = _addPhotoLabel;
-@synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer;
+@synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
 @synthesize delegate=_delegate;
 
@@ -129,6 +130,10 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     [self updateViewsForCurrentFocus];
 //    self.photoViewInView = self.photoViewCenter;
     
+    self.swipeRightHeaderGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedRightOnHeader:)];
+    self.swipeRightHeaderGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.headerButton addGestureRecognizer:self.swipeRightHeaderGestureRecognizer];
+    
     self.zoomOutGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchedToZoomOut:)];
     [self.view addGestureRecognizer:self.zoomOutGestureRecognizer];
     
@@ -167,6 +172,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     [self setZoomOutGestureRecognizer:nil];
     [self setSwipeUpGestureRecognizer:nil];
     [self setSwipeDownGestureRecognizer:nil];
+    [self setSwipeRightHeaderGestureRecognizer:nil];
     [self setContentView:nil];
     [self setAddPhotoButton:nil];
     [super viewDidUnload];
@@ -637,9 +643,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
             feelingViewController.topBar.alpha = 0.0;
             feelingViewController.addPhotoButton.alpha = 0.0;
             feelingViewController.addPhotoLabel.alpha = 0.0;
-            
-//            [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
-            
+                        
             [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
             int direction = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? -1 : 1;
             feelingViewController.view.frame = CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
@@ -663,33 +667,21 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
                 [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
             }];
             
-//            // Animate the transition
-//            //    CGRect headerFrame = self.headerButton.frame;
-//            //    CGRect captionFrame = photoView.photoCaptionLabel.frame;
-//            [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
-//                CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
-//                CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
-//                //        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
-//                self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
-//                photoView.photoCaptionLabel.frame = CGRectOffset(photoView.photoCaptionLabel.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
-//                void(^photoViewAlpha)(PhotoView *)=^(PhotoView * photoViewInQuestion){
-//                    photoViewInQuestion.alpha = photoView == photoViewInQuestion ? 1.0 : 0.0;
-//                };
-//                photoViewAlpha(self.photoViewCenter);
-//                photoViewAlpha(self.photoViewLeftCenter);
-//                photoViewAlpha(self.photoViewRightCenter);
-//                photoViewAlpha(self.photoViewLeftmost);
-//                photoViewAlpha(self.photoViewRightmost);
-//                self.addPhotoLabel.alpha = 0.0;
-//            } completion:^(BOOL finished){
-//                // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
-//                [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
-//            }];
-            
         }
         
     }
     
+}
+
+- (void)swipedRightOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
+    CGPoint swipeLocationInHeaderButton = [swipeGestureRecognizer locationInView:self.headerButton];
+    if (swipeLocationInHeaderButton.x >= self.headerButton.contentEdgeInsets.left && 
+        swipeLocationInHeaderButton.x <= [self.headerButton.titleLabel.text sizeWithFont:self.headerButton.titleLabel.font constrainedToSize:CGSizeMake(self.headerButton.frame.size.width - self.headerButton.contentEdgeInsets.left - self.headerButton.contentEdgeInsets.right, self.headerButton.frame.size.height)].width + self.headerButton.contentEdgeInsets.left) {
+        if (!self.photosScrollView.isTracking) {
+            NSLog(@"Swipe right");
+            [self photoInView:self.photoInView selectedFromPhotoView:self.photoViewInView];
+        }
+    }
 }
 
 @end
