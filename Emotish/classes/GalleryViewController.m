@@ -360,7 +360,7 @@
             }
         }
     } else {
-        [self.flagStretchView setArrowFlipped:-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance animated:YES];
+        [self.flagStretchView setArrowFlipped:scrollView.isTracking && -scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance animated:YES];
         //        if (-scrollView.contentOffset.y < scrollView.contentInset.top) {
         //            [self.flagStretchView setArrowFlipped:YES animated:YES];
         //        }
