@@ -91,7 +91,7 @@
 						<string key="NSFrame">{{160, 0}, {160, 44}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="277668981"/>
+						<reference key="NSNextKeyView"/>
 						<string key="NSReuseIdentifierKey">_NS:225</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
@@ -119,10 +119,10 @@
 					<object class="IBUIButton" id="277668981">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{12, 376}, {50, 50}}</string>
+						<string key="NSFrame">{{12, 382}, {44, 44}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="567055338"/>
+						<reference key="NSNextKeyView" ref="946767786"/>
 						<string key="NSReuseIdentifierKey">_NS:225</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<int key="IBUIContentMode">4</int>
@@ -135,16 +135,22 @@
 							<bytes key="NSRGB">MC4xOTYwNzg0MzQ2IDAuMzA5ODAzOTMyOSAwLjUyMTU2ODY1NgA</bytes>
 						</object>
 						<reference key="IBUINormalTitleShadowColor" ref="997530923"/>
-						<object class="NSCustomResource" key="IBUIHighlightedBackgroundImage" id="862319616">
+						<object class="NSCustomResource" key="IBUIHighlightedBackgroundImage">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">btn_camera_touch.png</string>
+						</object>
+						<object class="NSCustomResource" key="IBUISelectedBackgroundImage">
 							<string key="NSClassName">NSImage</string>
 							<string key="NSResourceName">btn_add_photo.png</string>
 						</object>
-						<reference key="IBUISelectedBackgroundImage" ref="862319616"/>
-						<reference key="IBUINormalBackgroundImage" ref="862319616"/>
+						<object class="NSCustomResource" key="IBUINormalBackgroundImage">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">btn_camera.png</string>
+						</object>
 						<reference key="IBUIFontDescription" ref="580752631"/>
 						<reference key="IBUIFont" ref="625762035"/>
 					</object>
-					<object class="IBUIImageView" id="567055338">
+					<object class="IBUIImageView" id="946767786">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">266</int>
 						<string key="NSFrame">{{0, 450}, {320, 10}}</string>
@@ -215,7 +221,7 @@
 					<object class="IBCocoaTouchOutletConnection" key="connection">
 						<string key="label">bottomBar</string>
 						<reference key="source" ref="372490531"/>
-						<reference key="destination" ref="567055338"/>
+						<reference key="destination" ref="946767786"/>
 					</object>
 					<int key="connectionID">26</int>
 				</object>
@@ -261,7 +267,7 @@
 							<reference ref="918533050"/>
 							<reference ref="277668981"/>
 							<reference ref="531839170"/>
-							<reference ref="567055338"/>
+							<reference ref="946767786"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -299,7 +305,7 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">25</int>
-						<reference key="object" ref="567055338"/>
+						<reference key="object" ref="946767786"/>
 						<reference key="parent" ref="191373211"/>
 					</object>
 				</array>
@@ -321,7 +327,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">26</int>
+			<int key="maxID">27</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -376,7 +382,9 @@
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="bottom_bar_smaller.png">{320, 10}</string>
-			<string key="btn_add_photo.png">{50, 50}</string>
+			<string key="btn_add_photo.png">{16, 16}</string>
+			<string key="btn_camera.png">{44, 44}</string>
+			<string key="btn_camera_touch.png">{44, 44}</string>
 			<string key="top_bar_with_branding_rounded.png">{320, 44}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">933</string>

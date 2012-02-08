@@ -182,7 +182,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    NSLog(@"%@ PhotosStripViewController viewWillAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
+//    NSLog(@"%@ PhotosStripViewController viewWillAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
     if (self.shouldAnimateIn) {
         
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
@@ -217,7 +217,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    NSLog(@"%@ PhotosStripViewController viewDidAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
+//    NSLog(@"%@ PhotosStripViewController viewDidAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
     if (self.shouldAnimateIn) {
         
         [UIView animateWithDuration:0.4 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
