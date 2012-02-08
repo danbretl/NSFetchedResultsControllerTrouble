@@ -10,6 +10,7 @@
 #import "UIColor+Emotish.h"
 
 #define ARC4RANDOM_MAX 0x100000000
+const CGFloat FSV_PULL_OUT_DISTANCE_FOR_ALL_BASE = 10.0;
 
 @interface FSV_MiddleLayer : CALayer
 @property (nonatomic) CGFloat pointHeight;
@@ -269,7 +270,7 @@ typedef enum {
     self.stripeRightLayer.paddingBottom = sidesPaddingBottom;
     self.stripeRightLayer.wedgeWidth = sidesWedgeWidth;
     self.stripeRightLayer.wedgeHeight = sidesWedgeHeight;
-    self.pullOutDistanceAllowedForAll = self.stripeMiddleLayer.pointHeight + sidesWedgeHeight;
+    self.pullOutDistanceAllowedForAll = self.stripeMiddleLayer.pointHeight + sidesWedgeHeight + FSV_PULL_OUT_DISTANCE_FOR_ALL_BASE;
     // THE FOLLOWING IS TO FIX AN ANIMATION STUTTER WHEN FLIPPING THE ICON OVER A CUSTOM DRAWN CALayer. NOT SURE WHY IT'S HAPPENING. HIDING IT IN MOST CASES BY HIDING THE MIDDLE CUSTOM DRAWN LAYER WHEN NOT USING ANGLED SHAPES (AND USING A BACKGROUND COLOR ON THE VIEW FOR THE MIDDLE STRIPE INSTEAD).
     self.stripeMiddleLayer.hidden = !self.angledShapes;
     self.backgroundColor = self.angledShapes ? [UIColor whiteColor] : [UIColor feelingColor];
