@@ -248,6 +248,7 @@ typedef enum {
 //        NSLog(@"setPullOutDistance changed");
         _pulledOutDistance = pullOutDistance;
         [self setNeedsLayout];
+//        [self.stripeMiddleLayer setNeedsDisplay];
     }
 }
 
