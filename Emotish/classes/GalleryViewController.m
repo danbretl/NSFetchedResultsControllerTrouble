@@ -15,7 +15,6 @@
 
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
-//- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex;
 - (IBAction)emotishLogoTouched:(UIButton *)button;
 @end
 
@@ -28,7 +27,6 @@
 @synthesize activeFeelingCell=_activeFeelingCell;
 @synthesize activeFeelingCellIndexRow=_activeFeelingCellIndexRow;
 @synthesize activeFeelingCellContentOffsetPreserved=_activeFeelingCellContentOffsetPreserved;
-//@synthesize tempFeelingStrings=_tempFeelingStrings;
 @synthesize flagStretchView = _flagStretchView;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize topBar=_topBar;
@@ -51,7 +49,6 @@
 {
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
-    
     // Release any cached data, images, etc that aren't in use.
 }
 
@@ -78,7 +75,6 @@
     self.flagStretchView.iconDistanceFromBottom = floorf(self.feelingsTableView.rowHeight / 3.0);
     self.flagStretchView.activationDistanceEnd = 2 * self.flagStretchView.iconDistanceFromBottom + self.flagStretchView.icon.frame.size.height;
     self.flagStretchView.angledShapes = NO;
-//    self.flagStretchView.pullOutMiddle = NO;
     self.flagStretchView.activationAffectsIcon = YES;
     self.flagStretchView.activationAffectsAlpha = NO;
     [tableHeaderView addSubview:self.flagStretchView];
@@ -181,34 +177,7 @@
         // Return the cell
         return cell;
         
-    }/* else {
-        
-        // Get / Create the cell
-        static NSString * FeelingImageCellID = @"FeelingImageCellID";
-        GalleryFeelingImageCell * cell = (GalleryFeelingImageCell *)[tableView dequeueReusableCellWithIdentifier:FeelingImageCellID];
-        if (cell == nil) {
-            cell = [[GalleryFeelingImageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingImageCellID];
-            cell.delegate = self;
-        }
-        
-        // Configure the cell
-        
-        // Configure the cell
-        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        cell.feelingLabel.text = feeling.word.lowercaseString;
-        cell.feelingIndex = indexPath.row;
-        [cell.imagesTableView reloadData];
-        
-        Photo * photo = [
-        [cell.button setImage:[UIImage imageNamed:[self imageNameForFeelingIndex:tableView.tag imageIndex:indexPath.row]] forState:UIControlStateNormal];
-        cell.feelingIndex = tableView.tag;
-        cell.imageIndex = indexPath.row;
-        cell.feelingCell = (GalleryFeelingCell *)tableView.superview.superview; // HARD CODED, dangerous.
-        
-        // Return the cell
-        return cell;
-        
-    }*/
+    }
     
     return nil;
     
@@ -364,13 +333,6 @@
         }
     } else {
         [self.flagStretchView setActivated:scrollView.isTracking && -scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.activationDistanceEnd animated:YES];
-//        NSLog(@"%f %f", scrollView.contentOffset.y,scrollView.contentInset.top);
-//        self.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.y - scrollView.contentInset.top);
-//        NSLog(@"\nscrollView.isTracking = %d\n-scrollView.contentOffset.y = %f\nscrollView.contentInset.top (%f) + self.flagStretchView.iconFlipDistance (%f) = %f", scrollView.isTracking, -scrollView.contentOffset.y, scrollView.contentInset.top, self.flagStretchView.iconFlipDistance, scrollView.contentInset.top + self.flagStretchView.iconFlipDistance);
-        //        if (-scrollView.contentOffset.y < scrollView.contentInset.top) {
-        //            [self.flagStretchView setArrowFlipped:YES animated:YES];
-        //        }
-        //        NSLog(@"%f >? %f", -scrollView.contentOffset.y, scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance);
     }
 }
 
@@ -406,19 +368,7 @@
     
 }
 
-//- (NSArray *)tempFeelingStrings {
-//    if (_tempFeelingStrings == nil) {
-//        _tempFeelingStrings = [[NSArray arrayWithObjects:@"Content", @"Distracted", @"Lucky", @"Satisfied", @"Aggressive", @"Frustrated", @"Silly", @"Sleepy", @"Excited", @"Too Cool", @"Utter Despair", @"Clever", @"Confused", @"Frantic", @"So Intense", @"Sneaky", @"Vindictive", @"Euphoric", @"Unicorn", @"Unlucky", @"Mellow", @"Desperate", @"Pouting", @"Happy", @"Intrigued", @"Mischievous", @"Mystified", @"Confident", @"Hopeful", @"Pissed Off", @"Disappointed", @"Flabbergasted", @"Meeple", @"On Edge", @"Robotic", @"Thoughtful", @"Bangladesh", @"Hopeless", @"Quixotic", @"Wary", @"Anguish", @"Calm", @"Indifferent", @"Stupid", @"Surprised", @"Tired", @"Astonished", @"Bemused", @"Bored", @"Chaos", @"Delighted", @"Depressed", @"Determined", @"Flummoxed", @"Full", @"Interested", @"Quirky", @"Stressed", @"Triumphant", @"Zen", @"Angry", @"Anxious", nil] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-//    }
-//    return _tempFeelingStrings;
-//}
-//
-//- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex {
-//    return [NSString stringWithFormat:@"protoImage%d.jpg", ((imageIndex + feelingIndex) % 4) + 1];
-//}
-
 - (void)emotishLogoTouched:(UIButton *)button {
-//    [self.feelingsTableView setContentOffset:CGPointMake(0, -(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL)) animated:YES];
     [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
 }
 
