@@ -67,11 +67,18 @@
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
     self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
     self.feelingsTableView.scrollsToTop = YES;
+
+    CGFloat tableHeaderViewFlagVisibleHeight = 3.0;
+    UIView * tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, tableHeaderViewFlagVisibleHeight + GC_FEELING_IMAGE_MARGIN_VERTICAL)];
     
-    self.flagStretchView.frame = CGRectMake(0, 0, self.flagStretchView.frame.size.width, self.flagStretchView.frame.size.height + GC_FEELING_IMAGE_MARGIN_VERTICAL);
-    self.flagStretchView.paddingBottom = GC_FEELING_IMAGE_MARGIN_VERTICAL;
-    self.flagStretchView.arrow.opacity = 0.75;
-    self.flagStretchView.arrowDistanceFromBottom = floorf(self.feelingsTableView.rowHeight / 3.0);
+    self.feelingsTableView.tableHeaderView = tableHeaderView;
+    
+    self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, tableHeaderViewFlagVisibleHeight - [UIScreen mainScreen].bounds.size.height, self.feelingsTableView.frame.size.width, [UIScreen mainScreen].bounds.size.height)];
+    self.flagStretchView.icon.opacity = 0.75;
+    self.flagStretchView.iconDistanceFromBottom = floorf(self.feelingsTableView.rowHeight / 3.0);
+    self.flagStretchView.angledShapes = NO;
+//    self.flagStretchView.pullOutMiddle = NO;
+    [tableHeaderView addSubview:self.flagStretchView];
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -327,7 +334,7 @@
             }
         }
     } else {
-        if (-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance) {
+        if (-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.iconFlipDistance) {
 //            scrollView.contentInset = UIEdgeInsetsMake(scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance, scrollView.contentInset.left, scrollView.contentInset.bottom, scrollView.contentInset.right);
 //            scrollView.userInteractionEnabled = NO;
 //            [self.flagStretchView startAnimatingStripes];
@@ -337,6 +344,8 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     if (scrollView != self.feelingsTableView) {
+        GalleryFeelingCell * feelingCell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+        feelingCell.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.y);
         if (scrollView == self.activeFeelingCell.imagesTableView) {
             // ...
             // ...
@@ -360,7 +369,10 @@
             }
         }
     } else {
-        [self.flagStretchView setArrowFlipped:scrollView.isTracking && -scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance animated:YES];
+        [self.flagStretchView setIconFlipped:scrollView.isTracking && -scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.iconFlipDistance animated:YES];
+//        NSLog(@"%f %f", scrollView.contentOffset.y,scrollView.contentInset.top);
+//        self.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.y - scrollView.contentInset.top);
+//        NSLog(@"\nscrollView.isTracking = %d\n-scrollView.contentOffset.y = %f\nscrollView.contentInset.top (%f) + self.flagStretchView.iconFlipDistance (%f) = %f", scrollView.isTracking, -scrollView.contentOffset.y, scrollView.contentInset.top, self.flagStretchView.iconFlipDistance, scrollView.contentInset.top + self.flagStretchView.iconFlipDistance);
         //        if (-scrollView.contentOffset.y < scrollView.contentInset.top) {
         //            [self.flagStretchView setArrowFlipped:YES animated:YES];
         //        }

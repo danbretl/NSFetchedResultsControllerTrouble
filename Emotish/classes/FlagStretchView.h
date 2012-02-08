@@ -11,22 +11,26 @@
 
 @interface FlagStretchView : UIView
 
-@property (nonatomic) CGFloat paddingBottom;
-@property (nonatomic) CGFloat arrowDistanceFromBottom;
-@property (readonly, nonatomic) CGFloat arrowFlipDistance;
-@property (nonatomic) CGFloat arrowFlipDistanceAdjustment;
-@property (nonatomic) CFTimeInterval arrowFlipAnimationDuration;
+@property (strong, nonatomic) CALayer * icon;
 
-@property (strong, nonatomic) CALayer * stripeLeft;
-@property (strong, nonatomic) CALayer * stripeMiddle;
-@property (strong, nonatomic) CALayer * stripeRight;
+//@property (nonatomic, readonly) CGRect boundsDrawing;
+//@property (nonatomic, readonly) CGRect frameDrawing;
 
-@property (strong, nonatomic) CALayer * arrow;
-@property (nonatomic) BOOL arrowFlipped;
+@property (nonatomic) CGFloat iconDistanceFromBottom;
+@property (nonatomic, readonly) CGFloat iconFlipDistance;
+@property (nonatomic) CGFloat iconFlipDistanceAdjustment;
+@property (nonatomic) CFTimeInterval iconFlipAnimationDuration;
+@property (nonatomic) BOOL iconFlipped;
 
-- (void) setArrowFlipped:(BOOL)flipped animated:(BOOL)animated;
+@property (nonatomic) BOOL angledShapes;
+@property (nonatomic) BOOL pullOutSides;
+@property (nonatomic) BOOL pullOutMiddle;
+@property (nonatomic) CGFloat pulledOutDistance;
+@property (nonatomic) CGFloat pullOutDistanceAllowedForAll;
 
-- (void) resetStripePositions;
+- (void) setIconFlipped:(BOOL)flipped animated:(BOOL)animated;
+
+//- (void) resetStripePositions;
 - (void) startAnimatingStripes;
 - (void) stopAnimatingStripes;
 

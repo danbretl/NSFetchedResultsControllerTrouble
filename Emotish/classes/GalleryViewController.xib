@@ -40,28 +40,15 @@
 					<object class="IBUITableView" id="617295070">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">274</int>
-						<array class="NSMutableArray" key="NSSubviews">
-							<object class="IBUIView" id="11844929">
-								<reference key="NSNextResponder" ref="617295070"/>
-								<int key="NSvFlags">290</int>
-								<string key="NSFrameSize">{320, 3}</string>
-								<reference key="NSSuperview" ref="617295070"/>
-								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView" ref="918533050"/>
-								<string key="NSReuseIdentifierKey">_NS:196</string>
-								<object class="NSColor" key="IBUIBackgroundColor" id="440433054">
-									<int key="NSColorSpace">3</int>
-									<bytes key="NSWhite">MQA</bytes>
-								</object>
-								<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
-							</object>
-						</array>
 						<string key="NSFrameSize">{320, 460}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="11844929"/>
+						<reference key="NSNextKeyView"/>
 						<string key="NSReuseIdentifierKey">_NS:418</string>
-						<reference key="IBUIBackgroundColor" ref="440433054"/>
+						<object class="NSColor" key="IBUIBackgroundColor" id="440433054">
+							<int key="NSColorSpace">3</int>
+							<bytes key="NSWhite">MQA</bytes>
+						</object>
 						<bool key="IBUIClipsSubviews">YES</bool>
 						<int key="IBUITag">-1</int>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
@@ -82,7 +69,6 @@
 						<float key="IBUIRowHeight">60</float>
 						<float key="IBUISectionHeaderHeight">22</float>
 						<float key="IBUISectionFooterHeight">22</float>
-						<reference key="IBUITableHeaderView" ref="11844929"/>
 					</object>
 					<object class="IBUIImageView" id="918533050">
 						<reference key="NSNextResponder" ref="191373211"/>
@@ -211,14 +197,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchOutletConnection" key="connection">
-						<string key="label">flagStretchView</string>
-						<reference key="source" ref="372490531"/>
-						<reference key="destination" ref="11844929"/>
-					</object>
-					<int key="connectionID">24</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBCocoaTouchOutletConnection" key="connection">
 						<string key="label">dataSource</string>
 						<reference key="source" ref="617295070"/>
 						<reference key="destination" ref="372490531"/>
@@ -276,9 +254,7 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">11</int>
 						<reference key="object" ref="617295070"/>
-						<array class="NSMutableArray" key="children">
-							<reference ref="11844929"/>
-						</array>
+						<array class="NSMutableArray" key="children"/>
 						<reference key="parent" ref="191373211"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -296,11 +272,6 @@
 						<reference key="object" ref="531839170"/>
 						<reference key="parent" ref="191373211"/>
 					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">23</int>
-						<reference key="object" ref="11844929"/>
-						<reference key="parent" ref="617295070"/>
-					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -314,8 +285,6 @@
 				<string key="18.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<real value="0.0" key="18.IBUIButtonInspectorSelectedStateConfigurationMetadataKey"/>
 				<string key="20.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
-				<string key="23.CustomClassName">FlagStretchView</string>
-				<string key="23.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
 			<nil key="activeLocalization"/>
@@ -325,14 +294,6 @@
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
-				<object class="IBPartialClassDescription">
-					<string key="className">FlagStretchView</string>
-					<string key="superclassName">UIView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/FlagStretchView.h</string>
-					</object>
-				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">GalleryViewController</string>
 					<string key="superclassName">UIViewController</string>
@@ -350,7 +311,6 @@
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="addPhotoButton">UIButton</string>
 						<string key="feelingsTableView">UITableView</string>
-						<string key="flagStretchView">FlagStretchView</string>
 						<string key="topBar">UIImageView</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -361,10 +321,6 @@
 						<object class="IBToOneOutletInfo" key="feelingsTableView">
 							<string key="name">feelingsTableView</string>
 							<string key="candidateClassName">UITableView</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="flagStretchView">
-							<string key="name">flagStretchView</string>
-							<string key="candidateClassName">FlagStretchView</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="topBar">
 							<string key="name">topBar</string>

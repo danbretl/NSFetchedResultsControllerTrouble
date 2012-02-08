@@ -12,6 +12,7 @@
 #import "GalleryFeelingImageCell.h"
 
 //#define GFC_ANIMATION_DURATION 0.25
+const CGFloat GFC_FEELING_IMAGE_SECOND_PERCENTAGE_OVERHANG = 0.2;
 
 @interface GalleryFeelingCell()
 - (void) feelingLabelButtonTouched:(UIButton *)button;
@@ -23,6 +24,7 @@
 @synthesize imagesTableView=_imagesTableView;
 @synthesize feelingLabel=_feelingLabel;
 @synthesize feelingLabelButton=_feelingLabelButton;
+@synthesize flagStretchView=_flagStretchView;
 
 @synthesize feelingLabelColorNormal=_feelingLabelColorNormal;
 @synthesize feelingLabelColorHighlight=_feelingLabelColorHighlight;
@@ -43,8 +45,8 @@
         self.feelingLabelColorHighlight = self.feelingLabelColorNormal;
         
         CGFloat selfHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
-        CGFloat labelContainerWidth = GC_TABLE_WIDTH - (GC_FEELING_IMAGE_SIDE_LENGTH + GC_FEELING_IMAGE_MARGIN_RIGHT + floorf(GC_FEELING_IMAGE_SIDE_LENGTH * 0.2));
-        CGFloat labelWidth = labelContainerWidth - (GC_FEELING_LABEL_MARGIN_LEFT + GC_FEELING_LABEL_MARGIN_RIGHT);
+        CGFloat tableViewHeaderWidth = GC_TABLE_WIDTH - (GC_FEELING_IMAGE_SIDE_LENGTH + GC_FEELING_IMAGE_MARGIN_RIGHT + floorf(GC_FEELING_IMAGE_SIDE_LENGTH * GFC_FEELING_IMAGE_SECOND_PERCENTAGE_OVERHANG));
+        CGFloat labelWidth = tableViewHeaderWidth - (GC_FEELING_LABEL_MARGIN_LEFT + GC_FEELING_LABEL_MARGIN_RIGHT);
         
         UIScrollView * wrapperScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, GC_TABLE_WIDTH, selfHeight)]; // This fixes a bug where bouncing does not work from the edge of the table view.
         wrapperScrollView.scrollsToTop = NO;
@@ -59,37 +61,50 @@
         self.imagesTableView.transform = CGAffineTransformMakeRotation(-M_PI * 0.5);
         self.imagesTableView.frame = CGRectMake(0, 0, GC_TABLE_WIDTH, selfHeight);
         self.imagesTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + GC_FEELING_IMAGE_MARGIN_RIGHT;
-        self.imagesTableView.backgroundColor = [UIColor whiteColor];
+        self.imagesTableView.backgroundColor = [UIColor clearColor];
         self.imagesTableView.opaque = YES;
         self.imagesTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         self.imagesTableView.allowsSelection = NO;
         self.imagesTableView.directionalLockEnabled = YES;
         self.imagesTableView.scrollsToTop = NO;
         
-        self.feelingLabel = [[UILabel alloc] initWithFrame:CGRectMake(GC_FEELING_LABEL_MARGIN_LEFT, 0, labelWidth, selfHeight)];
+        UIView * tableViewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, selfHeight, tableViewHeaderWidth)];
+        self.imagesTableView.tableHeaderView = tableViewHeader;
+        
+        self.feelingLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.feelingLabelButton.frame = tableViewHeader.bounds;
+        self.feelingLabelButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self.feelingLabelButton addTarget:self action:@selector(feelingLabelButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+        [self.imagesTableView.tableHeaderView addSubview:self.feelingLabelButton];
+        
+        self.feelingLabel = nil;
+        
+        self.feelingLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, GC_FEELING_LABEL_MARGIN_LEFT, selfHeight, labelWidth)];
+        self.feelingLabel.transform = CGAffineTransformMakeRotation(M_PI * 0.5);
+        self.feelingLabel.frame = CGRectMake(0, GC_FEELING_LABEL_MARGIN_LEFT, selfHeight, labelWidth); // Confused about this...
         self.feelingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.feelingLabel.textAlignment = UITextAlignmentRight;
         self.feelingLabel.text = @"feeling";
         self.feelingLabel.font = [UIFont boldSystemFontOfSize:30.0];
         self.feelingLabel.adjustsFontSizeToFitWidth = YES;
-//        self.feelingLabel.backgroundColor = [UIColor clearColor];
+        self.feelingLabel.backgroundColor = [UIColor clearColor];
         [self highlightLabel:NO];
-        UIView * feelingLabelContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, labelContainerWidth, selfHeight)];
-        feelingLabelContainer.transform = CGAffineTransformMakeRotation(M_PI * 0.5);
-//        feelingLabelContainer.backgroundColor = [UIColor clearColor];
-        [feelingLabelContainer addSubview:self.feelingLabel];
-        self.feelingLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        self.feelingLabelButton.frame = self.feelingLabel.frame;
-        self.feelingLabelButton.autoresizingMask = self.feelingLabel.autoresizingMask;
-        [self.feelingLabelButton addTarget:self action:@selector(feelingLabelButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
-        [feelingLabelContainer addSubview:self.feelingLabelButton];
-        self.imagesTableView.tableHeaderView = feelingLabelContainer;
+        [self.imagesTableView.tableHeaderView insertSubview:self.feelingLabel belowSubview:self.feelingLabelButton];
+          
+        CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+        self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(GC_FEELING_IMAGE_MARGIN_VERTICAL, -screenWidth, selfHeight - GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, screenWidth)];
+        self.flagStretchView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.flagStretchView.icon.hidden = YES;
+        self.flagStretchView.angledShapes = YES;
+        self.flagStretchView.pullOutSides = NO;
+        [self.imagesTableView.tableHeaderView addSubview:self.flagStretchView];
         
         [wrapperScrollView addSubview:self.imagesTableView];
         [self addSubview:wrapperScrollView];
         
         if (debugging) {
-            feelingLabelContainer.backgroundColor = [UIColor orangeColor];
+            tableViewHeader.backgroundColor = [UIColor purpleColor];
+            self.flagStretchView.backgroundColor = [UIColor cyanColor];
             self.feelingLabel.backgroundColor = [UIColor redColor];
             self.imagesTableView.backgroundColor = [UIColor yellowColor];
         }

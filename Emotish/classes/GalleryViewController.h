@@ -27,7 +27,7 @@
 @property (nonatomic) NSInteger activeFeelingCellIndexRow;
 @property (nonatomic) CGPoint activeFeelingCellContentOffsetPreserved;
 //@property (strong, nonatomic, readonly) NSArray * tempFeelingStrings;
-@property (unsafe_unretained, nonatomic) IBOutlet FlagStretchView *flagStretchView;
+@property (strong, nonatomic) FlagStretchView *flagStretchView;
 @property (strong, nonatomic) UIImageView * floatingImageView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton *addPhotoButton;
