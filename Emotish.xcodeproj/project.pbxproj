@@ -296,6 +296,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		322C4E6314E333DD0012FA78 /* Mock */ = {
+			isa = PBXGroup;
+			children = (
+				3244017214D99D950056DC81 /* top_bar_with_branding_rounded.png */,
+				3244017314D99D950056DC81 /* top_bar_with_branding_rounded@2x.png */,
+				322C4E5214E314D70012FA78 /* bottom_bar.png */,
+				322C4E5314E314D70012FA78 /* bottom_bar@2x.png */,
+				322C4E5714E31AC50012FA78 /* bottom_bar_smaller.png */,
+				322C4E5814E31AC50012FA78 /* bottom_bar_smaller@2x.png */,
+				326127CC14DCCCA4001FD065 /* flag_stretch_arrow.png */,
+				326127CD14DCCCA4001FD065 /* flag_stretch_arrow@2x.png */,
+			);
+			name = Mock;
+			sourceTree = "<group>";
+		};
 		323B2FCF14D759E50035BF74 /* PhotosStripViewController */ = {
 			isa = PBXGroup;
 			children = (
@@ -405,14 +420,7 @@
 		3241E5DF14D30BB200D46F63 /* Elements */ = {
 			isa = PBXGroup;
 			children = (
-				3244017214D99D950056DC81 /* top_bar_with_branding_rounded.png */,
-				3244017314D99D950056DC81 /* top_bar_with_branding_rounded@2x.png */,
-				322C4E5214E314D70012FA78 /* bottom_bar.png */,
-				322C4E5314E314D70012FA78 /* bottom_bar@2x.png */,
-				322C4E5714E31AC50012FA78 /* bottom_bar_smaller.png */,
-				322C4E5814E31AC50012FA78 /* bottom_bar_smaller@2x.png */,
-				326127CC14DCCCA4001FD065 /* flag_stretch_arrow.png */,
-				326127CD14DCCCA4001FD065 /* flag_stretch_arrow@2x.png */,
+				322C4E6314E333DD0012FA78 /* Mock */,
 				322C4E5B14E325C00012FA78 /* btn_camera_touch.png */,
 				322C4E5C14E325C00012FA78 /* btn_camera_touch@2x.png */,
 				322C4E5D14E325C00012FA78 /* btn_camera.png */,
