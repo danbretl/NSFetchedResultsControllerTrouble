@@ -16,7 +16,6 @@
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
 //- (NSString *)imageNameForFeelingIndex:(NSInteger)feelingIndex imageIndex:(NSInteger)imageIndex;
-- (void) floatingImageViewTouched:(UITapGestureRecognizer *)tapGestureRecognizer;
 - (IBAction)emotishLogoTouched:(UIButton *)button;
 @end
 
@@ -90,8 +89,6 @@
     self.floatingImageView.alpha = 0.0;
     self.floatingImageView.userInteractionEnabled = NO;
     self.floatingImageView.backgroundColor = [UIColor clearColor];
-    UITapGestureRecognizer * floatingImageViewTempTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(floatingImageViewTouched:)];
-    [self.floatingImageView addGestureRecognizer:floatingImageViewTempTapGestureRecognizer];
     
     if (debugging) {
         self.feelingsTableView.backgroundColor = [UIColor greenColor];
@@ -215,15 +212,6 @@
     
     return nil;
     
-}
-
-- (void)floatingImageViewTouched:(UITapGestureRecognizer *)tapGestureRecognizer {
-    [UIView animateWithDuration:0.25 animations:^{
-        self.floatingImageView.alpha = 0.0;
-        self.feelingsTableView.alpha = 1.0;
-        self.floatingImageView.userInteractionEnabled = NO;
-        self.feelingsTableView.userInteractionEnabled = YES;
-    }];
 }
 
 - (void) feelingCellSelected:(GalleryFeelingCell *)feelingCell fromImageCell:(GalleryFeelingImageCell *)imageCell {
