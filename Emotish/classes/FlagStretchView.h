@@ -12,15 +12,18 @@
 @interface FlagStretchView : UIView
 
 @property (strong, nonatomic) CALayer * icon;
-
-//@property (nonatomic, readonly) CGRect boundsDrawing;
-//@property (nonatomic, readonly) CGRect frameDrawing;
-
 @property (nonatomic) CGFloat iconDistanceFromBottom;
-@property (nonatomic, readonly) CGFloat iconFlipDistance;
-@property (nonatomic) CGFloat iconFlipDistanceAdjustment;
-@property (nonatomic) CFTimeInterval iconFlipAnimationDuration;
-@property (nonatomic) BOOL iconFlipped;
+
+@property (nonatomic) BOOL activated;
+@property (nonatomic) BOOL activationAffectsAlpha;
+@property (nonatomic) CGFloat sidesAlphaNormal;
+@property (nonatomic) CGFloat sidesAlphaActivated;
+@property (nonatomic) CGFloat middleAlphaNormal;
+@property (nonatomic) CGFloat middleAlphaActivated;
+@property (nonatomic) BOOL activationAffectsIcon;
+@property (nonatomic) CGFloat activationDistanceStart;
+@property (nonatomic) CGFloat activationDistanceEnd;
+@property (nonatomic) CFTimeInterval activationAnimationDuration;
 
 @property (nonatomic) BOOL angledShapes;
 @property (nonatomic) BOOL pullOutSides;
@@ -28,7 +31,7 @@
 @property (nonatomic) CGFloat pulledOutDistance;
 @property (nonatomic) CGFloat pullOutDistanceAllowedForAll;
 
-- (void) setIconFlipped:(BOOL)flipped animated:(BOOL)animated;
+- (void) setActivated:(BOOL)flipped animated:(BOOL)animated;
 
 //- (void) resetStripePositions;
 - (void) startAnimatingStripes;

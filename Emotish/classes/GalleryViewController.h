@@ -30,6 +30,7 @@
 @property (strong, nonatomic) FlagStretchView *flagStretchView;
 @property (strong, nonatomic) UIImageView * floatingImageView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
+@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *bottomBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton *addPhotoButton;
 
 @end

@@ -33,6 +33,7 @@
 @synthesize flagStretchView = _flagStretchView;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize topBar=_topBar;
+@synthesize bottomBar = _bottomBar;
 @synthesize addPhotoButton = _addPhotoButton;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -62,10 +63,10 @@
     [super viewDidLoad];
 //    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
     
-    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
+    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
         
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
-    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL, 0);
+    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL + VC_BOTTOM_BAR_HEIGHT, 0);
     self.feelingsTableView.scrollsToTop = YES;
 
     CGFloat tableHeaderViewFlagVisibleHeight = 3.0;
@@ -76,8 +77,11 @@
     self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, tableHeaderViewFlagVisibleHeight - [UIScreen mainScreen].bounds.size.height, self.feelingsTableView.frame.size.width, [UIScreen mainScreen].bounds.size.height)];
     self.flagStretchView.icon.opacity = 0.75;
     self.flagStretchView.iconDistanceFromBottom = floorf(self.feelingsTableView.rowHeight / 3.0);
+    self.flagStretchView.activationDistanceEnd = 2 * self.flagStretchView.iconDistanceFromBottom + self.flagStretchView.icon.frame.size.height;
     self.flagStretchView.angledShapes = NO;
 //    self.flagStretchView.pullOutMiddle = NO;
+    self.flagStretchView.activationAffectsIcon = YES;
+    self.flagStretchView.activationAffectsAlpha = NO;
     [tableHeaderView addSubview:self.flagStretchView];
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -105,6 +109,7 @@
 - (void)viewDidUnload {
     [self setAddPhotoButton:nil];
     [self setFlagStretchView:nil];
+    [self setBottomBar:nil];
     [super viewDidUnload];
     self.feelingsTableView = nil;
     self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
@@ -334,7 +339,7 @@
             }
         }
     } else {
-        if (-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.iconFlipDistance) {
+        if (-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.activationDistanceEnd) {
 //            scrollView.contentInset = UIEdgeInsetsMake(scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance, scrollView.contentInset.left, scrollView.contentInset.bottom, scrollView.contentInset.right);
 //            scrollView.userInteractionEnabled = NO;
 //            [self.flagStretchView startAnimatingStripes];
@@ -346,6 +351,7 @@
     if (scrollView != self.feelingsTableView) {
         GalleryFeelingCell * feelingCell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
         feelingCell.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.y);
+        [feelingCell.flagStretchView setActivated:scrollView.isTracking && feelingCell.flagStretchView.pulledOutDistance >= feelingCell.flagStretchView.activationDistanceEnd animated:YES];
         if (scrollView == self.activeFeelingCell.imagesTableView) {
             // ...
             // ...
@@ -369,7 +375,7 @@
             }
         }
     } else {
-        [self.flagStretchView setIconFlipped:scrollView.isTracking && -scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.iconFlipDistance animated:YES];
+        [self.flagStretchView setActivated:scrollView.isTracking && -scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.activationDistanceEnd animated:YES];
 //        NSLog(@"%f %f", scrollView.contentOffset.y,scrollView.contentInset.top);
 //        self.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.y - scrollView.contentInset.top);
 //        NSLog(@"\nscrollView.isTracking = %d\n-scrollView.contentOffset.y = %f\nscrollView.contentInset.top (%f) + self.flagStretchView.iconFlipDistance (%f) = %f", scrollView.isTracking, -scrollView.contentOffset.y, scrollView.contentInset.top, self.flagStretchView.iconFlipDistance, scrollView.contentInset.top + self.flagStretchView.iconFlipDistance);

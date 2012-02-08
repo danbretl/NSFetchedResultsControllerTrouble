@@ -14,26 +14,73 @@ const CGFloat FSV_PULL_OUT_DISTANCE_FOR_ALL_BASE = 10.0;
 
 @interface FSV_MiddleLayer : CALayer
 @property (nonatomic) CGFloat pointHeight;
+@property (nonatomic) CGFloat paddingHorizontal; // Does not apply to the point
+@property (nonatomic) CGFloat visibleWidth;
+@property (nonatomic) CGFloat drainPercentage;
+//@property (nonatomic) BOOL shouldFill;
 @end
 @implementation FSV_MiddleLayer
-@synthesize pointHeight=_pointHeight;
+@synthesize paddingHorizontal=_paddingHorizontal, pointHeight=_pointHeight,/*shouldFill=_shouldFill,*/ visibleWidth=_visibleWidth, drainPercentage=_drainPercentage;
 - (void)setPointHeight:(CGFloat)pointHeight {
     if (_pointHeight != pointHeight) {
-        _pointHeight = pointHeight;
-        [self setNeedsDisplay];
+        _pointHeight = pointHeight; [self setNeedsDisplay];
     }
 }
+- (void)setPaddingHorizontal:(CGFloat)paddingHorizontal {
+    if (_paddingHorizontal != paddingHorizontal) {
+        _paddingHorizontal = paddingHorizontal; [self setNeedsDisplay];
+    }
+}
+- (void)setVisibleWidth:(CGFloat)visibleWidth {
+    if (_visibleWidth != visibleWidth) {
+        _visibleWidth = visibleWidth;
+    }
+}
+- (void)setDrainPercentage:(CGFloat)drainPercentage {
+    if (_drainPercentage != drainPercentage) {
+        _drainPercentage = drainPercentage; [self setNeedsDisplay];
+    }
+}
+//- (void)setShouldFill:(BOOL)shouldFill {
+//    if (_shouldFill != shouldFill) {
+//        _shouldFill = shouldFill; [self setNeedsDisplay];
+//    }
+//}
 - (void)drawInContext:(CGContextRef)ctx {
-    NSLog(@"FSV_MiddleLayer drawInContext");
-    CGContextBeginPath(ctx);
-    CGContextMoveToPoint(ctx, 0, 0);
-    CGContextAddLineToPoint(ctx, 0, self.bounds.size.height - self.pointHeight);
-    CGContextAddLineToPoint(ctx, self.bounds.size.width / 2.0, self.bounds.size.height);
-    CGContextAddLineToPoint(ctx, self.bounds.size.width, self.bounds.size.height - self.pointHeight);
-    CGContextAddLineToPoint(ctx, self.bounds.size.width, 0);
-    CGContextClosePath(ctx);
+    
+    CGMutablePathRef outerArrowPath = CGPathCreateMutable();
+    CGPathMoveToPoint(outerArrowPath, NULL, self.paddingHorizontal, 0);
+    CGPathAddLineToPoint(outerArrowPath, NULL, self.paddingHorizontal, self.bounds.size.height - self.pointHeight);
+    CGPathAddLineToPoint(outerArrowPath, NULL, 0, self.bounds.size.height - self.pointHeight);
+    CGPathAddLineToPoint(outerArrowPath, NULL, self.bounds.size.width / 2.0, self.bounds.size.height);
+    CGPathAddLineToPoint(outerArrowPath, NULL, self.bounds.size.width, self.bounds.size.height - self.pointHeight);
+    CGPathAddLineToPoint(outerArrowPath, NULL, self.bounds.size.width - self.paddingHorizontal, self.bounds.size.height - self.pointHeight);
+    CGPathAddLineToPoint(outerArrowPath, NULL, self.bounds.size.width - self.paddingHorizontal, 0);
+    CGPathCloseSubpath(outerArrowPath);
+    
+//    if (!self.shouldFill) {
+        CGContextSaveGState(ctx);
+        CGContextSetStrokeColorWithColor(ctx, [UIColor feelingColor].CGColor);
+        CGContextSetMiterLimit(ctx, 10.0); // Doesn't seem to have any effect. Solved by using clipping instead.
+        CGContextSetLineJoin(ctx, kCGLineJoinMiter); // Doesn't seem to have any effect. Solved by using clipping instead.
+        CGContextSetLineCap(ctx, kCGLineCapSquare); // Doesn't seem to have any effect. Solved by using clipping instead.
+        CGContextSetLineWidth(ctx, 6.0);
+        CGContextAddPath(ctx, outerArrowPath);
+        CGContextClip(ctx);
+        CGContextAddPath(ctx, outerArrowPath);
+        CGContextDrawPath(ctx, kCGPathStroke);
+        CGContextRestoreGState(ctx);
+//    }
+    
+    CGContextSaveGState(ctx);
+    CGContextClipToRect(ctx, CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height - (self.visibleWidth * self.drainPercentage)));
+    CGContextAddPath(ctx, outerArrowPath);
     CGContextSetFillColorWithColor(ctx, [UIColor feelingColor].CGColor);
-    CGContextFillPath(ctx);
+    CGContextDrawPath(ctx, kCGPathFill);
+    CGContextRestoreGState(ctx);
+    
+    CGPathRelease(outerArrowPath);
+    
 }
 @end
 
@@ -46,54 +93,77 @@ typedef enum {
 @property (nonatomic) CGFloat wedgeHeight;
 @property (nonatomic) CGFloat wedgeWidth;
 @property (nonatomic) FSV_SideLayer_Side side;
+@property (nonatomic) BOOL shouldFill;
 @end
 @implementation FSV_SideLayer
-@synthesize paddingBottom=_paddingBottom, wedgeHeight=_wedgeHeight, wedgeWidth=_wedgeWidth, side=_side;
+@synthesize paddingBottom=_paddingBottom, wedgeHeight=_wedgeHeight, wedgeWidth=_wedgeWidth, side=_side, shouldFill=_shouldFill;
 - (void)setPaddingBottom:(CGFloat)paddingBottom {
-    _paddingBottom = paddingBottom;
-    [self setNeedsDisplay];
+    _paddingBottom = paddingBottom; [self setNeedsDisplay];
 }
 - (void)setWedgeHeight:(CGFloat)wedgeHeight {
-    _wedgeHeight = wedgeHeight;
-    [self setNeedsDisplay];
+    _wedgeHeight = wedgeHeight; [self setNeedsDisplay];
 }
 - (void)setWedgeWidth:(CGFloat)wedgeWidth {
-    _wedgeWidth = wedgeWidth;
-    [self setNeedsDisplay];
+    _wedgeWidth = wedgeWidth; [self setNeedsDisplay];
 }
 - (void)setSide:(FSV_SideLayer_Side)side {
-    _side = side;
-    [self setNeedsDisplay];
+    _side = side; [self setNeedsDisplay];
+}
+- (void)setShouldFill:(BOOL)shouldFill {
+    _shouldFill = shouldFill; [self setNeedsDisplay];
 }
 - (void)drawInContext:(CGContextRef)ctx {
-    CGContextBeginPath(ctx);
-    CGContextMoveToPoint(ctx, 0, 0);
+    
+    CGMutablePathRef shapePath = CGPathCreateMutable();
+    CGPathMoveToPoint(shapePath, NULL, 0, 0);
     CGFloat drawingHeight = self.bounds.size.height - self.paddingBottom;
-    CGContextAddLineToPoint(ctx, 0, drawingHeight - (self.side == FSV_SideLayer_Left ? self.wedgeHeight : 0));
-    CGContextAddLineToPoint(ctx, self.wedgeWidth, drawingHeight);
-    CGContextAddLineToPoint(ctx, self.bounds.size.width - (self.side == FSV_SideLayer_Right ? self.wedgeWidth : 0), drawingHeight);
-    CGContextAddLineToPoint(ctx, self.bounds.size.width, drawingHeight - self.wedgeHeight);
-    CGContextAddLineToPoint(ctx, self.bounds.size.width, 0);
-    CGContextClosePath(ctx);
-    CGContextSetFillColorWithColor(ctx, self.side == FSV_SideLayer_Left ? [UIColor emotishColor].CGColor : [UIColor userColor].CGColor);
-    CGContextFillPath(ctx);
+    CGPathAddLineToPoint(shapePath, NULL, 0, drawingHeight - (self.side == FSV_SideLayer_Left ? self.wedgeHeight : 0));
+    CGPathAddLineToPoint(shapePath, NULL, self.wedgeWidth, drawingHeight);
+    CGPathAddLineToPoint(shapePath, NULL, self.bounds.size.width - (self.side == FSV_SideLayer_Right ? self.wedgeWidth : 0), drawingHeight);
+    CGPathAddLineToPoint(shapePath, NULL, self.bounds.size.width, drawingHeight - self.wedgeHeight);
+    CGPathAddLineToPoint(shapePath, NULL, self.bounds.size.width, 0);
+    CGPathCloseSubpath(shapePath);
+    
+    UIColor * shapeColor = self.side == FSV_SideLayer_Left ? [UIColor emotishColor] : [UIColor userColor];
+    
+    if (self.shouldFill) {
+        CGContextSaveGState(ctx);
+        CGContextAddPath(ctx, shapePath);
+        CGContextSetFillColorWithColor(ctx, shapeColor.CGColor);
+        CGContextDrawPath(ctx, kCGPathFill);
+        CGContextRestoreGState(ctx);
+    } else {
+        CGContextSaveGState(ctx);
+        CGContextSetStrokeColorWithColor(ctx, shapeColor.CGColor);
+        CGContextSetLineWidth(ctx, 6.0);
+        CGContextAddPath(ctx, shapePath);
+        CGContextClip(ctx);
+        CGContextAddPath(ctx, shapePath);
+        CGContextDrawPath(ctx, kCGPathStroke);
+        CGContextRestoreGState(ctx);        
+    }
+    
+    CGPathRelease(shapePath);
+    
 }
 @end
 
 @interface FlagStretchView()
 - (void) initWithFrameOrCoder;
-//@property (unsafe_unretained, nonatomic, readonly) NSArray * randomPositionIncrements;
-@property (nonatomic, readonly) CGFloat oneThirdWidth;
-@property (nonatomic, readonly) CGFloat oneFifthWidth;
+@property (nonatomic, readonly) CGFloat stripeWidth;
+@property (nonatomic, readonly) CGFloat arrowSideOverhangWidth;
 @property (strong, nonatomic) FSV_MiddleLayer * stripeMiddleLayer;
 @property (strong, nonatomic) FSV_SideLayer * stripeLeftLayer;
 @property (strong, nonatomic) FSV_SideLayer * stripeRightLayer;
+- (void) updateStripesAlpha;
 @end
 
 @implementation FlagStretchView
 
 @synthesize icon=_icon;
-@synthesize iconDistanceFromBottom=_iconDistanceFromBottom, iconFlipDistance=_iconFlipDistance, iconFlipDistanceAdjustment=_iconFlipDistanceAdjustment, iconFlipAnimationDuration=_iconFlipAnimationDuration, iconFlipped=_iconFlipped;
+@synthesize iconDistanceFromBottom=_iconDistanceFromBottom, activationDistanceStart=_activationDistanceStart, activationDistanceEnd=_activationDistanceEnd, activationAnimationDuration=_activationAnimationDuration, activated=_activated, activationAffectsIcon=_activationAffectsIcon;
+@synthesize activationAffectsAlpha=_activationAffectsAlpha, sidesAlphaNormal=_sidesAlphaNormal, sidesAlphaActivated=_sidesAlphaActivated, middleAlphaNormal=_middleAlphaNormal, middleAlphaActivated=_middleAlphaActivated;
+
 @synthesize angledShapes=_angledShapes, pullOutSides=_pullOutSides, pullOutMiddle=_pullOutMiddle;
 @synthesize pulledOutDistance=_pulledOutDistance, pullOutDistanceAllowedForAll=_pullOutDistanceAllowedForAll;
 @synthesize stripeMiddleLayer=_stripeMiddleLayer, stripeLeftLayer=_stripeLeftLayer, stripeRightLayer=_stripeRightLayer;
@@ -116,31 +186,42 @@ typedef enum {
     
     self.clipsToBounds = NO;
     
-    self.iconFlipped = NO;
+    _activated = YES;
     self.iconDistanceFromBottom = 20.0;
-    self.iconFlipDistanceAdjustment = 0.0;
-    self.iconFlipAnimationDuration = 0.2;
+    self.activationAnimationDuration = 0.2;
+    self.activationDistanceStart = 0.0;
+    self.activationDistanceEnd = self.iconDistanceFromBottom + self.icon.frame.size.height + self.iconDistanceFromBottom;
+    self.activationAffectsIcon = NO;
+    self.activationAffectsAlpha = NO;
+    self.sidesAlphaNormal = 1.0;
+    self.sidesAlphaActivated = 1.0;
+    self.middleAlphaNormal = 1.0;
+    self.middleAlphaActivated = 1.0;
     
     self.pullOutSides = YES;
     self.pullOutMiddle = YES;
     self.pulledOutDistance = 0;
     
     self.stripeMiddleLayer = [FSV_MiddleLayer layer];
-    CGFloat horizontalPaddingForStripeMiddleLayer = self.oneThirdWidth - self.oneFifthWidth;
+    CGFloat horizontalPaddingForStripeMiddleLayer = self.stripeWidth - self.arrowSideOverhangWidth;
     self.stripeMiddleLayer.frame = CGRectMake(horizontalPaddingForStripeMiddleLayer, 0, self.bounds.size.width - 2 * horizontalPaddingForStripeMiddleLayer, self.bounds.size.height);
     self.stripeMiddleLayer.contentsScale = [UIScreen mainScreen].scale;
+//    self.stripeMiddleLayer.shouldFill = NO; // Testing
+//    self.stripeMiddleLayer.shouldFill = YES;
     [self.layer addSublayer:self.stripeMiddleLayer];
     
     self.stripeLeftLayer = [FSV_SideLayer layer];
-    self.stripeLeftLayer.frame = CGRectMake(0, 0, self.oneThirdWidth, self.bounds.size.height);
+    self.stripeLeftLayer.frame = CGRectMake(0, 0, self.stripeWidth, self.bounds.size.height);
     self.stripeLeftLayer.side = FSV_SideLayer_Left;
     self.stripeLeftLayer.contentsScale = [UIScreen mainScreen].scale;
+    self.stripeLeftLayer.shouldFill = YES;
     [self.layer addSublayer:self.stripeLeftLayer];
     
     self.stripeRightLayer = [FSV_SideLayer layer];
-    self.stripeRightLayer.frame = CGRectMake(self.bounds.size.width - self.oneThirdWidth, 0, self.oneThirdWidth, self.bounds.size.height);
+    self.stripeRightLayer.frame = CGRectMake(self.bounds.size.width - self.stripeWidth, 0, self.stripeWidth, self.bounds.size.height);
     self.stripeRightLayer.side = FSV_SideLayer_Right;
     self.stripeRightLayer.contentsScale = [UIScreen mainScreen].scale;
+    self.stripeRightLayer.shouldFill = YES;
     [self.layer addSublayer:self.stripeRightLayer];
     
     self.icon = [CALayer layer];
@@ -151,53 +232,21 @@ typedef enum {
     [self.layer addSublayer:self.icon];
    
     self.angledShapes = YES;
+    self.activated = NO;
     
 }
 
-//- (void) resetStripePositions {
-//    
-//    CGFloat oneThirdWidthRoundedDown = floorf(self.frame.size.width / 3.0);
-//    self.stripeLeft.frame = CGRectMake(-self.frame.size.width + oneThirdWidthRoundedDown, self.stripeLeft.frame.origin.y, self.frame.size.width, self.stripeLeft.frame.size.height);
-//    self.stripeRight.frame = CGRectMake(self.frame.size.width - oneThirdWidthRoundedDown, self.stripeRight.frame.origin.y, self.frame.size.width, self.stripeRight.frame.size.height);
-//    [self layoutSubviews];
-//    
-//}
-
 - (void)layoutSubviews {
-//    CGRect boundsDrawing = self.boundsDrawing;
-//    CGFloat screenHeight = self.maximumPullOutDistance;
-//    CGFloat stripeHeight = screenHeight + self.frame.size.height - self.paddingBottom;
-//    self.stripeLeft.frame = CGRectMake(self.stripeLeft.frame.origin.x, -screenHeight, self.frame.size.width, stripeHeight);
-//    self.stripeRight.frame = CGRectMake(self.stripeRight.frame.origin.x, -screenHeight, self.frame.size.width, stripeHeight);
-////    CGFloat stripeLeftMaxX = CGRectGetMaxX(self.stripeLeft.frame);
-////    CGFloat arrowX = stripeLeftMaxX + floorf((self.stripeRight.frame.origin.x - stripeLeftMaxX - self.icon.frame.size.width) / 2.0);
-////    self.icon.frame = CGRectMake(arrowX, self.stripeMiddle.frame.size.height - self.iconDistanceFromBottom - self.icon.frame.size.height, self.icon.frame.size.width, self.icon.frame.size.height);
     [CATransaction setAnimationDuration:0.0];
     if (!self.pullOutSides) {
         self.stripeLeftLayer.frame = CGRectMake(self.stripeLeftLayer.frame.origin.x, MIN(0, -self.pulledOutDistance + self.pullOutDistanceAllowedForAll), self.stripeLeftLayer.frame.size.width, self.stripeLeftLayer.frame.size.height);
         self.stripeRightLayer.frame = CGRectMake(self.stripeRightLayer.frame.origin.x, MIN(0, -self.pulledOutDistance + self.pullOutDistanceAllowedForAll), self.stripeRightLayer.frame.size.width, self.stripeRightLayer.frame.size.height);
-//        NSLog(@"pulledOutDistance = %f", self.pulledOutDistance);
-//        NSLog(@"pullOutDistanceAllowedForAll = %f", self.pullOutDistanceAllowedForAll);
-//        NSLog(@"%@", NSStringFromCGRect(self.stripeLeftLayer.frame));
     }
     if (!self.pullOutMiddle) {
         self.stripeMiddleLayer.frame = CGRectMake(self.stripeMiddleLayer.frame.origin.x, MIN(0, -self.pulledOutDistance + self.pullOutDistanceAllowedForAll), self.stripeMiddleLayer.frame.size.width, self.stripeMiddleLayer.frame.size.height);
     }
     self.icon.frame = CGRectMake((self.bounds.size.width - self.icon.frame.size.width) / 2.0, CGRectGetMaxY(self.stripeMiddleLayer.frame) - self.iconDistanceFromBottom - self.icon.frame.size.height, self.icon.frame.size.width, self.icon.frame.size.height);
 }
-
-//- (CGRect)boundsDrawing {
-//    return CGRectMake(self.paddingSides, 0, self.frame.size.width - 2 * self.paddingSides, self.frame.size.height - self.paddingBottom);
-//}
-//
-//- (CGRect)frameDrawing {
-//    return CGRectOffset(self.boundsDrawing, self.frame.origin.x, self.frame.origin.y);
-//}
-
-//- (void)setPaddingBottom:(CGFloat)paddingBottom {
-//    _paddingBottom = paddingBottom;
-//    [self setNeedsLayout];
-//}
 
 - (void)setIconDistanceFromBottom:(CGFloat)iconDistanceFromBottom {
     _iconDistanceFromBottom=iconDistanceFromBottom;
@@ -208,15 +257,6 @@ typedef enum {
     // ...
     // ...
     // ...
-//    CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-//    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-//    animation.repeatCount = INFINITY;
-//    animation.duration = 1.0;
-//    animation.fillMode = kCAFillModeForwards;
-//    animation.additive = YES;
-//    animation.toValue = [NSNumber numberWithFloat:5.0];
-//    [self.stripeLeft addAnimation:animation forKey:@"animatePosition"];
-//    [self.stripeRight addAnimation:animation forKey:@"animatePosition"];
 }
 
 - (void)stopAnimatingStripes {
@@ -225,21 +265,21 @@ typedef enum {
     // ...
 }
 
-- (CGFloat)iconFlipDistance {
-//    NSLog(@"iconFlipDistance = self.iconDistanceFromBottom (%f) + self.icon.frame.size.height (%f) + self.iconDistanceFromBottom (%f) + self.iconFlipDistanceAdjustment (%f) = %f", self.iconDistanceFromBottom, self.icon.frame.size.height, self.iconDistanceFromBottom, self.iconFlipDistanceAdjustment, self.iconDistanceFromBottom + self.icon.frame.size.height + self.iconDistanceFromBottom + self.iconFlipDistanceAdjustment);
-    return self.iconDistanceFromBottom + self.icon.frame.size.height + self.iconDistanceFromBottom + self.iconFlipDistanceAdjustment;
-}
-
-- (void)setIconFlipped:(BOOL)iconFlipped animated:(BOOL)animated {
-    if (_iconFlipped != iconFlipped) {
-        _iconFlipped = iconFlipped;
-        [CATransaction setAnimationDuration:animated ? self.iconFlipAnimationDuration : 0.0]; 
-        self.icon.transform = CATransform3DMakeRotation(self.iconFlipped ? M_PI : 0, 1.0, 0, 0);
+- (void)setActivated:(BOOL)activated animated:(BOOL)animated {
+    if (_activated != activated) {
+        _activated = activated;
+        [CATransaction setAnimationDuration:animated ? self.activationAnimationDuration : 0.0];
+        if (self.activationAffectsIcon) {
+            self.icon.transform = CATransform3DMakeRotation(self.activated ? M_PI : 0, 1.0, 0, 0);
+        }
+        if (self.activationAffectsAlpha) {
+            [self updateStripesAlpha];
+        }
     }
 }
 
-- (void)setIconFlipped:(BOOL)iconFlipped {
-    [self setIconFlipped:iconFlipped animated:NO];
+- (void)setActivated:(BOOL)activated {
+    [self setActivated:activated animated:NO];
 }
 
 - (void)setPulledOutDistance:(CGFloat)pullOutDistance {
@@ -248,7 +288,9 @@ typedef enum {
 //        NSLog(@"setPullOutDistance changed");
         _pulledOutDistance = pullOutDistance;
         [self setNeedsLayout];
-//        [self.stripeMiddleLayer setNeedsDisplay];
+        self.stripeMiddleLayer.visibleWidth = self.pulledOutDistance;
+//        NSLog(@"\n%f\n%f\n%f\n%f", pullOutDistance, self.activationDistanceStart, self.activationDistanceEnd, MAX(0, pullOutDistance - self.activationDistanceStart) / (self.activationDistanceEnd - self.activationDistanceStart));
+        self.stripeMiddleLayer.drainPercentage = MAX(0, pullOutDistance - self.activationDistanceStart) / (self.activationDistanceEnd - self.activationDistanceStart);
     }
 }
 
@@ -256,14 +298,23 @@ typedef enum {
     if (_angledShapes != angledShapes) {
         _angledShapes = angledShapes;
     }
-    self.stripeMiddleLayer.pointHeight = self.angledShapes ? (2 * self.oneFifthWidth + self.oneThirdWidth) * 3.0 / 8.0 : 0.0;
+//    self.stripeLeftLayer.shouldFill = !self.angledShapes;
+//    self.stripeRightLayer.shouldFill = !self.angledShapes;
+    // 3/4/5 Triangle
+//    CGFloat middlePointHeightMultiplier = 3.0 / 8.0;
+//    CGFloat sidesWedgeHeightMultiplier = 3.0 / 4.0;
+    // 1/1/sq(2) Triangle
+    CGFloat middlePointHeightMultiplier = 1.0 / 2.0;
+    CGFloat sidesWedgeHeightMultiplier = 1.0 / 1.0;
+    self.stripeMiddleLayer.pointHeight = self.angledShapes ? (2 * self.arrowSideOverhangWidth + self.stripeWidth) * middlePointHeightMultiplier : 0.0;
+    self.stripeMiddleLayer.paddingHorizontal = self.arrowSideOverhangWidth;
     CGFloat sidesPaddingBottom = 0;
     CGFloat sidesWedgeWidth = 0;
     CGFloat sidesWedgeHeight = 0;
     if (self.angledShapes) {
         sidesPaddingBottom = self.stripeMiddleLayer.pointHeight;
-        sidesWedgeWidth = self.oneThirdWidth - self.oneFifthWidth;
-        sidesWedgeHeight = (self.stripeLeftLayer.wedgeWidth) * 3.0 / 4.0;
+        sidesWedgeWidth = self.stripeWidth - self.arrowSideOverhangWidth;
+        sidesWedgeHeight = (self.stripeLeftLayer.wedgeWidth) * sidesWedgeHeightMultiplier;
     }
     self.stripeLeftLayer.paddingBottom = sidesPaddingBottom;
     self.stripeLeftLayer.wedgeWidth = sidesWedgeWidth;
@@ -277,7 +328,44 @@ typedef enum {
     self.backgroundColor = self.angledShapes ? [UIColor whiteColor] : [UIColor feelingColor];
 }
 
-- (CGFloat)oneThirdWidth { return floorf(self.bounds.size.width / 3.0); }
-- (CGFloat)oneFifthWidth { return floorf(self.bounds.size.width / 5.0); }
+- (void) updateStripesAlpha {
+    CGFloat sidesAlpha = self.sidesAlphaNormal;
+    CGFloat middleAlpha = self.middleAlphaNormal;
+    if (self.activated) {
+        sidesAlpha = self.sidesAlphaActivated;
+        middleAlpha = self.middleAlphaActivated;
+    }
+    self.stripeLeftLayer.opacity = sidesAlpha;
+    self.stripeRightLayer.opacity = sidesAlpha;
+    self.stripeMiddleLayer.opacity = middleAlpha;
+}
+
+- (void)setSidesAlphaNormal:(CGFloat)sidesAlphaNormal {
+    if (_sidesAlphaNormal != sidesAlphaNormal) {
+        _sidesAlphaNormal = sidesAlphaNormal;
+        [self updateStripesAlpha];
+    }
+}
+- (void)setSidesAlphaActivated:(CGFloat)sidesAlphaActivated {
+    if (_sidesAlphaActivated != sidesAlphaActivated) {
+        _sidesAlphaActivated = sidesAlphaActivated;
+        [self updateStripesAlpha];
+    }
+}
+- (void)setMiddleAlphaNormal:(CGFloat)middleAlphaNormal {
+    if (_middleAlphaNormal != middleAlphaNormal) {
+        _middleAlphaNormal = middleAlphaNormal;
+        [self updateStripesAlpha];
+    }
+}
+- (void)setMiddleAlphaActivated:(CGFloat)middleAlphaActivated {
+    if (_middleAlphaActivated != middleAlphaActivated) {
+        _middleAlphaActivated = middleAlphaActivated;
+        [self updateStripesAlpha];
+    }
+}
+
+- (CGFloat)stripeWidth { return floorf(self.bounds.size.width / 3.0); }
+- (CGFloat)arrowSideOverhangWidth { return floorf(self.bounds.size.width / 4.0); }
 
 @end

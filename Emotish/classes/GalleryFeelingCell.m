@@ -13,6 +13,9 @@
 
 //#define GFC_ANIMATION_DURATION 0.25
 const CGFloat GFC_FEELING_IMAGE_SECOND_PERCENTAGE_OVERHANG = 0.2;
+const CGFloat GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START = 25.0;
+const CGFloat GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_END = 65.0;
+const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
 
 @interface GalleryFeelingCell()
 - (void) feelingLabelButtonTouched:(UIButton *)button;
@@ -92,11 +95,24 @@ const CGFloat GFC_FEELING_IMAGE_SECOND_PERCENTAGE_OVERHANG = 0.2;
         [self.imagesTableView.tableHeaderView insertSubview:self.feelingLabel belowSubview:self.feelingLabelButton];
           
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-        self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(GC_FEELING_IMAGE_MARGIN_VERTICAL, -screenWidth, selfHeight - GC_FEELING_IMAGE_MARGIN_VERTICAL * 2, screenWidth)];
+//        CGFloat flagStretchViewHeight = selfHeight - 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
+//        CGFloat flagStretchViewHeight = floorf(selfHeight / 2.0);
+//        CGFloat flagStretchViewHeight = 2 * selfHeight;
+        CGFloat flagStretchViewHeight = GFC_FLAG_STRETCH_VIEW_HEIGHT;
+        self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(floorf((selfHeight - flagStretchViewHeight) / 2.0), -screenWidth, flagStretchViewHeight, screenWidth)];
         self.flagStretchView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.flagStretchView.icon.hidden = YES;
         self.flagStretchView.angledShapes = YES;
-        self.flagStretchView.pullOutSides = NO;
+//        self.flagStretchView.alpha = 0.5;
+//        self.flagStretchView.pullOutSides = NO; // This, combined with angled shapes, is far too phallic.
+        self.flagStretchView.activationDistanceStart = GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START;
+        self.flagStretchView.activationDistanceEnd = GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_END;
+        self.flagStretchView.activationAffectsAlpha = YES;
+        self.flagStretchView.sidesAlphaNormal = 0.5;
+        self.flagStretchView.sidesAlphaActivated = .9;
+        self.flagStretchView.middleAlphaNormal = 0.5;
+        self.flagStretchView.middleAlphaActivated = .9;
+        self.flagStretchView.activationAffectsIcon = NO;
         [self.imagesTableView.tableHeaderView addSubview:self.flagStretchView];
         
         [wrapperScrollView addSubview:self.imagesTableView];
@@ -108,6 +124,10 @@ const CGFloat GFC_FEELING_IMAGE_SECOND_PERCENTAGE_OVERHANG = 0.2;
             self.feelingLabel.backgroundColor = [UIColor redColor];
             self.imagesTableView.backgroundColor = [UIColor yellowColor];
         }
+        
+//        self.clipsToBounds = NO;
+//        self.imagesTableView.clipsToBounds = NO;
+//        self.imagesTableView.tableHeaderView.clipsToBounds = NO;
         
     }
     return self;

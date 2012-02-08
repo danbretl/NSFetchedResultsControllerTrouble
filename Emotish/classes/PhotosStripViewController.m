@@ -56,6 +56,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 @synthesize fetchedResultsControllerFeeling=_fetchedResultsControllerFeeling;
 @synthesize fetchedResultsControllerUser=_fetchedResultsControllerUser;
 @synthesize fetchedResultsControllerFeelings=_fetchedResultsControllerFeelings;
+@synthesize bottomBar = _bottomBar;
 @synthesize fetchedResultsControllerForCurrentFocus=_fetchedResultsControllerForCurrentFocus;
 @synthesize topBar=_topBar;
 @synthesize contentView = _contentView;
@@ -99,7 +100,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
+    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
     self.addPhotoLabel.frame = CGRectMake(CGRectGetMaxX(self.addPhotoButton.frame) + PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT, self.addPhotoButton.frame.origin.y, self.view.frame.size.width - CGRectGetMaxX(self.addPhotoButton.frame), self.addPhotoButton.frame.size.height);
     
     self.headerButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -175,6 +176,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     [self setSwipeRightHeaderGestureRecognizer:nil];
     [self setContentView:nil];
     [self setAddPhotoButton:nil];
+    [self setBottomBar:nil];
     [super viewDidUnload];
 }
 
@@ -641,6 +643,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
             feelingViewController.galleryImageView.alpha = 0.0;
             feelingViewController.backgroundView.alpha = 0.0;
             feelingViewController.topBar.alpha = 0.0;
+            feelingViewController.bottomBar.alpha = 0.0;
             feelingViewController.addPhotoButton.alpha = 0.0;
             feelingViewController.addPhotoLabel.alpha = 0.0;
                         
@@ -662,6 +665,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
                 feelingViewController.galleryImageView.alpha = 1.0;
                 feelingViewController.backgroundView.alpha = 1.0;
                 feelingViewController.topBar.alpha = 1.0;
+                feelingViewController.bottomBar.alpha = 1.0;
                 feelingViewController.addPhotoButton.alpha = 1.0;
                 feelingViewController.addPhotoLabel.alpha = 1.0;
                 [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];

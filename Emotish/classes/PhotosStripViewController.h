@@ -42,8 +42,8 @@ typedef enum {
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerUser;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeelings;
-
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
+@property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIView *contentView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * headerButton;
 @property (unsafe_unretained, nonatomic) IBOutlet ClipView * photosClipView;
