@@ -44,7 +44,7 @@
 						<string key="NSFrameSize">{320, 460}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="529214493"/>
+						<reference key="NSNextKeyView" ref="1067319845"/>
 						<string key="NSReuseIdentifierKey">_NS:567</string>
 						<int key="IBUIContentMode">5</int>
 						<bool key="IBUIUserInteractionEnabled">NO</bool>
@@ -56,7 +56,7 @@
 						<string key="NSFrame">{{0, 44}, {320, 416}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="1067319845"/>
+						<reference key="NSNextKeyView" ref="157865470"/>
 						<string key="NSReuseIdentifierKey">_NS:196</string>
 						<object class="NSColor" key="IBUIBackgroundColor">
 							<int key="NSColorSpace">3</int>
@@ -173,7 +173,7 @@
 														<string key="NSFrame">{{184, 0}, {46, 248}}</string>
 														<reference key="NSSuperview" ref="408255959"/>
 														<reference key="NSWindow"/>
-														<reference key="NSNextKeyView" ref="27303834"/>
+														<reference key="NSNextKeyView" ref="641236044"/>
 														<string key="NSReuseIdentifierKey">_NS:196</string>
 														<object class="NSColor" key="IBUIBackgroundColor">
 															<int key="NSColorSpace">3</int>
@@ -248,13 +248,13 @@
 						</object>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
 					</object>
-					<object class="IBUIView" id="27303834">
+					<object class="IBUIView" id="641236044">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">290</int>
 						<string key="NSFrameSize">{320, 44}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="157865470"/>
+						<reference key="NSNextKeyView" ref="529214493"/>
 						<string key="NSReuseIdentifierKey">_NS:196</string>
 						<object class="NSColor" key="IBUIBackgroundColor">
 							<int key="NSColorSpace">1</int>
@@ -506,7 +506,7 @@
 					<object class="IBCocoaTouchOutletConnection" key="connection">
 						<string key="label">topBar</string>
 						<reference key="source" ref="372490531"/>
-						<reference key="destination" ref="27303834"/>
+						<reference key="destination" ref="641236044"/>
 					</object>
 					<int key="connectionID">49</int>
 				</object>
@@ -555,7 +555,7 @@
 							<reference ref="61619528"/>
 							<reference ref="157865470"/>
 							<reference ref="627806884"/>
-							<reference ref="27303834"/>
+							<reference ref="641236044"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -664,7 +664,7 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">48</int>
-						<reference key="object" ref="27303834"/>
+						<reference key="object" ref="641236044"/>
 						<reference key="parent" ref="191373211"/>
 					</object>
 				</array>

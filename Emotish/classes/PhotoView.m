@@ -32,7 +32,6 @@ const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
     }
     return self;
 }
-
 - (id) initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
