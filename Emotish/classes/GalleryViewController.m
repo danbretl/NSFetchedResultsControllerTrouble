@@ -12,10 +12,14 @@
 #import "GalleryFeelingCell.h"
 #import "GalleryFeelingImageCell.h"
 #import <QuartzCore/QuartzCore.h>
+#import <MobileCoreServices/UTCoreTypes.h>
+#import "CameraOverlayView.h"
+#import "UIImage+Crop.h"
 
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
-- (IBAction)emotishLogoTouched:(UIButton *)button;
+- (void) emotishLogoTouched:(UIButton *)button;
+- (IBAction)addPhotoButtonTouched:(id)sender;
 @end
 
 @implementation GalleryViewController
@@ -32,6 +36,9 @@
 @synthesize topBar=_topBar;
 @synthesize bottomBar = _bottomBar;
 @synthesize addPhotoButton = _addPhotoButton;
+// THE FOLLOWING SYNTHESIZED PROPERTIES ARE DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+@synthesize imagePickerControllerCamera=_imagePickerControllerCamera, imagePickerControllerLibrary=_imagePickerControllerLibrary, cameraOverlayViewHandler=_cameraOverlayViewHandler, addPhotoImage=_addPhotoImage;
+// THE PREVIOUS SYNTHESIZED PROPERTIES ARE DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -56,7 +63,14 @@
     [super viewDidLoad];
 //    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
     
-    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
+    CGSize addPhotoButtonSize = CGSizeMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE + VC_ADD_PHOTO_BUTTON_WIDTH + VC_ADD_PHOTO_BUTTON_PADDING_RIGHT, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE + VC_ADD_PHOTO_BUTTON_HEIGHT + VC_ADD_PHOTO_BUTTON_PADDING_TOP);
+    self.addPhotoButton.frame = CGRectMake(0, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - addPhotoButtonSize.height, addPhotoButtonSize.width, addPhotoButtonSize.height);
+    self.addPhotoButton.contentEdgeInsets = UIEdgeInsetsMake(0, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, 0);
+    NSLog(@"%@", NSStringFromCGRect(self.addPhotoButton.frame));
+//    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
+    
+    [self.topBar.buttonBranding addTarget:self action:@selector(emotishLogoTouched:) forControlEvents:UIControlEventTouchUpInside];
+    [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
         
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
     self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL + VC_BOTTOM_BAR_HEIGHT, 0);
@@ -367,5 +381,116 @@
 - (void)emotishLogoTouched:(UIButton *)button {
     [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
 }
+
+
+
+// THE FOLLOWING CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+// THE FOLLOWING CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+// THE FOLLOWING CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+
+- (IBAction)addPhotoButtonTouched:(id)sender {
+    NSLog(@"addPhotoButtonTouched");
+    
+    UIImagePickerController * imagePickerControllerToPresent = nil;
+    
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        
+        self.imagePickerControllerCamera = [[UIImagePickerController alloc] init];
+        self.imagePickerControllerCamera.delegate = self;
+        self.imagePickerControllerCamera.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
+        self.imagePickerControllerCamera.sourceType = UIImagePickerControllerSourceTypeCamera;
+        self.imagePickerControllerCamera.cameraCaptureMode = UIImagePickerControllerCameraCaptureModePhoto;
+        self.imagePickerControllerCamera.showsCameraControls = NO;
+        self.imagePickerControllerCamera.allowsEditing = NO;
+        
+        BOOL frontCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceFront];
+        BOOL rearCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear];
+        self.imagePickerControllerCamera.cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
+        
+        CameraOverlayView * cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cameraOverlayView.swapCamerasButton.hidden = !(frontCameraAvailable && rearCameraAvailable);
+        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
+        
+        self.cameraOverlayViewHandler = [[CameraOverlayViewHandler alloc] init];
+        self.cameraOverlayViewHandler.delegate = self;
+        self.cameraOverlayViewHandler.imagePickerController = self.imagePickerControllerCamera;
+        self.cameraOverlayViewHandler.cameraOverlayView = cameraOverlayView;
+        
+        imagePickerControllerToPresent = self.imagePickerControllerCamera;
+        
+    } else {
+        
+        self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
+        self.imagePickerControllerLibrary.delegate = self;
+        self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
+        self.imagePickerControllerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        self.imagePickerControllerLibrary.allowsEditing = YES;
+        
+        imagePickerControllerToPresent = self.imagePickerControllerLibrary;
+    }
+    
+    [self presentModalViewController:imagePickerControllerToPresent animated:NO];
+    
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [self dismissModalViewControllerAnimated:NO];
+    if (picker == self.imagePickerControllerCamera) {
+        self.imagePickerControllerCamera = nil;
+        self.cameraOverlayViewHandler = nil;
+    } else {
+        self.imagePickerControllerLibrary = nil;
+        if (self.imagePickerControllerCamera != nil) {
+            [self presentModalViewController:self.imagePickerControllerCamera animated:NO];
+        }
+    }
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    NSLog(@"imagePickerController didFinishPickingMedia");
+    UIImage * image = [info objectForKey:UIImagePickerControllerEditedImage];
+    if (image == nil) {
+        image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    }    
+    if (picker == self.imagePickerControllerCamera) {
+    //    [self.cameraOverlayViewHandler showImageReview:[image imageWithEmotishCrop]];
+        NSLog(@"captured camera media, showing for review");
+        [self.cameraOverlayViewHandler showImageReview:image];
+    } else {
+        NSLog(@"picked library media, should move on");
+        [self dismissModalViewControllerAnimated:NO];
+        self.imagePickerControllerLibrary = nil;
+        self.addPhotoImage = image;
+        NSString * feelingText = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
+        NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
+    }
+}
+
+- (void)cameraOverlayViewHandlerRequestedLibraryPicker:(CameraOverlayViewHandler *)cameraOverlayViewHandler {
+    
+    self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
+    self.imagePickerControllerLibrary.delegate = self;
+    self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
+    self.imagePickerControllerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    self.imagePickerControllerLibrary.allowsEditing = YES;
+    [self dismissModalViewControllerAnimated:NO];
+    [self presentModalViewController:self.imagePickerControllerLibrary animated:NO];
+    
+}
+
+- (void)cameraOverlayViewHandler:(CameraOverlayViewHandler *)cameraOverlayViewHandler acceptedImage:(UIImage *)image withFeelingText:(NSString *)feelingText {
+    
+    [self dismissModalViewControllerAnimated:NO];
+    self.imagePickerControllerCamera = nil;
+    self.cameraOverlayViewHandler = nil;
+    self.addPhotoImage = [image imageWithEmotishCrop];
+    NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
+    
+}
+
+// THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+// THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+// THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+
 
 @end

@@ -12,6 +12,8 @@
 #import "User.h"
 #import "PhotoView.h"
 #import "ClipView.h"
+#import "CameraOverlayViewHandler.h"
+#import "TopBarView.h"
 
 typedef enum {
     NoFocus = 0,
@@ -27,7 +29,7 @@ typedef enum {
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/, UINavigationControllerDelegate, UIImagePickerControllerDelegate, CameraOverlayViewHandlerDelegate>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;
@@ -42,7 +44,7 @@ typedef enum {
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerUser;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeelings;
-@property (unsafe_unretained, nonatomic) IBOutlet UIImageView * topBar;
+@property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIView *contentView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * headerButton;
@@ -64,6 +66,13 @@ typedef enum {
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeRightHeaderGestureRecognizer;
 
 @property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate> delegate;
+
+// THE FOLLOWING PROPERTIES ARE DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
+@property (strong, nonatomic) UIImagePickerController * imagePickerControllerCamera;
+@property (strong, nonatomic) UIImagePickerController * imagePickerControllerLibrary;
+@property (strong, nonatomic) CameraOverlayViewHandler * cameraOverlayViewHandler;
+@property (strong, nonatomic) UIImage * addPhotoImage;
+// THE PREVIOUS PROPERTIES ARE DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
 
 @end
 
