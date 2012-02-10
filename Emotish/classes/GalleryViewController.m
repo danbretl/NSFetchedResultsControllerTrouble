@@ -393,6 +393,7 @@
     NSLog(@"addPhotoButtonTouched");
     
     UIImagePickerController * imagePickerControllerToPresent = nil;
+    CameraOverlayView * cameraOverlayView = nil;
     
     if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         
@@ -408,9 +409,9 @@
         BOOL rearCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear];
         self.imagePickerControllerCamera.cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
         
-        CameraOverlayView * cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
         cameraOverlayView.swapCamerasButton.hidden = !(frontCameraAvailable && rearCameraAvailable);
-        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
+//        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
         
         self.cameraOverlayViewHandler = [[CameraOverlayViewHandler alloc] init];
         self.cameraOverlayViewHandler.delegate = self;
@@ -424,13 +425,16 @@
         self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
         self.imagePickerControllerLibrary.delegate = self;
         self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
-        self.imagePickerControllerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
         self.imagePickerControllerLibrary.allowsEditing = YES;
         
         imagePickerControllerToPresent = self.imagePickerControllerLibrary;
     }
     
     [self presentModalViewController:imagePickerControllerToPresent animated:NO];
+    if (cameraOverlayView != nil) {
+        [imagePickerControllerToPresent.view addSubview:cameraOverlayView];//.window addSubview:cameraOverlayView];
+    }
     
 }
 
@@ -472,7 +476,7 @@
     self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
     self.imagePickerControllerLibrary.delegate = self;
     self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
-    self.imagePickerControllerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
     self.imagePickerControllerLibrary.allowsEditing = YES;
     [self dismissModalViewControllerAnimated:NO];
     [self presentModalViewController:self.imagePickerControllerLibrary animated:NO];

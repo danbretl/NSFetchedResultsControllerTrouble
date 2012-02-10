@@ -327,10 +327,6 @@
 							<string key="NSClassName">NSImage</string>
 							<string key="NSResourceName">btn_camera.png</string>
 						</object>
-						<object class="NSCustomResource" key="IBUISelectedBackgroundImage">
-							<string key="NSClassName">NSImage</string>
-							<string key="NSResourceName">btn_add_photo.png</string>
-						</object>
 						<object class="IBUIFontDescription" key="IBUIFontDescription">
 							<int key="type">2</int>
 							<double key="pointSize">15</double>
@@ -846,7 +842,6 @@
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="bottom_bar_smaller.png">{320, 10}</string>
-			<string key="btn_add_photo.png">{16, 16}</string>
 			<string key="btn_camera.png">{44, 44}</string>
 			<string key="btn_camera_touch.png">{44, 44}</string>
 		</dictionary>

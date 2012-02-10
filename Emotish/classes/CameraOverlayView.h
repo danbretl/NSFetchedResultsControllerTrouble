@@ -7,10 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "TopBarView.h"
 
 @interface CameraOverlayView : UIView <UITextFieldDelegate>
 
-@property (strong, nonatomic) UIView * topBar;
+@property (strong, nonatomic) TopBarView * topBar;
 @property (strong, nonatomic) UITextField * feelingTextField;
 
 @property (strong, nonatomic) UIImageView * imageOverlay;
@@ -22,6 +23,6 @@
 @property (strong, nonatomic) UIButton * libraryButton;
 @property (strong, nonatomic) UIButton * acceptButton;
 
-+ (CGRect) imageCropFrame;
+//+ (CGRect) imageCropFrame;
 
 @end

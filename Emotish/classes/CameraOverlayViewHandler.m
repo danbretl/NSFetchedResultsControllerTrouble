@@ -60,6 +60,7 @@
     NSLog(@"CameraOverlayViewHandler showImageReview");
     self.cameraOverlayView.imageOverlay.image = image;
     self.cameraOverlayView.imageOverlay.hidden = NO;
+    self.cameraOverlayView.imageOverlay.userInteractionEnabled = YES;
     self.cameraOverlayView.photoButton.hidden = YES;
     self.cameraOverlayView.acceptButton.hidden = NO;
     self.cameraOverlayView.swapCamerasButton.hidden = YES;
@@ -70,6 +71,7 @@
     NSLog(@"CameraOverlayViewHandler hideImageReview");
     self.cameraOverlayView.imageOverlay.hidden = YES;
     self.cameraOverlayView.imageOverlay.image = nil;
+    self.cameraOverlayView.imageOverlay.userInteractionEnabled = NO;
     self.cameraOverlayView.photoButton.hidden = NO;
     self.cameraOverlayView.acceptButton.hidden = YES;
     self.cameraOverlayView.swapCamerasButton.hidden = NO;

@@ -756,7 +756,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
         self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
         self.imagePickerControllerLibrary.delegate = self;
         self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
-        self.imagePickerControllerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
         self.imagePickerControllerLibrary.allowsEditing = YES;
         
         imagePickerControllerToPresent = self.imagePickerControllerLibrary;
@@ -807,7 +807,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
     self.imagePickerControllerLibrary.delegate = self;
     self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
-    self.imagePickerControllerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
     self.imagePickerControllerLibrary.allowsEditing = YES;
     [self dismissModalViewControllerAnimated:NO];
     [self presentModalViewController:self.imagePickerControllerLibrary animated:NO];
