@@ -130,6 +130,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
     self.feelingsTableView.contentOffset = self.feelingsTableViewContentOffsetPreserved;
 }
 

@@ -198,6 +198,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
     NSLog(@"%@ PhotosStripViewController viewWillAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
     if (self.shouldAnimateIn) {
         
