@@ -15,6 +15,7 @@
 #import <MobileCoreServices/UTCoreTypes.h>
 #import "CameraOverlayView.h"
 #import "UIImage+Crop.h"
+#import "SubmitPhotoViewController.h"
 
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
@@ -468,6 +469,13 @@
         self.addPhotoImage = image;
         NSString * feelingText = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
         NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
+        
+//        SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
+//        submitPhotoViewController.feelingImage = image;
+//        submitPhotoViewController.feelingWord = feelingText;
+//        submitPhotoViewController.userName = @"unknown user";
+//        [self.navigationController pushViewController:submitPhotoViewController animated:NO];
+        
     }
 }
 
@@ -490,8 +498,16 @@
     self.cameraOverlayViewHandler = nil;
     self.addPhotoImage = [image imageWithEmotishCrop];
     NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
+
+//    SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
+//    submitPhotoViewController.feelingImage = image;
+//    submitPhotoViewController.feelingWord = feelingText;
+//    submitPhotoViewController.userName = @"unknown user";
+//    [self.navigationController pushViewController:submitPhotoViewController animated:NO];
     
 }
+
+
 
 // THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
 // THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
