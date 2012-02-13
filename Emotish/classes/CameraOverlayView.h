@@ -13,6 +13,7 @@
 
 @property (strong, nonatomic) TopBarView * topBar;
 @property (strong, nonatomic) UITextField * feelingTextField;
+- (void) setFeelingText:(NSString *)feelingText;
 
 @property (strong, nonatomic) UIImageView * imageOverlay;
 @property (strong, nonatomic) UIButton * swapCamerasButton;

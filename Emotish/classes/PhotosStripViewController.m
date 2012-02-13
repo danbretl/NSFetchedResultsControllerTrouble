@@ -11,8 +11,6 @@
 #import "ViewConstants.h"
 #import "UIColor+Emotish.h"
 #import <QuartzCore/QuartzCore.h>
-#import "UIImage+Crop.h"
-#import <MobileCoreServices/UTCoreTypes.h>
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int PSVC_PHOTO_VIEWS_COUNT = 5;
@@ -79,9 +77,6 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
 @synthesize delegate=_delegate;
-// THE FOLLOWING SYNTHESIZED PROPERTIES ARE DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
-@synthesize imagePickerControllerCamera=_imagePickerControllerCamera, imagePickerControllerLibrary=_imagePickerControllerLibrary, cameraOverlayViewHandler=_cameraOverlayViewHandler, addPhotoImage=_addPhotoImage;
-// THE PREVIOUS SYNTHESIZED PROPERTIES ARE DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -716,120 +711,24 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     }
 }
 
-// THE FOLLOWING CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
-// THE FOLLOWING CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
-// THE FOLLOWING CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
-
 - (IBAction)addPhotoButtonTouched:(id)sender {
-    NSLog(@"addPhotoButtonTouched");
-    
-    UIImagePickerController * imagePickerControllerToPresent = nil;
-    CameraOverlayView * cameraOverlayView = nil;
-    
-    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-        
-        self.imagePickerControllerCamera = [[UIImagePickerController alloc] init];
-        self.imagePickerControllerCamera.delegate = self;
-        self.imagePickerControllerCamera.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
-        self.imagePickerControllerCamera.sourceType = UIImagePickerControllerSourceTypeCamera;
-        self.imagePickerControllerCamera.cameraCaptureMode = UIImagePickerControllerCameraCaptureModePhoto;
-        self.imagePickerControllerCamera.showsCameraControls = NO;
-        self.imagePickerControllerCamera.allowsEditing = NO;
-        
-        BOOL frontCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceFront];
-        BOOL rearCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear];
-        self.imagePickerControllerCamera.cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
-        
-        cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        cameraOverlayView.swapCamerasButton.hidden = !(frontCameraAvailable && rearCameraAvailable);
-        cameraOverlayView.feelingTextField.text = self.feelingFocus.word.lowercaseString;
-//        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
-        
-        self.cameraOverlayViewHandler = [[CameraOverlayViewHandler alloc] init];
-        self.cameraOverlayViewHandler.delegate = self;
-        self.cameraOverlayViewHandler.imagePickerController = self.imagePickerControllerCamera;
-        self.cameraOverlayViewHandler.cameraOverlayView = cameraOverlayView;
-        
-        imagePickerControllerToPresent = self.imagePickerControllerCamera;
-        
-    } else {
-        
-        self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
-        self.imagePickerControllerLibrary.delegate = self;
-        self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
-        self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
-        self.imagePickerControllerLibrary.allowsEditing = YES;
-        
-        imagePickerControllerToPresent = self.imagePickerControllerLibrary;
+    SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
+    if (self.focus == FeelingFocus) {
+        submitPhotoViewController.feelingWord = self.feelingFocus.word;
     }
-    
-    [self presentModalViewController:imagePickerControllerToPresent animated:NO];
-    if (cameraOverlayView != nil) {
-        [imagePickerControllerToPresent.view addSubview:cameraOverlayView];//.window addSubview:cameraOverlayView];
-    }
-    
+    submitPhotoViewController.shouldPushImagePicker = YES;
+    submitPhotoViewController.delegate = self;
+    [self presentModalViewController:submitPhotoViewController animated:NO];
 }
 
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+- (void)submitPhotoViewControllerDidCancel:(SubmitPhotoViewController *)submitPhotoViewController {
+    NSLog(@"submitPhotoViewControllerDidCancel");
     [self dismissModalViewControllerAnimated:NO];
-    if (picker == self.imagePickerControllerCamera) {
-        self.imagePickerControllerCamera = nil;
-        self.cameraOverlayViewHandler = nil;
-    } else {
-        self.imagePickerControllerLibrary = nil;
-        if (self.imagePickerControllerCamera != nil) {
-            [self presentModalViewController:self.imagePickerControllerCamera animated:NO];
-        }
-    }
 }
 
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-    NSLog(@"imagePickerController didFinishPickingMedia");
-    UIImage * image = [info objectForKey:UIImagePickerControllerEditedImage];
-    if (image == nil) {
-        image = [info objectForKey:UIImagePickerControllerOriginalImage];
-    }    
-    if (picker == self.imagePickerControllerCamera) {
-        //    [self.cameraOverlayViewHandler showImageReview:[image imageWithEmotishCrop]];
-        NSLog(@"captured camera media, showing for review");
-        [self.cameraOverlayViewHandler showImageReview:image];
-    } else {
-        NSLog(@"picked library media, should move on");
-        [self dismissModalViewControllerAnimated:NO];
-        self.imagePickerControllerLibrary = nil;
-        self.addPhotoImage = image;
-        NSString * feelingText = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
-        if (feelingText == nil || feelingText.length == 0) {
-            feelingText = self.feelingFocus.word.lowercaseString;
-        }
-        NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
-    }
-}
-
-- (void)cameraOverlayViewHandlerRequestedLibraryPicker:(CameraOverlayViewHandler *)cameraOverlayViewHandler {
-    
-    self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
-    self.imagePickerControllerLibrary.delegate = self;
-    self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
-    self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
-    self.imagePickerControllerLibrary.allowsEditing = YES;
+- (void)submitPhotoViewControllerDidSubmitPhoto:(SubmitPhotoViewController *)submitPhotoViewController {
+    NSLog(@"submitPhotoViewControllerDidSubmitPhoto");
     [self dismissModalViewControllerAnimated:NO];
-    [self presentModalViewController:self.imagePickerControllerLibrary animated:NO];
-    
 }
-
-- (void)cameraOverlayViewHandler:(CameraOverlayViewHandler *)cameraOverlayViewHandler acceptedImage:(UIImage *)image withFeelingText:(NSString *)feelingText {
-    
-    [self dismissModalViewControllerAnimated:NO];
-    self.imagePickerControllerCamera = nil;
-    self.cameraOverlayViewHandler = nil;
-    self.addPhotoImage = [image imageWithEmotishCrop];
-    NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
-    
-}
-
-// THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
-// THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
-// THE PREVIOUS CODE IS DUPLICATED IN GalleryViewController.m AND PhotosStripViewController.m
 
 @end

@@ -14,7 +14,7 @@
 const CGFloat COV_TOP_BAR_PADDING_HORIZONTAL = 20.0;
 const CGFloat COV_BOTTOM_BAR_PADDING_LEFT = 3.0;
 const CGFloat COV_BOTTOM_BAR_PADDING_RIGHT = 5.0;
-const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 5.0;
+const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
 
 @interface CameraOverlayView()
 @property (strong, nonatomic, readonly) NSString * feelingPlaceholderText;
@@ -62,7 +62,6 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 5.0;
         self.feelingTextField.returnKeyType = UIReturnKeyDone;
         self.feelingTextField.delegate = self;
         self.feelingTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-        self.feelingTextField.text = @"something";
         self.feelingTextField.leftViewMode = UITextFieldViewModeAlways;
         [self.topBar addSubview:self.feelingTextField];
         self.feelingPromptLabel = [[UILabel alloc] init];
@@ -72,11 +71,9 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 5.0;
         self.feelingPromptLabel.lineBreakMode = UILineBreakModeClip;
         self.feelingPromptLabel.font = [UIFont boldSystemFontOfSize:24.0];
         self.feelingPromptLabel.textColor = [UIColor emotishColor];
-        self.feelingPromptLabel.text = self.feelingPromptTextLong;
         self.feelingPromptIndex = 0;
-        self.feelingPromptLabel.frame = CGRectMake(0, 0, [self.feelingTextField.text sizeWithFont:self.feelingPromptLabel.font].width + COV_FEELING_PROMPT_MARGIN_RIGHT, self.feelingTextField.frame.size.height);
         self.feelingTextField.leftView = self.feelingPromptLabel;
-
+        [self setFeelingText:self.feelingPlaceholderText];
         
         self.bottomBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.frame.size.height - CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT, self.frame.size.width, CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT)];
         self.bottomBar.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bottom_bar_camera_view.png"]];
@@ -246,6 +243,11 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 5.0;
         _feelingPromptsWidthsLongestToShortest = widths;
     }
     return _feelingPromptsWidthsLongestToShortest;
+}
+
+- (void)setFeelingText:(NSString *)feelingText {
+    self.feelingTextField.text = feelingText;
+    [self adjustFeelingPromptLabelForFeelingString:feelingText];
 }
 
 @end

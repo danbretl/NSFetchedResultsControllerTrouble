@@ -8,13 +8,19 @@
 
 #import "SubmitPhotoViewController.h"
 #import "ViewConstants.h"
+#import <MobileCoreServices/UTCoreTypes.h>
+#import "UIImage+Crop.h"
 
 @implementation SubmitPhotoViewController
+
 @synthesize topBar=_topBar, feelingTextField=_feelingTextField, photoView=_photoView, bottomBar=_bottomBar;
 @synthesize feelingImage=_feelingImage, feelingWord=_feelingWord, userName=_userName;
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
+@synthesize shouldPushImagePicker=_shouldPushImagePicker;
+@synthesize imagePickerControllerCamera=_imagePickerControllerCamera, imagePickerControllerLibrary=_imagePickerControllerLibrary, cameraOverlayViewHandler=_cameraOverlayViewHandler, addPhotoImage=_addPhotoImage;
+@synthesize delegate=_delegate;
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
@@ -59,9 +65,142 @@
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    if (self.shouldPushImagePicker) {
+        [self pushImagePicker];
+        self.shouldPushImagePicker = NO;
+    }
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     // Return YES for supported orientations
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
+}
+
+- (void) pushImagePicker {
+    
+    UIImagePickerController * imagePickerControllerToPresent = nil;
+    CameraOverlayView * cameraOverlayView = nil;
+    
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        
+        self.imagePickerControllerCamera = [[UIImagePickerController alloc] init];
+        self.imagePickerControllerCamera.delegate = self;
+        self.imagePickerControllerCamera.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
+        self.imagePickerControllerCamera.sourceType = UIImagePickerControllerSourceTypeCamera;
+        self.imagePickerControllerCamera.cameraCaptureMode = UIImagePickerControllerCameraCaptureModePhoto;
+        self.imagePickerControllerCamera.showsCameraControls = NO;
+        self.imagePickerControllerCamera.allowsEditing = NO;
+        
+        BOOL frontCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceFront];
+        BOOL rearCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear];
+        self.imagePickerControllerCamera.cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
+        
+        cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cameraOverlayView.swapCamerasButton.hidden = !(frontCameraAvailable && rearCameraAvailable);
+        if (self.feelingWord && self.feelingWord.length > 0) {
+            [cameraOverlayView setFeelingText:self.feelingWord.lowercaseString];
+        }
+        //        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
+        
+        self.cameraOverlayViewHandler = [[CameraOverlayViewHandler alloc] init];
+        self.cameraOverlayViewHandler.delegate = self;
+        self.cameraOverlayViewHandler.imagePickerController = self.imagePickerControllerCamera;
+        self.cameraOverlayViewHandler.cameraOverlayView = cameraOverlayView;
+        
+        imagePickerControllerToPresent = self.imagePickerControllerCamera;
+        
+    } else {
+        
+        self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
+        self.imagePickerControllerLibrary.delegate = self;
+        self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
+        self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        self.imagePickerControllerLibrary.allowsEditing = YES;
+        
+        imagePickerControllerToPresent = self.imagePickerControllerLibrary;
+    }
+    
+    [self presentModalViewController:imagePickerControllerToPresent animated:NO];
+    if (cameraOverlayView != nil) {
+        [imagePickerControllerToPresent.view addSubview:cameraOverlayView];//.window addSubview:cameraOverlayView];
+    }
+    
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [self dismissModalViewControllerAnimated:NO];
+    if (picker == self.imagePickerControllerCamera) {
+        self.imagePickerControllerCamera = nil;
+        self.cameraOverlayViewHandler = nil;
+        [self.delegate submitPhotoViewControllerDidCancel:self];
+    } else {
+        self.imagePickerControllerLibrary = nil;
+        if (self.imagePickerControllerCamera != nil) {
+            [self presentModalViewController:self.imagePickerControllerCamera animated:NO];
+        } else {
+            [self.delegate submitPhotoViewControllerDidCancel:self];
+        }
+    }
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    NSLog(@"imagePickerController didFinishPickingMedia");
+    UIImage * image = [info objectForKey:UIImagePickerControllerEditedImage];
+    if (image == nil) {
+        image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    }    
+    if (picker == self.imagePickerControllerCamera) {
+        //    [self.cameraOverlayViewHandler showImageReview:[image imageWithEmotishCrop]];
+        NSLog(@"captured camera media, showing for review");
+        [self.cameraOverlayViewHandler showImageReview:image];
+    } else {
+        NSLog(@"picked library media, should move on");
+        [self dismissModalViewControllerAnimated:NO];
+        self.imagePickerControllerLibrary = nil;
+        self.addPhotoImage = image;
+        NSString * feelingText = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
+        NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
+
+        [self.delegate submitPhotoViewControllerDidSubmitPhoto:self];
+        
+        //        SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
+        //        submitPhotoViewController.feelingImage = image;
+        //        submitPhotoViewController.feelingWord = feelingText;
+        //        submitPhotoViewController.userName = @"unknown user";
+        //        [self.navigationController pushViewController:submitPhotoViewController animated:NO];
+        
+    }
+}
+
+- (void)cameraOverlayViewHandlerRequestedLibraryPicker:(CameraOverlayViewHandler *)cameraOverlayViewHandler {
+    
+    self.imagePickerControllerLibrary = [[UIImagePickerController alloc] init];
+    self.imagePickerControllerLibrary.delegate = self;
+    self.imagePickerControllerLibrary.mediaTypes = [NSArray arrayWithObject:(NSString *)kUTTypeImage];
+    self.imagePickerControllerLibrary.sourceType = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ? UIImagePickerControllerSourceTypePhotoLibrary : UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    self.imagePickerControllerLibrary.allowsEditing = YES;
+    [self dismissModalViewControllerAnimated:NO];
+    [self presentModalViewController:self.imagePickerControllerLibrary animated:NO];
+    
+}
+
+- (void)cameraOverlayViewHandler:(CameraOverlayViewHandler *)cameraOverlayViewHandler acceptedImage:(UIImage *)image withFeelingText:(NSString *)feelingText {
+    
+    [self dismissModalViewControllerAnimated:NO];
+    self.imagePickerControllerCamera = nil;
+    self.cameraOverlayViewHandler = nil;
+    self.addPhotoImage = [image imageWithEmotishCrop];
+    NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
+    
+    [self.delegate submitPhotoViewControllerDidSubmitPhoto:self];
+    
+    //    SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
+    //    submitPhotoViewController.feelingImage = image;
+    //    submitPhotoViewController.feelingWord = feelingText;
+    //    submitPhotoViewController.userName = @"unknown user";
+    //    [self.navigationController pushViewController:submitPhotoViewController animated:NO];
+    
 }
 
 @end
