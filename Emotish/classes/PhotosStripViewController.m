@@ -724,6 +724,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     NSLog(@"addPhotoButtonTouched");
     
     UIImagePickerController * imagePickerControllerToPresent = nil;
+    CameraOverlayView * cameraOverlayView = nil;
     
     if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         
@@ -739,10 +740,10 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
         BOOL rearCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear];
         self.imagePickerControllerCamera.cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
         
-        CameraOverlayView * cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
         cameraOverlayView.swapCamerasButton.hidden = !(frontCameraAvailable && rearCameraAvailable);
         cameraOverlayView.feelingTextField.text = self.feelingFocus.word.lowercaseString;
-        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
+//        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
         
         self.cameraOverlayViewHandler = [[CameraOverlayViewHandler alloc] init];
         self.cameraOverlayViewHandler.delegate = self;
@@ -763,6 +764,9 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     }
     
     [self presentModalViewController:imagePickerControllerToPresent animated:NO];
+    if (cameraOverlayView != nil) {
+        [imagePickerControllerToPresent.view addSubview:cameraOverlayView];//.window addSubview:cameraOverlayView];
+    }
     
 }
 
