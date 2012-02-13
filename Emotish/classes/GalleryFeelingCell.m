@@ -10,10 +10,12 @@
 #import "GalleryConstants.h"
 #import "UIColor+Emotish.h"
 #import "GalleryFeelingImageCell.h"
+#import "UIImage+LocalStore.h"
+#import "UIButton+WebCache.h"
 
 //#define GFC_ANIMATION_DURATION 0.25
 const CGFloat GFC_FEELING_IMAGE_SECOND_PERCENTAGE_OVERHANG = 0.2;
-const CGFloat GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START = 25.0;
+const CGFloat GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START = 35.0;
 const CGFloat GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_END = 65.0;
 const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
 
@@ -209,7 +211,16 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
     
     // Configure the cell
     Photo * photo = [self.photos objectAtIndex:indexPath.row];
-    [cell.button setImage:[UIImage imageNamed:photo.filename] forState:UIControlStateNormal];
+    UIImage * image = [UIImage localTestImageWithFilename:photo.filename];
+    if (image != nil) {
+        [cell.button setImage:image forState:UIControlStateNormal];
+    } else {
+//        [cell.button setImage:nil forState:UIControlStateNormal];
+//        [cell.button.imageView setImageWithURL:[NSURL URLWithString:[UIImage pathForLocalImageWithFilename:photo.filename]]];
+        [cell.button setImageWithURL:[NSURL fileURLWithPath:[UIImage pathForLocalImageWithFilename:photo.filename]]];
+    }
+    
+//    [cell.button setImage:[UIImage imageNamed:photo.filename] forState:UIControlStateNormal];
     cell.feelingIndex = self.feelingIndex;
     cell.imageIndex = indexPath.row;
     cell.feelingCell = self;

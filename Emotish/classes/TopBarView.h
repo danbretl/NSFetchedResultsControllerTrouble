@@ -19,6 +19,7 @@ typedef enum {
     BackButton = 3,
     CancelButton = 4,
     DoneButton = 5,
+    SendButton = 6,
 } TopBarButtonType;
 
 typedef enum {
@@ -37,5 +38,6 @@ typedef enum {
 - (void) setViewMode:(TopBarViewMode)viewMode animated:(BOOL)animated;
 - (void) showButtonType:(TopBarButtonType)buttonType inPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;
 - (void) hideButtonInPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;
+- (void) addTarget:(id)target selector:(SEL)selector forButtonPosition:(TopBarButtonPosition)buttonPosition;
 
 @end

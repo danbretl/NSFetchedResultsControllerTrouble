@@ -10,20 +10,35 @@
 #import "ViewConstants.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 #import "UIImage+Crop.h"
+#import "UIColor+Emotish.h"
+#import "UIImage+LocalStore.h"
+
+static NSString * SPVC_FEELING_PLACEHOLDER_TEXT = @"something";
+static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
+
+@interface SubmitPhotoViewController()
+- (void) updateViewsWithCurrentData;
+- (void) backButtonTouched:(UIButton *)button;
+- (void) doneButtonTouched:(UIButton *)button;
+@end
 
 @implementation SubmitPhotoViewController
 
 @synthesize topBar=_topBar, feelingTextField=_feelingTextField, photoView=_photoView, bottomBar=_bottomBar;
-@synthesize feelingImage=_feelingImage, feelingWord=_feelingWord, userName=_userName;
+@synthesize feelingImageOriginal=_feelingImageOriginal, feelingImageSquare=_feelingImageSquare, feelingWord=_feelingWord, userName=_userName;
+@synthesize coreDataManager=_coreDataManager;
 
 @synthesize shouldPushImagePicker=_shouldPushImagePicker;
-@synthesize imagePickerControllerCamera=_imagePickerControllerCamera, imagePickerControllerLibrary=_imagePickerControllerLibrary, cameraOverlayViewHandler=_cameraOverlayViewHandler, addPhotoImage=_addPhotoImage;
+@synthesize imagePickerControllerCamera=_imagePickerControllerCamera, imagePickerControllerLibrary=_imagePickerControllerLibrary, cameraOverlayViewHandler=_cameraOverlayViewHandler;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization
+        self.feelingImageOriginal = nil;
+        self.feelingImageSquare = nil;
+        self.feelingWord = SPVC_FEELING_PLACEHOLDER_TEXT;
+        self.userName = SPVC_USER_PLACEHOLDER_TEXT;
     }
     return self;
 }
@@ -42,13 +57,11 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     
-    self.photoView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT + PC_PHOTO_CELL_PADDING_BOTTOM);
+    self.photoView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT + PC_PHOTO_CELL_PADDING_BOTTOM);
+    self.photoView.photoImageView.clipsToBounds = YES;
     
     self.feelingTextField.frame = CGRectMake(self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, CGRectGetMaxY(self.topBar.frame), PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, CGRectGetMinY(self.photoView.frame) - CGRectGetMaxY(self.topBar.frame));
-    
-    self.photoView.photoImageView.image = self.feelingImage;
-    self.photoView.photoCaptionLabel.text = self.userName;
-    self.feelingTextField.text = self.feelingWord;
+    self.feelingTextField.textFieldInsets = UIEdgeInsetsMake(0, 0, PC_PHOTO_CELL_MARGIN_TOP, 0);
     
 }
 
@@ -63,6 +76,18 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
+    [self.topBar setViewMode:BrandingCenter animated:NO];
+    [self.topBar showButtonType:DoneButton inPosition:RightNormal animated:NO];
+    [self.topBar addTarget:self selector:@selector(doneButtonTouched:) forButtonPosition:RightNormal];
+    if (self.feelingImageSquare != nil) {
+        [self.topBar showButtonType:BackButton inPosition:LeftNormal animated:NO];
+        [self.topBar addTarget:self selector:@selector(backButtonTouched:) forButtonPosition:LeftNormal];
+    } else {
+        // Shouldn't ever get here...
+//        [self.topBar showButtonType:CancelButton inPosition:LeftNormal animated:NO];
+        NSLog(@"LOGIC ERROR in SubmitPhotoViewController - viewWillAppear");
+    }
+    [self updateViewsWithCurrentData];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -99,7 +124,7 @@
         cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
         cameraOverlayView.swapCamerasButton.hidden = !(frontCameraAvailable && rearCameraAvailable);
         if (self.feelingWord && self.feelingWord.length > 0) {
-            [cameraOverlayView setFeelingText:self.feelingWord.lowercaseString];
+            [cameraOverlayView setFeelingText:self.feelingWord];//.lowercaseString];
         }
         //        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
         
@@ -107,6 +132,9 @@
         self.cameraOverlayViewHandler.delegate = self;
         self.cameraOverlayViewHandler.imagePickerController = self.imagePickerControllerCamera;
         self.cameraOverlayViewHandler.cameraOverlayView = cameraOverlayView;
+        if (self.feelingImageOriginal != nil) {
+            [self.cameraOverlayViewHandler showImageReview:self.feelingImageOriginal];
+        }
         
         imagePickerControllerToPresent = self.imagePickerControllerCamera;
         
@@ -151,24 +179,19 @@
         image = [info objectForKey:UIImagePickerControllerOriginalImage];
     }    
     if (picker == self.imagePickerControllerCamera) {
-        //    [self.cameraOverlayViewHandler showImageReview:[image imageWithEmotishCrop]];
         NSLog(@"captured camera media, showing for review");
         [self.cameraOverlayViewHandler showImageReview:image];
     } else {
         NSLog(@"picked library media, should move on");
+        
+        self.feelingWord = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
+        self.feelingImageOriginal = image;
+        self.feelingImageSquare = [image imageWithEmotishCrop];
+        self.userName = self.photoView.photoCaptionLabel.text;
+        [self updateViewsWithCurrentData];
+        
         [self dismissModalViewControllerAnimated:NO];
         self.imagePickerControllerLibrary = nil;
-        self.addPhotoImage = image;
-        NSString * feelingText = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
-        NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
-
-        [self.delegate submitPhotoViewControllerDidSubmitPhoto:self];
-        
-        //        SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
-        //        submitPhotoViewController.feelingImage = image;
-        //        submitPhotoViewController.feelingWord = feelingText;
-        //        submitPhotoViewController.userName = @"unknown user";
-        //        [self.navigationController pushViewController:submitPhotoViewController animated:NO];
         
     }
 }
@@ -187,20 +210,67 @@
 
 - (void)cameraOverlayViewHandler:(CameraOverlayViewHandler *)cameraOverlayViewHandler acceptedImage:(UIImage *)image withFeelingText:(NSString *)feelingText {
     
+    NSLog(@"captured camera media, should move on");
+    
+    self.feelingWord = feelingText;
+    self.feelingImageOriginal = image;
+    self.feelingImageSquare = [image imageWithEmotishCrop];
+    self.userName = self.photoView.photoCaptionLabel.text;
+    [self updateViewsWithCurrentData];
+    
     [self dismissModalViewControllerAnimated:NO];
     self.imagePickerControllerCamera = nil;
     self.cameraOverlayViewHandler = nil;
-    self.addPhotoImage = [image imageWithEmotishCrop];
-    NSLog(@"image size:%@, feeling text:%@", NSStringFromCGSize(self.addPhotoImage.size), feelingText && feelingText.length > 0 ? feelingText : @"(none)");
     
-    [self.delegate submitPhotoViewControllerDidSubmitPhoto:self];
-    
-    //    SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
-    //    submitPhotoViewController.feelingImage = image;
-    //    submitPhotoViewController.feelingWord = feelingText;
-    //    submitPhotoViewController.userName = @"unknown user";
-    //    [self.navigationController pushViewController:submitPhotoViewController animated:NO];
-    
+}
+
+- (void)updateViewsWithCurrentData {
+    self.feelingTextField.text = self.feelingWord && self.feelingWord.length > 0 ? self.feelingWord : SPVC_FEELING_PLACEHOLDER_TEXT;
+    self.photoView.photoImageView.image = self.feelingImageSquare;
+    self.photoView.photoCaptionLabel.text = self.userName && self.userName.length > 0 ? self.userName : SPVC_USER_PLACEHOLDER_TEXT;
+    self.photoView.photoCaptionLabel.textColor = [UIColor userColor];
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    BOOL shouldReturn = YES;
+    if (textField == self.feelingTextField) {
+        shouldReturn = NO;
+        [textField resignFirstResponder];
+    }
+    return shouldReturn;
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    if (textField == self.feelingTextField) {
+        if ([textField.text isEqualToString:SPVC_FEELING_PLACEHOLDER_TEXT]) {
+            textField.text = @"";
+        }
+    }
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    if ([textField.text isEqualToString:@""]) {
+        textField.text = SPVC_FEELING_PLACEHOLDER_TEXT;
+    }
+}
+
+- (void) backButtonTouched:(UIButton *)button {
+    NSLog(@"backButtonTouched");
+    [self pushImagePicker];
+}
+
+- (void) doneButtonTouched:(UIButton *)button {
+    NSLog(@"doneButtonTouched");
+//    NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
+//    dateFormatter.dateFormat = @"yyyyMMdd";
+    NSDate * now = [NSDate date];
+//    NSString * todayFormatted = [dateFormatter stringFromDate:now];
+    NSString * nowString = [NSString stringWithFormat:@"%d", abs([now timeIntervalSince1970])];
+    NSString * filename = [NSString stringWithFormat:@"%@-%@-%@", self.feelingWord, self.userName, nowString];
+    NSLog(@"Going to use local filename : %@", filename);
+    [UIImage saveImage:self.feelingImageSquare withFilename:filename];
+    Photo * photoAdded = [self.coreDataManager addPhotoWithFilename:filename forFeelingWord:self.feelingWord fromUsername:self.userName];
+    [self.delegate submitPhotoViewController:self didSubmitPhoto:photoAdded withImage:self.feelingImageSquare];
 }
 
 @end

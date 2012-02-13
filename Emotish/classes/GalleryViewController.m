@@ -18,6 +18,9 @@
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
 - (void) emotishLogoTouched:(UIButton *)button;
 - (IBAction)addPhotoButtonTouched:(id)sender;
+- (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
+@property (strong, nonatomic) UIImage * galleryScreenshot;
+@property (strong, nonatomic, readonly) UIImage * galleryScreenshotCurrent;
 @end
 
 @implementation GalleryViewController
@@ -34,6 +37,7 @@
 @synthesize topBar=_topBar;
 @synthesize bottomBar = _bottomBar;
 @synthesize addPhotoButton = _addPhotoButton;
+@synthesize galleryScreenshot=_galleryScreenshot;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -129,6 +133,11 @@
     self.feelingsTableView.contentOffset = self.feelingsTableViewContentOffsetPreserved;
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    self.galleryScreenshot = nil;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     // Return YES for supported orientations
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
@@ -165,11 +174,7 @@
         }
         
         // Configure the cell
-        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        cell.feelingLabel.text = feeling.word.lowercaseString;
-        cell.feelingIndex = indexPath.row;
-        cell.photos = feeling.mostRecentPhotos;
-        [cell.imagesTableView reloadData];
+        [self tableView:tableView configureCell:cell atIndexPath:indexPath];
 
         // Update active cell view object
         if (indexPath.row == self.activeFeelingCellIndexRow) {
@@ -186,6 +191,17 @@
     }
     
     return nil;
+    
+}
+
+- (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath {
+    
+    // Configure the cell
+    Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    feelingCell.feelingLabel.text = feeling.word;//.lowercaseString;
+    feelingCell.feelingIndex = indexPath.row;
+    feelingCell.photos = feeling.mostRecentPhotos;
+    [feelingCell.imagesTableView reloadData];
     
 }
 
@@ -238,16 +254,8 @@
         [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
         [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:imageCell.button.imageView.image];
         
-        // Render the view layer of this view controller, for fading back to it from other views
-        if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
-            UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, NO, [UIScreen mainScreen].scale);
-        } else {
-            UIGraphicsBeginImageContext(self.view.bounds.size);
-        }
-        [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
-        UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-        feelingStripViewController.galleryScreenshot = image;
+        self.galleryScreenshot = self.galleryScreenshotCurrent;
+        feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
                 
         self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
         self.floatingImageView.image = imageCell.button.imageView.image;
@@ -268,6 +276,57 @@
     
     }
     
+}
+
+- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
+    // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
+    [self.feelingsTableView beginUpdates];
+}
+
+- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
+    
+    switch(type) {
+            
+        case NSFetchedResultsChangeInsert:
+            [self.feelingsTableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+            
+        case NSFetchedResultsChangeDelete:
+            [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+            
+        case NSFetchedResultsChangeUpdate:
+            [self tableView:self.feelingsTableView configureCell:(GalleryFeelingCell *)[self.feelingsTableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
+            break;
+            
+        case NSFetchedResultsChangeMove:
+            [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray
+                                               arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            [self.feelingsTableView insertRowsAtIndexPaths:[NSArray
+                                               arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+    }
+}
+
+
+- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <NSFetchedResultsSectionInfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
+    
+    switch(type) {
+            
+        case NSFetchedResultsChangeInsert:
+            [self.feelingsTableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+            
+        case NSFetchedResultsChangeDelete:
+            [self.feelingsTableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+    }
+}
+
+
+- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
+    // The fetch controller has sent all current change notifications, so tell the table view to process all updates.
+    [self.feelingsTableView endUpdates];
 }
 
 - (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController {
@@ -364,7 +423,7 @@
     
     NSFetchRequest * fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [NSEntityDescription entityForName:@"Feeling" inManagedObjectContext:self.coreDataManager.managedObjectContext];
-    fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES]];
+    fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES selector:@selector(localizedCaseInsensitiveCompare:)]];
     fetchRequest.fetchBatchSize = 20;
     
     _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:@"Gallery"];
@@ -379,9 +438,11 @@
 }
 
 - (IBAction)addPhotoButtonTouched:(id)sender {
+    self.galleryScreenshot = self.galleryScreenshotCurrent;
     SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
     submitPhotoViewController.shouldPushImagePicker = YES;
     submitPhotoViewController.delegate = self;
+    submitPhotoViewController.coreDataManager = self.coreDataManager;
     [self presentModalViewController:submitPhotoViewController animated:NO];
 }
 
@@ -390,9 +451,36 @@
     [self dismissModalViewControllerAnimated:NO];
 }
 
-- (void)submitPhotoViewControllerDidSubmitPhoto:(SubmitPhotoViewController *)submitPhotoViewController {
+- (void)submitPhotoViewController:(SubmitPhotoViewController *)submitPhotoViewController didSubmitPhoto:(Photo *)photo withImage:(UIImage *)image {
+    
     NSLog(@"submitPhotoViewControllerDidSubmitPhoto");
+
+    PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+    feelingStripViewController.delegate = self;
+    feelingStripViewController.coreDataManager = self.coreDataManager;
+    feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
+    [feelingStripViewController setFocusToFeeling:photo.feeling photo:photo];
+    [feelingStripViewController setShouldAnimateIn:YES fromSource:SubmitPhoto withPersistentImage:image];
+    feelingStripViewController.galleryScreenshot = self.galleryScreenshot; // This might not work... It's an old screenshot.
+    
     [self dismissModalViewControllerAnimated:NO];
+    [self.navigationController popToRootViewControllerAnimated:NO];
+    [self.navigationController pushViewController:feelingStripViewController animated:NO];
+    self.galleryScreenshot = feelingStripViewController.galleryScreenshot;
+    
+}
+
+- (UIImage *) galleryScreenshotCurrent {
+    // Render the view layer of this view controller, for fading back to it from other views
+    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
+        UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, NO, [UIScreen mainScreen].scale);
+    } else {
+        UIGraphicsBeginImageContext(self.view.bounds.size);
+    }
+    [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
 }
 
 @end

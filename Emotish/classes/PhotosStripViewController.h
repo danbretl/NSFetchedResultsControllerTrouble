@@ -25,11 +25,12 @@ typedef enum {
     NoSource = 0,
     Gallery = 1,
     PhotosStripOpposite = 2,
+    SubmitPhoto = 3,
 } PhotosStripAnimationInSource;
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/, SubmitPhotoViewControllerDelegate>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;
@@ -65,7 +66,7 @@ typedef enum {
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeDownGestureRecognizer;
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeRightHeaderGestureRecognizer;
 
-@property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate> delegate;
+@property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate> delegate;
 
 @end
 

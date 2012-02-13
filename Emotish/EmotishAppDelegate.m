@@ -7,6 +7,7 @@
 //
 
 #import "EmotishAppDelegate.h"
+#import "UIImage+LocalStore.h"
 
 @implementation EmotishAppDelegate
 
@@ -24,6 +25,21 @@
     
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
+    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-SeedDataFilenames"] && 
+                         [[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-MessyData06"]);
+    if (shouldFlush && allFeelings != nil && allFeelings.count > 0) {
+        NSLog(@"Flushing database");
+        for (Feeling * feeling in [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
+            [self.coreDataManager.managedObjectContext deleteObject:feeling];
+        }
+        for (User * user in [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil]) {
+            [self.coreDataManager.managedObjectContext deleteObject:user];
+        }
+        [self.coreDataManager saveCoreData];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-SeedDataFilenames"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-MessyData06"];
+    }
+    allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
     BOOL onlyAllowFeelingsWithAppropriateImages = YES;
     if (allFeelings == nil || allFeelings.count == 0) {
         NSLog(@"Starting to seed database");
@@ -58,6 +74,14 @@
             NSLog(@"    Added %d %@ %@ photos", photosCount, appropriateFilenamesAvailable ? @"fitting" : @"random", feelingWord);
         }
         NSLog(@"Finished seeding database");
+    } else {
+        NSLog(@"Reporting on existing data");
+        for (Feeling * feeling in allFeelings) {
+            NSLog(@"%@", feeling.word);
+            for (Photo * photo in feeling.photos) {
+                NSLog(@"  %@ photo", photo.user.name);
+            }
+        }
     }
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -248,7 +272,7 @@
 
 - (NSSet *)tempSeedImageFilenames {
     if (_tempSeedImageFilenames == nil) {
-        _tempSeedImageFilenames = [NSSet setWithObjects:@"aggressive-1.jpg", @"aggressive-2.jpg", @"aggressive-3.jpg", @"aggressive-4.jpg", @"aggressive-5.jpg", @"aggressive-6.jpg", @"aggressive-7.jpg", @"aggressive-8.jpg", @"aggressive-9.jpg", @"aggressive-10.jpg", @"aggressive-11.jpg", @"bored-1.jpg", @"bored-2.jpg", @"bored-3.jpg", @"bored-4.jpg", @"bored-5.jpg", @"bored-6.jpg", @"bored-7.jpg", @"bored-8.jpg", @"bored-9.jpg", @"bored-10.jpg", @"bored-11.jpg", @"bored-12.jpg", @"clever-1.jpg", @"clever-2.jpg", @"clever-3.jpg", @"clever-4.jpg", @"content-1.jpg", @"content-2.jpg", @"content-3.jpg", @"content-4.jpg", @"euphoric-1.jpg", @"euphoric-2.jpg", @"euphoric-3.jpg", @"euphoric-4.jpg", @"frantic-1.jpg", @"frantic-2.jpg", @"frantic-3.jpg", @"frantic-4.jpg", @"frustrated-1.jpg", @"frustrated-2.jpg", @"frustrated-4.jpg", @"lucky-1.jpg", @"lucky-2.jpg", @"lucky-3.jpg", @"lucky-4.jpg", @"pissedoff-1.jpg", @"pissedoff-2.jpg", @"pissedoff-3.jpg", @"pissedoff-4.jpg", @"pouting-1.jpg", @"pouting-2.jpg", @"pouting-3.jpg", @"pouting-4.jpg", @"silly-1.jpg", @"silly-2.jpg", @"silly-3.jpg", @"silly-4.jpg", @"sneaky-1.jpg", @"sneaky-2.jpg", @"sneaky-3.jpg", @"sneaky-4.jpg", @"sointense-1.jpg", @"sointense-2.jpg", @"sointense-3.jpg", @"sointense-4.jpg", @"toocool-1.jpg", @"toocool-2.jpg", @"toocool-3.jpg", @"toocool-4.jpg", @"unicorn-1.jpg", @"unicorn-2.jpg", @"unicorn-3.jpg", @"unicorn-4.jpg", @"unlucky-1.jpg", @"unlucky-3.jpg", @"unlucky-4.jpg", @"utterdespair-1.jpg", @"utterdespair-2.jpg", @"utterdespair-3.jpg", @"utterdespair-4.jpg", @"vindictive-1.jpg", @"vindictive-2.jpg", @"vindictive-3.jpg", @"vindictive-4.jpg", nil];
+        _tempSeedImageFilenames = [NSSet setWithObjects:@"emotish_seed_data_aggressive-1.jpg", @"emotish_seed_data_aggressive-2.jpg", @"emotish_seed_data_aggressive-3.jpg", @"emotish_seed_data_aggressive-4.jpg", @"emotish_seed_data_aggressive-5.jpg", @"emotish_seed_data_aggressive-6.jpg", @"emotish_seed_data_aggressive-7.jpg", @"emotish_seed_data_aggressive-8.jpg", @"emotish_seed_data_aggressive-9.jpg", @"emotish_seed_data_aggressive-10.jpg", @"emotish_seed_data_aggressive-11.jpg", @"emotish_seed_data_bored-1.jpg", @"emotish_seed_data_bored-2.jpg", @"emotish_seed_data_bored-3.jpg", @"emotish_seed_data_bored-4.jpg", @"emotish_seed_data_bored-5.jpg", @"emotish_seed_data_bored-6.jpg", @"emotish_seed_data_bored-7.jpg", @"emotish_seed_data_bored-8.jpg", @"emotish_seed_data_bored-9.jpg", @"emotish_seed_data_bored-10.jpg", @"emotish_seed_data_bored-11.jpg", @"emotish_seed_data_bored-12.jpg", @"emotish_seed_data_clever-1.jpg", @"emotish_seed_data_clever-2.jpg", @"emotish_seed_data_clever-3.jpg", @"emotish_seed_data_clever-4.jpg", @"emotish_seed_data_content-1.jpg", @"emotish_seed_data_content-2.jpg", @"emotish_seed_data_content-3.jpg", @"emotish_seed_data_content-4.jpg", @"emotish_seed_data_euphoric-1.jpg", @"emotish_seed_data_euphoric-2.jpg", @"emotish_seed_data_euphoric-3.jpg", @"emotish_seed_data_euphoric-4.jpg", @"emotish_seed_data_frantic-1.jpg", @"emotish_seed_data_frantic-2.jpg", @"emotish_seed_data_frantic-3.jpg", @"emotish_seed_data_frantic-4.jpg", @"emotish_seed_data_frustrated-1.jpg", @"emotish_seed_data_frustrated-2.jpg", @"emotish_seed_data_frustrated-4.jpg", @"emotish_seed_data_lucky-1.jpg", @"emotish_seed_data_lucky-2.jpg", @"emotish_seed_data_lucky-3.jpg", @"emotish_seed_data_lucky-4.jpg", @"emotish_seed_data_pissedoff-1.jpg", @"emotish_seed_data_pissedoff-2.jpg", @"emotish_seed_data_pissedoff-3.jpg", @"emotish_seed_data_pissedoff-4.jpg", @"emotish_seed_data_pouting-1.jpg", @"emotish_seed_data_pouting-2.jpg", @"emotish_seed_data_pouting-3.jpg", @"emotish_seed_data_pouting-4.jpg", @"emotish_seed_data_silly-1.jpg", @"emotish_seed_data_silly-2.jpg", @"emotish_seed_data_silly-3.jpg", @"emotish_seed_data_silly-4.jpg", @"emotish_seed_data_sneaky-1.jpg", @"emotish_seed_data_sneaky-2.jpg", @"emotish_seed_data_sneaky-3.jpg", @"emotish_seed_data_sneaky-4.jpg", @"emotish_seed_data_sointense-1.jpg", @"emotish_seed_data_sointense-2.jpg", @"emotish_seed_data_sointense-3.jpg", @"emotish_seed_data_sointense-4.jpg", @"emotish_seed_data_toocool-1.jpg", @"emotish_seed_data_toocool-2.jpg", @"emotish_seed_data_toocool-3.jpg", @"emotish_seed_data_toocool-4.jpg", @"emotish_seed_data_unicorn-1.jpg", @"emotish_seed_data_unicorn-2.jpg", @"emotish_seed_data_unicorn-3.jpg", @"emotish_seed_data_unicorn-4.jpg", @"emotish_seed_data_unlucky-1.jpg", @"emotish_seed_data_unlucky-3.jpg", @"emotish_seed_data_unlucky-4.jpg", @"emotish_seed_data_utterdespair-1.jpg", @"emotish_seed_data_utterdespair-2.jpg", @"emotish_seed_data_utterdespair-3.jpg", @"emotish_seed_data_utterdespair-4.jpg", @"emotish_seed_data_vindictive-1.jpg", @"emotish_seed_data_vindictive-2.jpg", @"emotish_seed_data_vindictive-3.jpg", @"emotish_seed_data_vindictive-4.jpg", nil];
     }
     return _tempSeedImageFilenames;
 }
@@ -257,7 +281,8 @@
     NSString * feelingWordFormatted = [feelingWord.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""];
     NSSet * filteredSet = [self.tempSeedImageFilenames filteredSetUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary * bindings){
         NSString * evaluatedString = (NSString *)evaluatedObject;
-        return evaluatedString.length >= feelingWordFormatted.length && [[evaluatedObject substringToIndex:feelingWordFormatted.length] isEqualToString:feelingWordFormatted];
+        evaluatedString = [evaluatedString stringByReplacingOccurrencesOfString:LOCAL_IMAGE_SEED_PREFIX withString:@""];
+        return evaluatedString.length >= feelingWordFormatted.length && [[evaluatedString substringToIndex:feelingWordFormatted.length] isEqualToString:feelingWordFormatted];
     }]];
     return filteredSet;
 }

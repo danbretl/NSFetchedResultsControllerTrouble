@@ -21,7 +21,8 @@
 @end
 
 const CGFloat TBV_BUTTON_BRANDING_PADDING_HORIZONTAL = 9.0;
-const CGFloat TBV_BUTTON_NORMAL_WIDTH = 80.0;
+const CGFloat TBV_BUTTON_NORMAL_WIDTH = 62.0;
+const CGFloat TBV_BUTTON_MARGIN_HORIZONTAL = 10.0;
 const double TBV_ANIMATION_DURATION = 0.25;
 
 @interface TopBarView()
@@ -75,35 +76,46 @@ const double TBV_ANIMATION_DURATION = 0.25;
     self.buttonBranding.adjustsImageWhenDisabled = NO;
     CGFloat buttonBrandingWidth = brandingImage.size.width + 2 * TBV_BUTTON_BRANDING_PADDING_HORIZONTAL;
     self.buttonBranding.frame = CGRectMake(self.bounds.size.width - buttonBrandingWidth, 0, buttonBrandingWidth, self.bounds.size.height);
-    self.buttonBranding.contentMode = UIViewContentModeCenter;
+    self.buttonBranding.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    self.buttonBranding.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self addSubview:self.buttonBranding];
     
     self.buttonLeftSpecialA = [UIButton buttonWithType:UIButtonTypeCustom];
     self.buttonLeftSpecialA.frame = CGRectMake(0, 0, 50.0, self.bounds.size.height);
-    self.buttonLeftSpecialA.contentMode = UIViewContentModeCenter;
+    self.buttonLeftSpecialA.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    self.buttonLeftSpecialA.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self addSubview:self.buttonLeftSpecialA];
     self.buttonLeftSpecialA.alpha = 0.0;
     self.buttonLeftSpecialB = [UIButton buttonWithType:UIButtonTypeCustom];
     self.buttonLeftSpecialB.frame = CGRectMake(0, 0, 50.0, self.bounds.size.height);
-    self.buttonLeftSpecialB.contentMode = UIViewContentModeCenter;
+    self.buttonLeftSpecialB.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    self.buttonLeftSpecialB.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self addSubview:self.buttonLeftSpecialB];
     self.buttonLeftSpecialB.alpha = 0.0;
     
     self.buttonLeftNormalA = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.buttonLeftNormalA.frame = CGRectMake(0, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonLeftNormalA.frame = CGRectMake(TBV_BUTTON_MARGIN_HORIZONTAL, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonLeftNormalA.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+    self.buttonLeftNormalA.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self addSubview:self.buttonLeftNormalA];
     self.buttonLeftNormalA.alpha = 0.0;
     self.buttonLeftNormalB = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.buttonLeftNormalB.frame = CGRectMake(0, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonLeftNormalB.frame = CGRectMake(TBV_BUTTON_MARGIN_HORIZONTAL, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonLeftNormalB.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+    self.buttonLeftNormalB.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self addSubview:self.buttonLeftNormalB];
     self.buttonLeftNormalB.alpha = 0.0;
 
     self.buttonRightNormalA = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.buttonRightNormalA.frame = CGRectMake(self.frame.size.width - TBV_BUTTON_NORMAL_WIDTH, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonRightNormalA.frame = CGRectMake(self.frame.size.width - TBV_BUTTON_NORMAL_WIDTH - TBV_BUTTON_MARGIN_HORIZONTAL, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonRightNormalA.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+    self.buttonRightNormalA.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self addSubview:self.buttonRightNormalA];
     self.buttonRightNormalA.alpha = 0.0;
     self.buttonRightNormalB = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.buttonRightNormalB.frame = CGRectMake(self.frame.size.width - TBV_BUTTON_NORMAL_WIDTH, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonRightNormalB.frame = CGRectMake(self.frame.size.width - TBV_BUTTON_NORMAL_WIDTH - TBV_BUTTON_MARGIN_HORIZONTAL, 0, TBV_BUTTON_NORMAL_WIDTH, self.bounds.size.height);
+    self.buttonRightNormalB.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+    self.buttonRightNormalB.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     [self addSubview:self.buttonRightNormalB];
     self.buttonRightNormalB.alpha = 0.0;
 
@@ -144,7 +156,6 @@ const double TBV_ANIMATION_DURATION = 0.25;
         
         UIImage * buttonImage = nil;
         UIImage * buttonImageTouch = nil;
-        NSString * buttonText = nil;
         if (buttonType == ProfileButton) {
             buttonImage = [UIImage imageNamed:@"icon_profile.png"];
             buttonImageTouch = [UIImage imageNamed:@"icon_profile_touch.png"];
@@ -152,16 +163,20 @@ const double TBV_ANIMATION_DURATION = 0.25;
             buttonImage = [UIImage imageNamed:@"icon_settings.png"];
             buttonImageTouch = [UIImage imageNamed:@"icon_settings_touch.png"];        
         } else if (buttonType == BackButton) {
-            buttonText = @"Back";
+            buttonImage = [UIImage imageNamed:@"btn_back.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_back.png"];
         } else if (buttonType == CancelButton) {
-            buttonText = @"Cancel";
+            buttonImage = [UIImage imageNamed:@"btn_cancel.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_cancel.png"];
         } else if (buttonType == DoneButton) {
-            buttonText = @"Done";
+            buttonImage = [UIImage imageNamed:@"btn_done.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_done.png"];
+        } else if (buttonType == SendButton) {
+            buttonImage = [UIImage imageNamed:@"btn_send.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_send.png"];
         }
         [buttonSpare setImage:buttonImage forState:UIControlStateNormal];
         [buttonSpare setImage:buttonImageTouch forState:UIControlStateHighlighted];
-        [buttonSpare setTitle:buttonText forState:UIControlStateNormal];
-        [buttonSpare setTitle:buttonText forState:UIControlStateHighlighted];
         void(^buttonChanges)(void) = ^{
             buttonCurrent.alpha = 0.0;
             buttonSpare.alpha = 1.0;
@@ -179,8 +194,10 @@ const double TBV_ANIMATION_DURATION = 0.25;
 
 - (void)hideButtonInPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated {
     UIButton * button = [self buttonCurrentForPosition:buttonPosition];
+    UIButton * spareButton = [self buttonSpareForPosition:buttonPosition]; // Not sure why this is necessary. Something about my buttonCurrent is not working.
     [UIView animateWithDuration:animated ? TBV_ANIMATION_DURATION : 0.0 animations:^{
         button.alpha = 0.0;
+        spareButton.alpha = 0.0;
         if (buttonPosition == LeftSpecial) {
             self.dividerLayer.opacity = 0.0;
         }
@@ -243,6 +260,19 @@ const double TBV_ANIMATION_DURATION = 0.25;
         _buttonsDictionary = [NSMutableDictionary dictionary];
     }
     return _buttonsDictionary;
+}
+
+- (void)addTarget:(id)target selector:(SEL)selector forButtonPosition:(TopBarButtonPosition)buttonPosition {
+    if (buttonPosition == LeftSpecial) {
+        [self.buttonLeftSpecialA addTarget:target action:selector forControlEvents:UIControlEventTouchUpInside];
+        [self.buttonLeftSpecialB addTarget:target action:selector forControlEvents:UIControlEventTouchUpInside];
+    } else if (buttonPosition == LeftNormal) {
+        [self.buttonLeftNormalA addTarget:target action:selector forControlEvents:UIControlEventTouchUpInside];
+        [self.buttonLeftNormalB addTarget:target action:selector forControlEvents:UIControlEventTouchUpInside];
+    } else if (buttonPosition == RightNormal) {
+        [self.buttonRightNormalA addTarget:target action:selector forControlEvents:UIControlEventTouchUpInside];
+        [self.buttonRightNormalB addTarget:target action:selector forControlEvents:UIControlEventTouchUpInside];
+    }
 }
 
 @end

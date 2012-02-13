@@ -40,12 +40,6 @@
             [self.imagePickerController.delegate imagePickerControllerDidCancel:self.imagePickerController];
         }
     } else if (button == self.cameraOverlayView.photoButton) {
-        // The following does not work
-//        UIGraphicsBeginImageContext([UIScreen mainScreen].bounds.size);
-//        [self.imagePickerController.view.window.layer renderInContext:UIGraphicsGetCurrentContext()];
-//        UIImage * quickGrab = UIGraphicsGetImageFromCurrentImageContext();
-//        UIGraphicsEndImageContext();
-//        [self showImageReview:quickGrab];
         [self.imagePickerController takePicture];
     } else if (button == self.cameraOverlayView.acceptButton) {
         [self.delegate cameraOverlayViewHandler:self acceptedImage:self.cameraOverlayView.imageOverlay.image withFeelingText:self.cameraOverlayView.feelingTextField.text];

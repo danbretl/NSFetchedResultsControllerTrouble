@@ -11,6 +11,8 @@
 #import "ViewConstants.h"
 #import "UIColor+Emotish.h"
 #import <QuartzCore/QuartzCore.h>
+#import "UIImage+LocalStore.h"
+#import "UIImageView+WebCache.h"
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int PSVC_PHOTO_VIEWS_COUNT = 5;
@@ -128,7 +130,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     self.photosClipView.backgroundColor = [UIColor clearColor];
     
     self.headerButton.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photosClipView.frame));
-    self.headerButton.contentEdgeInsets = UIEdgeInsetsMake(0, self.photosScrollView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, self.headerButton.contentEdgeInsets.bottom, 320 - (CGRectGetMaxX(self.photosScrollView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
+    self.headerButton.contentEdgeInsets = UIEdgeInsetsMake(0, self.photosScrollView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_MARGIN_TOP, 320 - (CGRectGetMaxX(self.photosScrollView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
     
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -226,6 +228,13 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
             self.headerButton.frame = headerOffscreenFrame;
             self.photoViewCenter.photoCaptionLabel.frame = captionOffscreenFrame;
             
+        } else if (self.animationInSource == SubmitPhoto) {
+            
+            [self.topBar setViewMode:BrandingCenter animated:NO];
+            [self.topBar showButtonType:BackButton inPosition:LeftNormal animated:NO];
+            [self.topBar showButtonType:DoneButton inPosition:RightNormal animated:NO];
+            self.addPhotoButton.alpha = 0.0;
+            
         }
         
     } else {
@@ -254,6 +263,11 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
                 CGRect captionFrame = self.photoViewCenter.photoCaptionLabel.frame;
                 captionFrame.origin.x = self.photoViewCenter.photoImageView.frame.origin.x;
                 self.photoViewCenter.photoCaptionLabel.frame = captionFrame;
+            } else if (self.animationInSource == SubmitPhoto) {
+                [self.topBar setViewMode:BrandingRight animated:NO];
+                [self.topBar hideButtonInPosition:LeftNormal animated:NO];
+                [self.topBar hideButtonInPosition:RightNormal animated:NO];
+                self.addPhotoButton.alpha = 1.0;
             }
             [self.topBar showButtonType:self.focus == FeelingFocus ? ProfileButton : SettingsButton inPosition:LeftSpecial animated:NO];
             
@@ -310,9 +324,9 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     UIColor * headerColor = nil;
     NSString * addPhotoString = nil;
     if (self.focus == FeelingFocus) {
-        headerString = self.feelingFocus.word.lowercaseString;
+        headerString = self.feelingFocus.word;//.lowercaseString;
         headerColor = [UIColor feelingColor];
-        addPhotoString = [NSString stringWithFormat:@"Do you feel %@?", self.feelingFocus.word.lowercaseString];
+        addPhotoString = [NSString stringWithFormat:@"Do you feel %@?", self.feelingFocus.word];//.lowercaseString];
     } else if (self.focus == UserFocus) {
         headerString = self.userFocus.name;
         headerColor = [UIColor userColor];
@@ -377,7 +391,19 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     }
     
     Photo * photo = validIndexPathForPhotoView == nil ? nil : [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:validIndexPathForPhotoView];
-    photoView.photoImageView.image = photo == nil ? nil : [UIImage imageNamed:photo.filename];
+//    photoView.photoImageView.image = photo == nil ? nil : [UIImage localTestImageWithFilename:photo.filename];
+    if (photo == nil) {
+        photoView.photoImageView.image = nil;
+    } else {
+        UIImage * image = [UIImage localTestImageWithFilename:photo.filename];
+        if (image != nil) {
+            photoView.photoImageView.image = image;
+        } else {
+//            photoView.photoImageView.image = nil;
+//            [photoView.photoImageView setImageWithURL:[NSURL URLWithString:[UIImage pathForLocalImageWithFilename:photo.filename]]];
+            [photoView.photoImageView setImageWithURL:[NSURL fileURLWithPath:[UIImage pathForLocalImageWithFilename:photo.filename]]];
+        }
+    }
     [self updatePhotoViewCaption:photoView withDataFromPhoto:photo oppositeOfFocus:self.focus];
     
 }
@@ -390,7 +416,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
             captionText = photo.user.name;
             captionColor = [UIColor userColor];
         } else {
-            captionText = photo.feeling.word.lowercaseString;
+            captionText = photo.feeling.word;//.lowercaseString;
             captionColor = [UIColor feelingColor];
         }
     }
@@ -717,18 +743,9 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
         submitPhotoViewController.feelingWord = self.feelingFocus.word;
     }
     submitPhotoViewController.shouldPushImagePicker = YES;
-    submitPhotoViewController.delegate = self;
+    submitPhotoViewController.coreDataManager = self.coreDataManager;
+    submitPhotoViewController.delegate = self.delegate;
     [self presentModalViewController:submitPhotoViewController animated:NO];
-}
-
-- (void)submitPhotoViewControllerDidCancel:(SubmitPhotoViewController *)submitPhotoViewController {
-    NSLog(@"submitPhotoViewControllerDidCancel");
-    [self dismissModalViewControllerAnimated:NO];
-}
-
-- (void)submitPhotoViewControllerDidSubmitPhoto:(SubmitPhotoViewController *)submitPhotoViewController {
-    NSLog(@"submitPhotoViewControllerDidSubmitPhoto");
-    [self dismissModalViewControllerAnimated:NO];
 }
 
 @end

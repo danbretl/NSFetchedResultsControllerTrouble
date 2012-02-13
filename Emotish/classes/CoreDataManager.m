@@ -52,6 +52,7 @@
     photo.filename = filename;
     photo.datetime = [NSDate date];
     
+    feelingWord = feelingWord.lowercaseString;
     Feeling * feeling = (Feeling *)[self getOrMakeObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", feelingWord] usingSortDescriptors:nil];
     feeling.word = feelingWord;
     photo.feeling = feeling;

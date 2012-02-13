@@ -10,25 +10,29 @@
 #import "TopBarView.h"
 #import "PhotoView.h"
 #import "CameraOverlayViewHandler.h"
+#import "Photo.h"
+#import "CoreDataManager.h"
+#import "UITextFieldWithInset.h"
 
 @protocol SubmitPhotoViewControllerDelegate;
 
 @interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate>
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
-@property (unsafe_unretained, nonatomic) IBOutlet UITextField * feelingTextField;
+@property (unsafe_unretained, nonatomic) IBOutlet UITextFieldWithInset * feelingTextField;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView * photoView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 
-@property (strong, nonatomic) UIImage * feelingImage;
+@property (strong, nonatomic) UIImage * feelingImageOriginal;
+@property (strong, nonatomic) UIImage * feelingImageSquare;
 @property (strong, nonatomic) NSString * feelingWord;
 @property (strong, nonatomic) NSString * userName;
+@property (strong, nonatomic) CoreDataManager * coreDataManager;
 
 @property (nonatomic) BOOL shouldPushImagePicker;
 @property (strong, nonatomic) UIImagePickerController * imagePickerControllerCamera;
 @property (strong, nonatomic) UIImagePickerController * imagePickerControllerLibrary;
 @property (strong, nonatomic) CameraOverlayViewHandler * cameraOverlayViewHandler;
-@property (strong, nonatomic) UIImage * addPhotoImage;
 - (void) pushImagePicker;
 @property (unsafe_unretained, nonatomic) id<SubmitPhotoViewControllerDelegate> delegate;
 
@@ -37,6 +41,6 @@
 @protocol SubmitPhotoViewControllerDelegate <NSObject>
 
 - (void) submitPhotoViewControllerDidCancel:(SubmitPhotoViewController *)submitPhotoViewController;
-- (void) submitPhotoViewControllerDidSubmitPhoto:(SubmitPhotoViewController *)submitPhotoViewController;
+- (void) submitPhotoViewController:(SubmitPhotoViewController *)submitPhotoViewController didSubmitPhoto:(Photo *)photo withImage:(UIImage *)image;
 
 @end
