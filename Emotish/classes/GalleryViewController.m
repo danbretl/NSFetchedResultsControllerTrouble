@@ -95,6 +95,7 @@
     self.floatingImageView.alpha = 0.0;
     self.floatingImageView.userInteractionEnabled = NO;
     self.floatingImageView.backgroundColor = [UIColor clearColor];
+    self.floatingImageView.clipsToBounds = YES;
     
     if (debugging) {
         self.feelingsTableView.backgroundColor = [UIColor greenColor];
@@ -260,6 +261,7 @@
         self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
         self.floatingImageView.image = imageCell.button.imageView.image;
         self.floatingImageView.alpha = 1.0;
+        self.floatingImageView.clipsToBounds = YES;
         imageCell.alpha = 0.0;
         
         [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{

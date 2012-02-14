@@ -8,6 +8,7 @@
 
 #import "UIImage+Crop.h"
 #import "ViewConstants.h"
+#import "UIImage+Resize.h"
 
 @implementation UIImage (Crop)
 
@@ -15,17 +16,33 @@ static inline double radians (double degrees) { return degrees * M_PI/180; }
 
 - (UIImage *)imageWithEmotishCrop {
     
-    NSLog(@"imageWithEmotishCrop for image with size %@", NSStringFromCGSize(self.size));
+    NSLog(@"imageWithEmotishCrop for image with size %@, orientation %@", NSStringFromCGSize(self.size), [UIImage stringForImageOrientation:self.imageOrientation]);
     
     BOOL verticalImage = self.imageOrientation == UIImageOrientationLeft || self.imageOrientation == UIImageOrientationRight;
     
     CGFloat imageCropLength = MIN(self.size.width, self.size.height);
     CGFloat imageCropLongerSideOriginPercentage = CAMERA_OVERLAY_TOP_BAR_HEIGHT / CAMERA_VIEW_SCREEN_HEIGHT;
+    NSLog(@"imageCropLongerSideOriginPercentage = CAMERA_OVERLAY_TOP_BAR_HEIGHT (%f) / CAMERA_VIEW_SCREEN_HEIGHT (%f) = (%f)", CAMERA_OVERLAY_TOP_BAR_HEIGHT, CAMERA_VIEW_SCREEN_HEIGHT, imageCropLongerSideOriginPercentage);
     CGFloat imageCropX = verticalImage ? 0 : floorf(imageCropLongerSideOriginPercentage * self.size.width);
     CGFloat imageCropY = verticalImage ? floorf(imageCropLongerSideOriginPercentage * self.size.height) : 0;
-    return [self imageWithCrop:CGRectMake(imageCropX, imageCropY, imageCropLength, imageCropLength)];
+    return [self croppedImage:CGRectMake(0, 0, imageCropLength, imageCropLength)];
+//    return [self imageWithCrop:CGRectMake(imageCropX, imageCropY, imageCropLength, imageCropLength)];
     
 }
+
+//- (UIImage *)imageWithEmotishCrop {
+//    
+//    NSLog(@"imageWithEmotishCrop for image with size %@", NSStringFromCGSize(self.size));
+//    
+//    BOOL verticalImage = self.imageOrientation == UIImageOrientationLeft || self.imageOrientation == UIImageOrientationRight;
+//    
+//    CGFloat imageCropLength = MIN(self.size.width, self.size.height);
+//    CGFloat imageCropLongerSideOriginPercentage = CAMERA_OVERLAY_TOP_BAR_HEIGHT / CAMERA_VIEW_SCREEN_HEIGHT;
+//    CGFloat imageCropX = verticalImage ? 0 : floorf(imageCropLongerSideOriginPercentage * self.size.width);
+//    CGFloat imageCropY = verticalImage ? floorf(imageCropLongerSideOriginPercentage * self.size.height) : 0;
+//    return [self imageWithCrop:CGRectMake(imageCropX, imageCropY, imageCropLength, imageCropLength)];
+//    
+//}
 
 - (UIImage *)imageWithCrop:(CGRect)cropRect {
     NSLog(@"Cropping image with size %@ to rect %@", NSStringFromCGSize(self.size), NSStringFromCGRect(cropRect));

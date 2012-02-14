@@ -138,6 +138,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     self.floatingImageView.alpha = 0.0;
     self.floatingImageView.userInteractionEnabled = NO;
     self.floatingImageView.backgroundColor = [UIColor clearColor];
+    self.floatingImageView.clipsToBounds = YES;
 //    UITapGestureRecognizer * floatingImageViewTempTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(floatingImageViewTouched:)];
 //    [self.floatingImageView addGestureRecognizer:floatingImageViewTempTapGestureRecognizer];
     

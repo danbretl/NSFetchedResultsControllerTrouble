@@ -44,6 +44,7 @@ const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
     
     self.photoImageView = [[UIImageView alloc] initWithFrame:CGRectMake(PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)];
     self.photoImageView.contentMode = UIViewContentModeScaleAspectFill;
+    self.photoImageView.clipsToBounds = YES;
     [self addSubview:self.photoImageView];
     
     self.photoCaptionLabel = [[UILabel alloc] initWithFrame:CGRectMake(self.photoImageView.frame.origin.x, CGRectGetMaxY(self.photoImageView.frame) + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM, self.photoImageView.frame.size.width, PC_PHOTO_CELL_LABEL_HEIGHT)];

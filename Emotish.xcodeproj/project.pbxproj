@@ -43,6 +43,9 @@
 		325C287A14E9843500019977 /* btn_done@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C287214E9843500019977 /* btn_done@2x.png */; };
 		325C287B14E9843500019977 /* btn_send.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C287314E9843500019977 /* btn_send.png */; };
 		325C287C14E9843500019977 /* btn_send@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C287414E9843500019977 /* btn_send@2x.png */; };
+		32602C0114EADCDB00BEB1D5 /* UIImage+Alpha.m in Sources */ = {isa = PBXBuildFile; fileRef = 32602BFC14EADCDB00BEB1D5 /* UIImage+Alpha.m */; };
+		32602C0214EADCDB00BEB1D5 /* UIImage+Resize.m in Sources */ = {isa = PBXBuildFile; fileRef = 32602BFE14EADCDB00BEB1D5 /* UIImage+Resize.m */; };
+		32602C0314EADCDB00BEB1D5 /* UIImage+RoundedCorner.m in Sources */ = {isa = PBXBuildFile; fileRef = 32602C0014EADCDB00BEB1D5 /* UIImage+RoundedCorner.m */; };
 		326127CA14DCC25E001FD065 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 326127C914DCC25E001FD065 /* QuartzCore.framework */; };
 		326127CE14DCCCA4001FD065 /* flag_stretch_arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 326127CC14DCCCA4001FD065 /* flag_stretch_arrow.png */; };
 		326127CF14DCCCA4001FD065 /* flag_stretch_arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 326127CD14DCCCA4001FD065 /* flag_stretch_arrow@2x.png */; };
@@ -228,6 +231,12 @@
 		325C287214E9843500019977 /* btn_done@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "btn_done@2x.png"; sourceTree = "<group>"; };
 		325C287314E9843500019977 /* btn_send.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_send.png; sourceTree = "<group>"; };
 		325C287414E9843500019977 /* btn_send@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "btn_send@2x.png"; sourceTree = "<group>"; };
+		32602BFB14EADCDB00BEB1D5 /* UIImage+Alpha.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Alpha.h"; sourceTree = "<group>"; };
+		32602BFC14EADCDB00BEB1D5 /* UIImage+Alpha.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Alpha.m"; sourceTree = "<group>"; };
+		32602BFD14EADCDB00BEB1D5 /* UIImage+Resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Resize.h"; sourceTree = "<group>"; };
+		32602BFE14EADCDB00BEB1D5 /* UIImage+Resize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Resize.m"; sourceTree = "<group>"; };
+		32602BFF14EADCDB00BEB1D5 /* UIImage+RoundedCorner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+RoundedCorner.h"; sourceTree = "<group>"; };
+		32602C0014EADCDB00BEB1D5 /* UIImage+RoundedCorner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+RoundedCorner.m"; sourceTree = "<group>"; };
 		326127C914DCC25E001FD065 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		326127CC14DCCCA4001FD065 /* flag_stretch_arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = flag_stretch_arrow.png; sourceTree = "<group>"; };
 		326127CD14DCCCA4001FD065 /* flag_stretch_arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flag_stretch_arrow@2x.png"; sourceTree = "<group>"; };
@@ -582,9 +591,23 @@
 			name = Elements;
 			sourceTree = "<group>";
 		};
+		32602BF914EADCCB00BEB1D5 /* UIImage Categories */ = {
+			isa = PBXGroup;
+			children = (
+				32602BFB14EADCDB00BEB1D5 /* UIImage+Alpha.h */,
+				32602BFC14EADCDB00BEB1D5 /* UIImage+Alpha.m */,
+				32602BFD14EADCDB00BEB1D5 /* UIImage+Resize.h */,
+				32602BFE14EADCDB00BEB1D5 /* UIImage+Resize.m */,
+				32602BFF14EADCDB00BEB1D5 /* UIImage+RoundedCorner.h */,
+				32602C0014EADCDB00BEB1D5 /* UIImage+RoundedCorner.m */,
+			);
+			name = "UIImage Categories";
+			sourceTree = "<group>";
+		};
 		3281ED5C14E9A58A00BC45DC /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
+				32602BF914EADCCB00BEB1D5 /* UIImage Categories */,
 				32B980AC14E9F45E002B351F /* SDWebImage */,
 			);
 			name = "3rd Party";
@@ -980,6 +1003,9 @@
 				32B980C314E9F472002B351F /* SDWebImagePrefetcher.m in Sources */,
 				32B980C414E9F472002B351F /* UIButton+WebCache.m in Sources */,
 				32B980C514E9F472002B351F /* UIImageView+WebCache.m in Sources */,
+				32602C0114EADCDB00BEB1D5 /* UIImage+Alpha.m in Sources */,
+				32602C0214EADCDB00BEB1D5 /* UIImage+Resize.m in Sources */,
+				32602C0314EADCDB00BEB1D5 /* UIImage+RoundedCorner.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
