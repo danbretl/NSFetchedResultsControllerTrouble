@@ -196,27 +196,36 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
         
         NSLog(@"picked library media, should move on");
         
-        UIImage * image = [info objectForKey:UIImagePickerControllerOriginalImage];
-//        UIImage * imageEdited = [info objectForKey:UIImagePickerControllerEditedImage];
-        CGRect imageCropRect = [[info objectForKey:UIImagePickerControllerCropRect] CGRectValue];
-        NSLog(@"  imageCropRect (to start) = %@", NSStringFromCGRect(imageCropRect));
-
-        imageCropRect.size.width = MIN(image.size.width, imageCropRect.size.width);
-        imageCropRect.size.height = MIN(image.size.height, imageCropRect.size.height);
-        BOOL specialCaseShouldCenterCropRect = CGSizeEqualToSize(image.size, imageCropRect.size);
-        CGFloat minSideLength = MAX(imageCropRect.size.width, imageCropRect.size.height);
-        minSideLength = MIN(image.size.width - imageCropRect.origin.x, minSideLength);
-        minSideLength = MIN(image.size.height - imageCropRect.origin.y, minSideLength);
-        imageCropRect.size = CGSizeMake(minSideLength, minSideLength);
-        if (specialCaseShouldCenterCropRect) {
-            imageCropRect.origin.x = floorf((image.size.width  - imageCropRect.size.width)  / 2.0);
-            imageCropRect.origin.y = floorf((image.size.height - imageCropRect.size.height) / 2.0);
+        UIImage * image = [info objectForKey:UIImagePickerControllerEditedImage];
+        NSLog(@"  image size = %@", NSStringFromCGSize(image.size));
+        NSLog(@"  image orientation = %@", [UIImage stringForImageOrientation:image.imageOrientation]);
+        if (image.size.width != image.size.height) {
+            CGFloat minSideLength = MIN(image.size.width, image.size.height);
+            image = [image imageWithCrop:CGRectMake(floorf((image.size.width - minSideLength) / 2.0), floorf((image.size.height - minSideLength) / 2.0), minSideLength, minSideLength)];
         }
         
-        NSLog(@"  imageCropRect (adjusted) = %@", NSStringFromCGRect(imageCropRect));
-        NSLog(@"  image.size (to start)    = %@", NSStringFromCGSize(image.size));
-        image = [image imageWithCrop:imageCropRect];
-        NSLog(@"  image.size (cropped)     = %@", NSStringFromCGSize(image.size));
+        // I CAN NOT FOR THE LIFE OF ME FIGURE OUT CROPPING UIIMAGES...
+//        UIImage * image = [info objectForKey:UIImagePickerControllerOriginalImage];
+////        UIImage * imageEdited = [info objectForKey:UIImagePickerControllerEditedImage];
+//        CGRect imageCropRect = [[info objectForKey:UIImagePickerControllerCropRect] CGRectValue];
+//        NSLog(@"  imageCropRect (to start) = %@", NSStringFromCGRect(imageCropRect));
+//
+//        imageCropRect.size.width = MIN(image.size.width, imageCropRect.size.width);
+//        imageCropRect.size.height = MIN(image.size.height, imageCropRect.size.height);
+//        BOOL specialCaseShouldCenterCropRect = CGSizeEqualToSize(image.size, imageCropRect.size);
+//        CGFloat minSideLength = MAX(imageCropRect.size.width, imageCropRect.size.height);
+//        minSideLength = MIN(image.size.width - imageCropRect.origin.x, minSideLength);
+//        minSideLength = MIN(image.size.height - imageCropRect.origin.y, minSideLength);
+//        imageCropRect.size = CGSizeMake(minSideLength, minSideLength);
+//        if (specialCaseShouldCenterCropRect) {
+//            imageCropRect.origin.x = floorf((image.size.width  - imageCropRect.size.width)  / 2.0);
+//            imageCropRect.origin.y = floorf((image.size.height - imageCropRect.size.height) / 2.0);
+//        }
+//        
+//        NSLog(@"  imageCropRect (adjusted) = %@", NSStringFromCGRect(imageCropRect));
+//        NSLog(@"  image.size (to start)    = %@", NSStringFromCGSize(image.size));
+//        image = [image imageWithCrop:imageCropRect];
+//        NSLog(@"  image.size (cropped)     = %@", NSStringFromCGSize(image.size));
 
         self.feelingImageSquare = image;
         self.feelingWord = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
