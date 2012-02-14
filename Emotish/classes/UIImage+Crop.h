@@ -10,7 +10,8 @@
 
 @interface UIImage (Crop)
 
-- (UIImage *)imageWithEmotishCrop;
+- (UIImage *)imageWithEmotishCameraViewCrop;
+//- (UIImage *)imageWithCrop:(CGRect)cropRect;
 - (UIImage *)imageWithCrop:(CGRect)cropRect;
 + (NSString *) stringForImageOrientation:(UIImageOrientation)orientation;
 

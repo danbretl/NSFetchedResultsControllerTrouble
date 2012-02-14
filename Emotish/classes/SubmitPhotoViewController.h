@@ -23,7 +23,7 @@
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView * photoView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 
-@property (strong, nonatomic) UIImage * feelingImageOriginal;
+//@property (strong, nonatomic) UIImage * feelingImageOriginal;
 @property (strong, nonatomic) UIImage * feelingImageSquare;
 @property (strong, nonatomic) NSString * feelingWord;
 @property (strong, nonatomic) NSString * userName;

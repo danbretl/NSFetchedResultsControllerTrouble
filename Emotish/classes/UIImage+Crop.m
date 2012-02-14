@@ -10,34 +10,50 @@
 #import "ViewConstants.h"
 #import "UIImage+Resize.h"
 
-@implementation UIImage (Crop)
+@implementation UIImage(Crop)
 
 static inline double radians (double degrees) { return degrees * M_PI/180; }
 
-- (UIImage *)imageWithEmotishCrop {
-    
-    NSLog(@"imageWithEmotishCrop for image with size %@, orientation %@", NSStringFromCGSize(self.size), [UIImage stringForImageOrientation:self.imageOrientation]);
-    
-    BOOL verticalImage = self.imageOrientation == UIImageOrientationLeft || self.imageOrientation == UIImageOrientationRight;
-    
-    CGFloat imageCropLength = MIN(self.size.width, self.size.height);
-    CGFloat imageCropLongerSideOriginPercentage = CAMERA_OVERLAY_TOP_BAR_HEIGHT / CAMERA_VIEW_SCREEN_HEIGHT;
-    NSLog(@"imageCropLongerSideOriginPercentage = CAMERA_OVERLAY_TOP_BAR_HEIGHT (%f) / CAMERA_VIEW_SCREEN_HEIGHT (%f) = (%f)", CAMERA_OVERLAY_TOP_BAR_HEIGHT, CAMERA_VIEW_SCREEN_HEIGHT, imageCropLongerSideOriginPercentage);
-    CGFloat imageCropX = verticalImage ? 0 : floorf(imageCropLongerSideOriginPercentage * self.size.width);
-    CGFloat imageCropY = verticalImage ? floorf(imageCropLongerSideOriginPercentage * self.size.height) : 0;
-    return [self croppedImage:CGRectMake(0, 0, imageCropLength, imageCropLength)];
-//    return [self imageWithCrop:CGRectMake(imageCropX, imageCropY, imageCropLength, imageCropLength)];
-    
-}
-
+// This new version wasn't going well at all. Probably didn't stick with it / work with it long enough.
 //- (UIImage *)imageWithEmotishCrop {
 //    
-//    NSLog(@"imageWithEmotishCrop for image with size %@", NSStringFromCGSize(self.size));
+//    NSLog(@"imageWithEmotishCrop for image with size %@, orientation %@", NSStringFromCGSize(self.size), [UIImage stringForImageOrientation:self.imageOrientation]);
 //    
 //    BOOL verticalImage = self.imageOrientation == UIImageOrientationLeft || self.imageOrientation == UIImageOrientationRight;
 //    
 //    CGFloat imageCropLength = MIN(self.size.width, self.size.height);
 //    CGFloat imageCropLongerSideOriginPercentage = CAMERA_OVERLAY_TOP_BAR_HEIGHT / CAMERA_VIEW_SCREEN_HEIGHT;
+//    NSLog(@"imageCropLongerSideOriginPercentage = CAMERA_OVERLAY_TOP_BAR_HEIGHT (%f) / CAMERA_VIEW_SCREEN_HEIGHT (%f) = (%f)", CAMERA_OVERLAY_TOP_BAR_HEIGHT, CAMERA_VIEW_SCREEN_HEIGHT, imageCropLongerSideOriginPercentage);
+//    CGFloat imageCropX = verticalImage ? 0 : floorf(imageCropLongerSideOriginPercentage * self.size.width);
+//    CGFloat imageCropY = verticalImage ? floorf(imageCropLongerSideOriginPercentage * self.size.height) : 0;
+//    return [self croppedImage:CGRectMake(0, 0, imageCropLength, imageCropLength)];
+////    return [self imageWithCrop:CGRectMake(imageCropX, imageCropY, imageCropLength, imageCropLength)];
+//    
+//}
+
+- (UIImage *)imageWithEmotishCameraViewCrop {
+//    BOOL verticalImage = self.imageOrientation == UIImageOrientationLeft || self.imageOrientation == UIImageOrientationRight;
+    
+//    NSLog(@"imageWithEmotishCrop\n  size : \t\t%@\n  verticalImage : \t%d", NSStringFromCGSize(self.size), verticalImage);
+    
+    CGFloat imageCropLength = MIN(self.size.width, self.size.height);
+    BOOL isImageWiderThanTall = self.size.width > self.size.height;
+    
+    CGFloat imageCropLongerSideOriginPercentage = CAMERA_VIEW_SCREEN_DISPLAY_ORIGIN_Y / CAMERA_VIEW_SCREEN_HEIGHT;
+    CGFloat imageCropX =  isImageWiderThanTall ? floorf(imageCropLongerSideOriginPercentage * self.size.width)  : 0;
+    CGFloat imageCropY = !isImageWiderThanTall ? floorf(imageCropLongerSideOriginPercentage * self.size.height) : 0;
+    return [self imageWithCrop:CGRectMake(imageCropX, imageCropY, imageCropLength, imageCropLength)];
+}
+
+//- (UIImage *)imageWithSmarterCrop {
+//    
+//    BOOL verticalImage = self.imageOrientation == UIImageOrientationLeft || self.imageOrientation == UIImageOrientationRight;
+//    
+////    NSLog(@"imageWithEmotishCrop\n  size : \t\t%@\n  verticalImage : \t%d", NSStringFromCGSize(self.size), verticalImage);
+//    
+//    CGFloat imageCropLength = MIN(self.size.width, self.size.height);
+//    
+//    CGFloat imageCropLongerSideOriginPercentage = CAMERA_VIEW_SCREEN_DISPLAY_ORIGIN_Y / CAMERA_VIEW_SCREEN_HEIGHT;
 //    CGFloat imageCropX = verticalImage ? 0 : floorf(imageCropLongerSideOriginPercentage * self.size.width);
 //    CGFloat imageCropY = verticalImage ? floorf(imageCropLongerSideOriginPercentage * self.size.height) : 0;
 //    return [self imageWithCrop:CGRectMake(imageCropX, imageCropY, imageCropLength, imageCropLength)];
@@ -45,9 +61,9 @@ static inline double radians (double degrees) { return degrees * M_PI/180; }
 //}
 
 - (UIImage *)imageWithCrop:(CGRect)cropRect {
-    NSLog(@"Cropping image with size %@ to rect %@", NSStringFromCGSize(self.size), NSStringFromCGRect(cropRect));
+    NSLog(@"    Cropping image with size %@ to rect %@", NSStringFromCGSize(self.size), NSStringFromCGRect(cropRect));
     if (self.scale > 1.0f) {
-        NSLog(@"Scale is greater than 1.0f");
+        NSLog(@"      Scale is greater than 1.0f");
         cropRect = CGRectMake(cropRect.origin.x     * self.scale,
                               cropRect.origin.y     * self.scale,
                               cropRect.size.width   * self.scale,
@@ -58,15 +74,29 @@ static inline double radians (double degrees) { return degrees * M_PI/180; }
         cropRect = CGRectMake(cropRect.origin.y, cropRect.origin.x, cropRect.size.height, cropRect.size.width);
     }
     
-    NSLog(@"Original image scale=%f orientation=%@", self.scale, [UIImage stringForImageOrientation:self.imageOrientation]);
-    NSLog(@"Original imageRef size is %lu %lu", CGImageGetWidth(self.CGImage), CGImageGetHeight(self.CGImage));
+    NSLog(@"      Original image scale=%f orientation=%@", self.scale, [UIImage stringForImageOrientation:self.imageOrientation]);
+    NSLog(@"      Original imageRef size is %lu %lu", CGImageGetWidth(self.CGImage), CGImageGetHeight(self.CGImage));
     CGImageRef imageRef = CGImageCreateWithImageInRect(self.CGImage, cropRect);
-    NSLog(@"Cropped imageRef size is %lu %lu", CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
+    NSLog(@"      Cropped imageRef size is %lu %lu", CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
     UIImage * result = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
     CGImageRelease(imageRef);
-    NSLog(@"Ended with image with size %@", NSStringFromCGSize(result.size));
+    NSLog(@"    Ended with image with size %@", NSStringFromCGSize(result.size));
     return result;
 }
+
+//- (UIImage *)imageWithCrop:(CGRect)cropRect {
+//    if (self.scale > 1.0f) {
+//        cropRect = CGRectMake(cropRect.origin.x     * self.scale,
+//                              cropRect.origin.y     * self.scale,
+//                              cropRect.size.width   * self.scale,
+//                              cropRect.size.height  * self.scale);
+//    }
+//    
+//    CGImageRef imageRef = CGImageCreateWithImageInRect(self.CGImage, cropRect);
+//    UIImage * result = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:UIImageOrientationUp];
+//    CGImageRelease(imageRef);
+//    return result;
+//}
 
 + (NSString *) stringForImageOrientation:(UIImageOrientation)orientation {
     NSString * string = nil;

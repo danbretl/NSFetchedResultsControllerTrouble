@@ -112,7 +112,7 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
         self.libraryButton.adjustsImageWhenHighlighted = NO;
         [self.bottomBar addSubview:self.libraryButton];
         
-        CGRect imageFrame = CGRectMake(0, CGRectGetMaxY(self.topBar.frame) + floorf((CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0), CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH, CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH);
+        CGRect imageFrame = CGRectMake(0, CAMERA_VIEW_SCREEN_DISPLAY_ORIGIN_Y, CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH, CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH);
 //        NSLog(@"imageFrame = %@", NSStringFromCGRect(imageFrame));
 //        NSLog(@"floorf((CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0)");
 //        NSLog(@"\nCGRectGetMinY(self.bottomBar.frame) = %f\nCGRectGetMaxY(self.topBar.frame) = %f\nCAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH = %f\n(CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) = %f\n(CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0 = %f\nfloorf((CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0) = %f", CGRectGetMinY(self.bottomBar.frame), CGRectGetMaxY(self.topBar.frame), CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH, (CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH), (CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0, floorf((CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0));
@@ -139,7 +139,7 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
         imageShadowViewBottom.backgroundColor = [UIColor blackColor];
         [imageLetterboxViewBottom addSubview:imageShadowViewBottom];
         
-        self.imageOverlay = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, CAMERA_VIEW_SCREEN_WIDTH, CAMERA_VIEW_SCREEN_HEIGHT)];
+        self.imageOverlay = [[UIImageView alloc] initWithFrame:imageFrame];// CGRectMake(0, 0, CAMERA_VIEW_SCREEN_WIDTH, CAMERA_VIEW_SCREEN_HEIGHT)];
         self.imageOverlay.contentMode = UIViewContentModeScaleAspectFill;
         self.imageOverlay.hidden = YES;
         self.imageOverlay.userInteractionEnabled = NO;

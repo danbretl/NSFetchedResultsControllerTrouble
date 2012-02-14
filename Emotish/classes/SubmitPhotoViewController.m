@@ -25,7 +25,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
 @implementation SubmitPhotoViewController
 
 @synthesize topBar=_topBar, feelingTextField=_feelingTextField, photoView=_photoView, bottomBar=_bottomBar;
-@synthesize feelingImageOriginal=_feelingImageOriginal, feelingImageSquare=_feelingImageSquare, feelingWord=_feelingWord, userName=_userName;
+@synthesize /*feelingImageOriginal=_feelingImageOriginal,*/ feelingImageSquare=_feelingImageSquare, feelingWord=_feelingWord, userName=_userName;
 @synthesize coreDataManager=_coreDataManager;
 
 @synthesize shouldPushImagePicker=_shouldPushImagePicker;
@@ -35,7 +35,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        self.feelingImageOriginal = nil;
+//        self.feelingImageOriginal = nil;
         self.feelingImageSquare = nil;
         self.feelingWord = SPVC_FEELING_PLACEHOLDER_TEXT;
         self.userName = SPVC_USER_PLACEHOLDER_TEXT;
@@ -132,9 +132,12 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
         self.cameraOverlayViewHandler.delegate = self;
         self.cameraOverlayViewHandler.imagePickerController = self.imagePickerControllerCamera;
         self.cameraOverlayViewHandler.cameraOverlayView = cameraOverlayView;
-        if (self.feelingImageOriginal != nil) {
-            [self.cameraOverlayViewHandler showImageReview:self.feelingImageOriginal];
+        if (self.feelingImageSquare != nil) {
+            [self.cameraOverlayViewHandler showImageReview:self.feelingImageSquare];
         }
+//        if (self.feelingImageOriginal != nil) {
+//            [self.cameraOverlayViewHandler showImageReview:self.feelingImageOriginal];
+//        }
         
         imagePickerControllerToPresent = self.imagePickerControllerCamera;
         
@@ -174,22 +177,52 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     NSLog(@"imagePickerController didFinishPickingMedia");
-    UIImage * image = [info objectForKey:UIImagePickerControllerEditedImage];
-    if (image == nil) {
-        image = [info objectForKey:UIImagePickerControllerOriginalImage];
-    }    
+    
     if (picker == self.imagePickerControllerCamera) {
+        
         NSLog(@"captured camera media, showing for review");
-        [self.cameraOverlayViewHandler showImageReview:image];
+        UIImage * image = [info objectForKey:UIImagePickerControllerOriginalImage];
+
+        NSLog(@"  image size (to start) = %@", NSStringFromCGSize(image.size));
+        if (image.size.width != image.size.height) {
+            image = [image imageWithEmotishCameraViewCrop];
+        }
+        NSLog(@"  image size (cropped)  = %@", NSStringFromCGSize(image.size));
+        
+        self.feelingImageSquare = image;
+        [self.cameraOverlayViewHandler showImageReview:self.feelingImageSquare];
+        
     } else {
+        
         NSLog(@"picked library media, should move on");
         
-        self.feelingWord = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
-        self.feelingImageOriginal = image;
-        self.feelingImageSquare = [image imageWithEmotishCrop];
-        self.userName = self.photoView.photoCaptionLabel.text;
-        [self updateViewsWithCurrentData];
+        UIImage * image = [info objectForKey:UIImagePickerControllerOriginalImage];
+//        UIImage * imageEdited = [info objectForKey:UIImagePickerControllerEditedImage];
+        CGRect imageCropRect = [[info objectForKey:UIImagePickerControllerCropRect] CGRectValue];
+        NSLog(@"  imageCropRect (to start) = %@", NSStringFromCGRect(imageCropRect));
+
+        imageCropRect.size.width = MIN(image.size.width, imageCropRect.size.width);
+        imageCropRect.size.height = MIN(image.size.height, imageCropRect.size.height);
+        BOOL specialCaseShouldCenterCropRect = CGSizeEqualToSize(image.size, imageCropRect.size);
+        CGFloat minSideLength = MAX(imageCropRect.size.width, imageCropRect.size.height);
+        minSideLength = MIN(image.size.width - imageCropRect.origin.x, minSideLength);
+        minSideLength = MIN(image.size.height - imageCropRect.origin.y, minSideLength);
+        imageCropRect.size = CGSizeMake(minSideLength, minSideLength);
+        if (specialCaseShouldCenterCropRect) {
+            imageCropRect.origin.x = floorf((image.size.width  - imageCropRect.size.width)  / 2.0);
+            imageCropRect.origin.y = floorf((image.size.height - imageCropRect.size.height) / 2.0);
+        }
         
+        NSLog(@"  imageCropRect (adjusted) = %@", NSStringFromCGRect(imageCropRect));
+        NSLog(@"  image.size (to start)    = %@", NSStringFromCGSize(image.size));
+        image = [image imageWithCrop:imageCropRect];
+        NSLog(@"  image.size (cropped)     = %@", NSStringFromCGSize(image.size));
+
+        self.feelingImageSquare = image;
+        self.feelingWord = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
+        self.userName = self.photoView.photoCaptionLabel.text;
+        
+        [self updateViewsWithCurrentData];
         [self dismissModalViewControllerAnimated:NO];
         self.imagePickerControllerLibrary = nil;
         
@@ -213,8 +246,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
     NSLog(@"captured camera media, should move on");
     
     self.feelingWord = feelingText;
-    self.feelingImageOriginal = image;
-    self.feelingImageSquare = [image imageWithEmotishCrop];
+    self.feelingImageSquare = image;
     self.userName = self.photoView.photoCaptionLabel.text;
     [self updateViewsWithCurrentData];
     
