@@ -17,5 +17,7 @@
 @property (nonatomic, retain) NSDate * datetime;
 @property (nonatomic, retain) Feeling *feeling;
 @property (nonatomic, retain) User *user;
+@property (nonatomic, retain) NSString * serverID;
+@property (nonatomic, retain) NSString * imageURL;
 
 @end

@@ -12,9 +12,9 @@
 @class Photo;
 
 @interface Feeling : NSManagedObject
-
 @property (nonatomic, retain) NSString * word;
 @property (nonatomic, retain) NSSet *photos;
+@property (nonatomic, retain) NSString * serverID;
 @end
 
 @interface Feeling (CoreDataGeneratedAccessors)

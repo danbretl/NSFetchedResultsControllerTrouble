@@ -12,9 +12,9 @@
 @class Photo;
 
 @interface User : NSManagedObject
-
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSSet *photos;
+@property (nonatomic, retain) NSString * serverID;
 @end
 
 @interface User (CoreDataGeneratedAccessors)

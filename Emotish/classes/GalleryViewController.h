@@ -34,4 +34,6 @@
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * addPhotoButton;
 
+- (void) getFeelingsFromServer;
+
 @end

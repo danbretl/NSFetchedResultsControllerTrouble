@@ -19,9 +19,10 @@
 @interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate>
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
+@property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
+@property (unsafe_unretained, nonatomic) IBOutlet UIScrollView * scrollView;
 @property (unsafe_unretained, nonatomic) IBOutlet UITextFieldWithInset * feelingTextField;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView * photoView;
-@property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 
 //@property (strong, nonatomic) UIImage * feelingImageOriginal;
 @property (strong, nonatomic) UIImage * feelingImageSquare;

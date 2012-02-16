@@ -20,10 +20,10 @@
 }
 @end
 
-const CGFloat TBV_BUTTON_BRANDING_PADDING_HORIZONTAL = 9.0;
+const CGFloat TBV_BUTTON_BRANDING_PADDING_HORIZONTAL = 10.0;
 const CGFloat TBV_BUTTON_NORMAL_WIDTH = 62.0;
 const CGFloat TBV_BUTTON_MARGIN_HORIZONTAL = 10.0;
-const double TBV_ANIMATION_DURATION = 0.25;
+const double  TBV_ANIMATION_DURATION = 0.25;
 
 @interface TopBarView()
 @property (strong, nonatomic, readonly) NSMutableDictionary * buttonsDictionary;
@@ -40,7 +40,6 @@ const double TBV_ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) UIButton * buttonLeftNormalB;
 @property (strong, nonatomic) UIButton * buttonRightNormalA;
 @property (strong, nonatomic) UIButton * buttonRightNormalB;
-
 @end
 
 @implementation TopBarView
@@ -48,6 +47,7 @@ const double TBV_ANIMATION_DURATION = 0.25;
 @synthesize buttonsDictionary=_buttonsDictionary;
 @synthesize buttonBranding=_buttonBranding, buttonLeftSpecial=_buttonLeftSpecial, buttonLeftSpecialA=_buttonLeftSpecialA, buttonLeftSpecialB=_buttonLeftSpecialB, buttonLeftNormal=_buttonLeftNormal, buttonLeftNormalA=_buttonLeftNormalA, buttonLeftNormalB=_buttonLeftNormalB, buttonRightNormal=_buttonRightNormal, buttonRightNormalA=_buttonRightNormalA, buttonRightNormalB=_buttonRightNormalB, dividerLayer=_dividerLayer;
 @synthesize viewMode=_viewMode;
+@synthesize backgroundView=_backgroundView;
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -66,18 +66,28 @@ const double TBV_ANIMATION_DURATION = 0.25;
 
 - (void)initWithFrameOrCoder {
     
-    self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"top_bar.png"]];
+    self.backgroundColor = [UIColor blackColor];
+    
+    self.backgroundView = [[UIView alloc] initWithFrame:self.bounds];
+    self.backgroundView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"top_bar.png"]];
+    self.backgroundView.contentMode = UIViewContentModeTop;
+    [self addSubview:self.backgroundView];
     
     _viewMode = BrandingRight;
     self.buttonBranding = [UIButton buttonWithType:UIButtonTypeCustom];
-    UIImage * brandingImage = [UIImage imageNamed:@"branding_text.png"];
+    UIImage * brandingImage = [UIImage imageNamed:@"top_bar_branding.png"];
     [self.buttonBranding setImage:brandingImage forState:UIControlStateNormal];
     self.buttonBranding.adjustsImageWhenHighlighted = NO;
     self.buttonBranding.adjustsImageWhenDisabled = NO;
     CGFloat buttonBrandingWidth = brandingImage.size.width + 2 * TBV_BUTTON_BRANDING_PADDING_HORIZONTAL;
     self.buttonBranding.frame = CGRectMake(self.bounds.size.width - buttonBrandingWidth, 0, buttonBrandingWidth, self.bounds.size.height);
-    self.buttonBranding.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
-    self.buttonBranding.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    self.buttonBranding.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+//    self.buttonBranding.imageView.backgroundColor = [UIColor redColor];
+    self.buttonBranding.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+    self.buttonBranding.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
+    self.buttonBranding.backgroundColor = [UIColor clearColor];
+//    self.buttonBranding.backgroundColor = [UIColor yellowColor];
+    self.buttonBranding.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 10, TBV_BUTTON_BRANDING_PADDING_HORIZONTAL);
     [self addSubview:self.buttonBranding];
     
     self.buttonLeftSpecialA = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -125,8 +135,6 @@ const double TBV_ANIMATION_DURATION = 0.25;
     [self.layer addSublayer:self.dividerLayer];
     [self.dividerLayer setNeedsDisplay];
     self.dividerLayer.opacity = 0.0;
-    
-    self.buttonBranding.backgroundColor = [UIColor clearColor];
     
 }
 

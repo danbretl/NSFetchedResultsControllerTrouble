@@ -37,34 +37,52 @@
     return fetchedObjects;
 }
 
-- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors {
+- (NSManagedObject *)getFirstObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors shouldMakeObjectIfNoMatch:(BOOL)shouldMakeObjectIfNoMatch {
     NSArray * matchingObjects = [self getAllObjectsForEntityName:entityName predicate:predicate sortDescriptors:sortDescriptors];
     NSManagedObject * matchingObject = matchingObjects.count > 0 ? [matchingObjects objectAtIndex:0] : nil;
-    if (matchingObject == nil) {
+    if (shouldMakeObjectIfNoMatch && matchingObject == nil) {
         matchingObject = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.managedObjectContext];
     }
     return matchingObject;
 }
 
-- (Photo *) addPhotoWithFilename:(NSString *)filename forFeelingWord:(NSString *)feelingWord fromUsername:(NSString *)username {
-    
-    Photo * photo = [NSEntityDescription insertNewObjectForEntityForName:@"Photo" inManagedObjectContext:self.managedObjectContext];
-    photo.filename = filename;
-    photo.datetime = [NSDate date];
-    
-    feelingWord = feelingWord.lowercaseString;
-    Feeling * feeling = (Feeling *)[self getOrMakeObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", feelingWord] usingSortDescriptors:nil];
-    feeling.word = feelingWord;
-    photo.feeling = feeling;
-    
-    User * user = (User *)[self getOrMakeObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"name == %@", username] usingSortDescriptors:nil];
-    user.name = username;
-    photo.user = user;
-    
-    [self saveCoreData];
-    
+//- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors {
+//    NSArray * matchingObjects = [self getAllObjectsForEntityName:entityName predicate:predicate sortDescriptors:sortDescriptors];
+//    NSManagedObject * matchingObject = matchingObjects.count > 0 ? [matchingObjects objectAtIndex:0] : nil;
+//    if (matchingObject == nil) {
+//        matchingObject = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.managedObjectContext];
+//    }
+//    return matchingObject;
+//}
+
+- (Feeling *)addOrUpdateFeelingFromServer:(PFObject *)feelingServer {
+    Feeling * feeling = (Feeling *)[self getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", feelingServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES];
+    feeling.serverID = feelingServer.objectId;
+    feeling.word = [feelingServer objectForKey:@"word"];
+    return feeling;
+}
+
+- (User *)addOrUpdateUserFromServer:(PFObject *)userServer {
+    User * user = (User *)[self getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", userServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES];
+    user.serverID = userServer.objectId;
+    user.name = [userServer objectForKey:@"username"];
+    return user;
+}
+
+- (Photo *)addOrUpdatePhotoFromServer:(PFObject *)photoServer {
+    Photo * photo = (Photo *)[self getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", photoServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES];
+    photo.serverID = photoServer.objectId;
+    PFFile * imageFile = [photoServer objectForKey:@"image"];
+    photo.imageURL = imageFile.url;
+    photo.datetime = photoServer.createdAt;
     return photo;
-    
+}
+
+- (Photo *)addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer {
+    Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
+    photo.feeling = [self addOrUpdateFeelingFromServer:feelingServer];
+    photo.user = [self addOrUpdateUserFromServer:userServer];
+    return photo;
 }
 
 

@@ -13,6 +13,7 @@
 #import "GalleryFeelingImageCell.h"
 #import <QuartzCore/QuartzCore.h>
 #import "CameraOverlayView.h"
+#import <Parse/Parse.h>
 
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
@@ -21,6 +22,9 @@
 - (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 @property (strong, nonatomic) UIImage * galleryScreenshot;
 @property (strong, nonatomic, readonly) UIImage * galleryScreenshotCurrent;
+- (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
+- (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
+- (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
 @end
 
 @implementation GalleryViewController
@@ -61,7 +65,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 //    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
-    
+        
     CGSize addPhotoButtonSize = CGSizeMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE + VC_ADD_PHOTO_BUTTON_WIDTH + VC_ADD_PHOTO_BUTTON_PADDING_RIGHT, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE + VC_ADD_PHOTO_BUTTON_HEIGHT + VC_ADD_PHOTO_BUTTON_PADDING_TOP);
     self.addPhotoButton.frame = CGRectMake(0, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - addPhotoButtonSize.height, addPhotoButtonSize.width, addPhotoButtonSize.height);
     self.addPhotoButton.contentEdgeInsets = UIEdgeInsetsMake(0, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, 0);
@@ -107,6 +111,8 @@
 		NSLog(@"GalleryViewController - Unresolved error %@, %@", error, [error userInfo]);
 		exit(-1);  // Fail
 	}
+    
+    [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
     
 }
 
@@ -362,11 +368,13 @@
                 [cell scrollToOriginAnimated:YES];
             }
         }
+        GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
+        if (cell.flagStretchView.activated) {
+            [self getPhotosFromServerForFeeling:[self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:cell.feelingIndex inSection:0]]];
+        }
     } else {
-        if (-scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.activationDistanceEnd) {
-//            scrollView.contentInset = UIEdgeInsetsMake(scrollView.contentInset.top + self.flagStretchView.arrowFlipDistance, scrollView.contentInset.left, scrollView.contentInset.bottom, scrollView.contentInset.right);
-//            scrollView.userInteractionEnabled = NO;
-//            [self.flagStretchView startAnimatingStripes];
+        if (self.flagStretchView.activated) {
+            [self getFeelingsFromServer];
         }
     }
 }
@@ -436,7 +444,11 @@
 }
 
 - (void)emotishLogoTouched:(UIButton *)button {
-    [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+    if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] > 0) {
+        [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+    } else {
+        [self.feelingsTableView setContentOffset:CGPointMake(0, -(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL)) animated:YES];
+    }
 }
 
 - (IBAction)addPhotoButtonTouched:(id)sender {
@@ -483,6 +495,65 @@
     UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return image;
+}
+
+
+
+- (void)getFeelingsFromServer {
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    PFQuery * feelingsQuery = [PFQuery queryWithClassName:@"Feeling"];
+    feelingsQuery.limit = [NSNumber numberWithInt:500];
+    [feelingsQuery findObjectsInBackgroundWithTarget:self selector:@selector(getFeelingsFromServerCallback:error:)];
+}
+
+- (void)getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error {
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    if (!error) {
+        NSLog(@"Success - %d results", results.count);
+        for (PFObject * feelingServer in results) {
+            Feeling * feeling = [self.coreDataManager addOrUpdateFeelingFromServer:feelingServer];
+            [self getPhotosFromServerForFeeling:feeling];
+        }
+        [self.coreDataManager saveCoreData];
+    } else {
+        NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
+        UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [errorAlert show];
+    }
+}
+
+- (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
+    PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
+    feelingServer.objectId = feeling.serverID;
+    [photosQuery whereKey:@"feeling" equalTo:feelingServer];
+    photosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
+    [photosQuery orderByDescending:@"createdAt"];
+    [photosQuery includeKey:@"feeling"];
+    [photosQuery includeKey:@"user"];
+    [photosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerForFeelingCallback:error:)];
+}
+
+- (void)getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error {
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    if (!error) {
+        NSLog(@"Success - %d results", results.count);
+        for (PFObject * photoServer in results) {
+            PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
+            PFObject * userServer = [photoServer objectForKey:@"user"];
+            [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
+        }
+        [self.coreDataManager saveCoreData];
+    } else {
+        NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
+        UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [errorAlert show];
+    }
 }
 
 @end

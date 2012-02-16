@@ -10,6 +10,7 @@
 #import "Photo.h"
 #import "Feeling.h"
 #import "User.h"
+#import <Parse/Parse.h>
 
 @interface CoreDataManager : NSObject
 
@@ -19,12 +20,17 @@
 
 - (void) saveCoreData;
 - (NSArray *) getAllObjectsForEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors;
-- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors;
+//- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors;
+- (NSManagedObject *) getFirstObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors shouldMakeObjectIfNoMatch:(BOOL)shouldMakeObjectIfNoMatch;
 
 //- (NSArray *) getFeelings;
 //- (Feeling *) getFeelingAlphabeticallyBeforeFeeling:(Feeling *)feeling;
 //- (Feeling *) getFeelingAlphabeticallyAfterFeeling:(Feeling *)feeling;
 
-- (Photo *) addPhotoWithFilename:(NSString *)filename forFeelingWord:(NSString *)feelingWord fromUsername:(NSString *)username; // This method will add a new Photo object to the database. It will connect that Photo to an existing Feeling object in the database for the given feeling word, or else create one. Likewise, it will connect the Photo to an existing User object matching the given username, or else create a new one.
+// The following methods will get an existing object that matches the given server object's objectID (serverID, locally speaking), or will create one if it doesn't exist already.
+- (Feeling *) addOrUpdateFeelingFromServer:(PFObject *)feelingServer;
+- (User *) addOrUpdateUserFromServer:(PFObject *)userServer;
+- (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer;
+- (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer;
 
 @end

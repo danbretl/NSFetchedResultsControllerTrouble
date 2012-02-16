@@ -8,6 +8,7 @@
 
 #import "EmotishAppDelegate.h"
 #import "UIImage+LocalStore.h"
+#import <Parse/Parse.h>
 
 @implementation EmotishAppDelegate
 
@@ -23,10 +24,12 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
+    [Parse setApplicationId:@"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC" 
+                  clientKey:@"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"];
+    
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
-    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-SeedDataFilenames"] && 
-                         [[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-MessyData06"]);
+    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-MovingToRemoteData"]);
     if (shouldFlush && allFeelings != nil && allFeelings.count > 0) {
         NSLog(@"Flushing database");
         for (Feeling * feeling in [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
@@ -36,53 +39,52 @@
             [self.coreDataManager.managedObjectContext deleteObject:user];
         }
         [self.coreDataManager saveCoreData];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-SeedDataFilenames"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-MessyData06"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-MovingToRemoteData"];
     }
-    allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
-    BOOL onlyAllowFeelingsWithAppropriateImages = YES;
-    if (allFeelings == nil || allFeelings.count == 0) {
-        NSLog(@"Starting to seed database");
-        for (NSString * feelingWord in self.tempSeedFeelings) {
-            NSLog(@"  Adding %@", feelingWord);
-            NSSet * imageFilenamesToChooseFrom = [self tempSeedImageFilenamesForFeelingWord:feelingWord];
-            BOOL appropriateFilenamesAvailable = imageFilenamesToChooseFrom.count > 0;
-            if (onlyAllowFeelingsWithAppropriateImages && !appropriateFilenamesAvailable) {
-                NSLog(@"    No photos available, skipping.");
-                continue;
-            }
-            int photosCount = 0;
-            if (appropriateFilenamesAvailable) {
-                photosCount = imageFilenamesToChooseFrom.count;
-            } else {
-                imageFilenamesToChooseFrom = self.tempSeedImageFilenames;
-                photosCount = (arc4random() % 10) + 1;
-            }
-            NSArray * filenamesArray = [imageFilenamesToChooseFrom allObjects];
-            NSLog(@"    Adding photos");
-            for (int i=0; i<photosCount; i++) {
-                int imageIndex = appropriateFilenamesAvailable ? i : (arc4random() % filenamesArray.count);
-                NSString * imageFilename = [filenamesArray objectAtIndex:imageIndex];
-                NSRange hyphenRange = [imageFilename rangeOfString:@"-"];
-                NSString * userIndicatorString = [[imageFilename substringFromIndex:hyphenRange.location + 1] stringByReplacingOccurrencesOfString:@".jpg" withString:@""];
-                int suggestedUserIndex = userIndicatorString.intValue - 1;
-                int userIndex = suggestedUserIndex < self.tempSeedUsernames.count ? suggestedUserIndex : (arc4random() % self.tempSeedUsernames.count);
-                NSString * username = [self.tempSeedUsernames objectAtIndex:userIndex];
-                NSLog(@"      Adding %@ for user %@", imageFilename, username);
-                [self.coreDataManager addPhotoWithFilename:imageFilename forFeelingWord:feelingWord fromUsername:username];
-            }
-            NSLog(@"    Added %d %@ %@ photos", photosCount, appropriateFilenamesAvailable ? @"fitting" : @"random", feelingWord);
-        }
-        NSLog(@"Finished seeding database");
-    } else {
-        NSLog(@"Reporting on existing data");
-        for (Feeling * feeling in allFeelings) {
-            NSLog(@"%@", feeling.word);
-            for (Photo * photo in feeling.photos) {
-                NSLog(@"  %@ photo", photo.user.name);
-            }
-        }
-    }
+//    allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
+//    BOOL onlyAllowFeelingsWithAppropriateImages = YES;
+//    if (allFeelings == nil || allFeelings.count == 0) {
+//        NSLog(@"Starting to seed database");
+//        for (NSString * feelingWord in self.tempSeedFeelings) {
+//            NSLog(@"  Adding %@", feelingWord);
+//            NSSet * imageFilenamesToChooseFrom = [self tempSeedImageFilenamesForFeelingWord:feelingWord];
+//            BOOL appropriateFilenamesAvailable = imageFilenamesToChooseFrom.count > 0;
+//            if (onlyAllowFeelingsWithAppropriateImages && !appropriateFilenamesAvailable) {
+//                NSLog(@"    No photos available, skipping.");
+//                continue;
+//            }
+//            int photosCount = 0;
+//            if (appropriateFilenamesAvailable) {
+//                photosCount = imageFilenamesToChooseFrom.count;
+//            } else {
+//                imageFilenamesToChooseFrom = self.tempSeedImageFilenames;
+//                photosCount = (arc4random() % 10) + 1;
+//            }
+//            NSArray * filenamesArray = [imageFilenamesToChooseFrom allObjects];
+//            NSLog(@"    Adding photos");
+//            for (int i=0; i<photosCount; i++) {
+//                int imageIndex = appropriateFilenamesAvailable ? i : (arc4random() % filenamesArray.count);
+//                NSString * imageFilename = [filenamesArray objectAtIndex:imageIndex];
+//                NSRange hyphenRange = [imageFilename rangeOfString:@"-"];
+//                NSString * userIndicatorString = [[imageFilename substringFromIndex:hyphenRange.location + 1] stringByReplacingOccurrencesOfString:@".jpg" withString:@""];
+//                int suggestedUserIndex = userIndicatorString.intValue - 1;
+//                int userIndex = suggestedUserIndex < self.tempSeedUsernames.count ? suggestedUserIndex : (arc4random() % self.tempSeedUsernames.count);
+//                NSString * username = [self.tempSeedUsernames objectAtIndex:userIndex];
+//                NSLog(@"      Adding %@ for user %@", imageFilename, username);
+//                [self.coreDataManager addPhotoWithFilename:imageFilename forFeelingWord:feelingWord fromUsername:username];
+//            }
+//            NSLog(@"    Added %d %@ %@ photos", photosCount, appropriateFilenamesAvailable ? @"fitting" : @"random", feelingWord);
+//        }
+//        NSLog(@"Finished seeding database");
+//    } else {
+//        NSLog(@"Reporting on existing data");
+//        for (Feeling * feeling in allFeelings) {
+//            NSLog(@"%@", feeling.word);
+//            for (Photo * photo in feeling.photos) {
+//                NSLog(@"  %@ photo", photo.user.name);
+//            }
+//        }
+//    }
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
@@ -96,6 +98,82 @@
 
     self.window.rootViewController = navigationController;
     [self.window makeKeyAndVisible];
+    
+//    BOOL seedAnonymousUserComplete = ([[NSUserDefaults standardUserDefaults] boolForKey:@"specialSeedComplete-01"]);
+//    if (!seedAnonymousUserComplete) {
+//        PFUser * user = [PFUser user];
+//        user.username = @"anonymous";
+//        user.password = @"anonymous";
+//        user.email = @"danbretl@gmail.com";
+//        BOOL success = [user signUp];
+//        NSLog(@"Signed up anonymous user, success? %d", success);
+//        [[NSUserDefaults standardUserDefaults] setBool:success forKey:@"specialSeedComplete-01"];
+//    }
+    
+//    BOOL seedAnonymousImagesComplete = ([[NSUserDefaults standardUserDefaults] boolForKey:@"seedAnonymousImagesComplete3"]);
+//    if (!seedAnonymousImagesComplete) {
+//        // Log in as anonymous user
+//        PFUser * currentUser = [PFUser logInWithUsername:@"anonymous" password:@"anonymous"];
+//        NSLog(@"Retrieved currentUser as %@", currentUser.username);
+//        NSLog(@"Starting to seed database");
+//        for (NSString * feelingWord in self.tempSeedFeelings) {
+//            PFQuery * query = [PFQuery queryWithClassName:@"Feeling"];
+//            [query whereKey:@"word" equalTo:feelingWord.lowercaseString];
+//            PFObject * feeling = [query getFirstObject];
+//            NSLog(@"  Adding %@", feelingWord);
+//            NSSet * imageFilenamesToChooseFrom = [self tempSeedImageFilenamesForFeelingWord:feelingWord];
+//            BOOL appropriateFilenamesAvailable = imageFilenamesToChooseFrom.count > 0;
+//            if (onlyAllowFeelingsWithAppropriateImages && !appropriateFilenamesAvailable) {
+//                NSLog(@"    No photos available, skipping.");
+//                continue;
+//            }
+//            int photosCount = 0;
+//            if (appropriateFilenamesAvailable) {
+//                photosCount = imageFilenamesToChooseFrom.count;
+//            } else {
+//                imageFilenamesToChooseFrom = self.tempSeedImageFilenames;
+//                photosCount = (arc4random() % 10) + 1;
+//            }
+//            if (photosCount > 0) {
+//                if (feeling == nil) {
+//                    feeling = [PFObject objectWithClassName:@"Feeling"];
+//                    [feeling setObject:feelingWord.lowercaseString forKey:@"word"];
+//                    [feeling save];
+//                }
+//                NSLog(@"Retrieved feeling %@", [feeling objectForKey:@"word"]);
+//            }
+//            NSArray * filenamesArray = [imageFilenamesToChooseFrom allObjects];
+//            NSLog(@"    Adding photos");
+//            for (int i=0; i<photosCount; i++) {
+//                int imageIndex = appropriateFilenamesAvailable ? i : (arc4random() % filenamesArray.count);
+//                NSString * imageFilename = [filenamesArray objectAtIndex:imageIndex];
+////                NSRange hyphenRange = [imageFilename rangeOfString:@"-"];
+////                NSString * userIndicatorString = [[imageFilename substringFromIndex:hyphenRange.location + 1] stringByReplacingOccurrencesOfString:@".jpg" withString:@""];
+////                int suggestedUserIndex = userIndicatorString.intValue - 1;
+////                int userIndex = suggestedUserIndex < self.tempSeedUsernames.count ? suggestedUserIndex : (arc4random() % self.tempSeedUsernames.count);
+////                NSString * username = [self.tempSeedUsernames objectAtIndex:userIndex];
+//                NSString * username = @"anonymous";
+//                NSLog(@"      Adding %@ for user %@", imageFilename, username);
+////                [self.coreDataManager addPhotoWithFilename:imageFilename forFeelingWord:feelingWord fromUsername:username];
+//                NSData * imageData = UIImageJPEGRepresentation([UIImage imageNamed:imageFilename], 1.0);
+//                NSDate * now = [NSDate date];
+//                //    NSString * todayFormatted = [dateFormatter stringFromDate:now];
+//                NSString * nowString = [NSString stringWithFormat:@"%d", abs([now timeIntervalSince1970])];
+//                NSString * filename = [NSString stringWithFormat:@"%@-%@-%@.jpg", [feelingWord.lowercaseString  stringByReplacingOccurrencesOfString:@" " withString:@""], username, nowString];
+//                PFFile * imageFile = [PFFile fileWithName:filename data:imageData];
+//                [imageFile save];
+//                PFObject * photo = [PFObject objectWithClassName:@"Photo"];
+//                [photo setObject:imageFile forKey:@"image"];
+//                [photo setObject:currentUser forKey:@"user"];
+//                [photo setObject:feeling forKey:@"feeling"];
+//                BOOL success = [photo save];
+//                NSLog(@"PFObject photo saved successfully? %d", success);
+//            }
+//            NSLog(@"    Added %d %@ %@ photos", photosCount, appropriateFilenamesAvailable ? @"fitting" : @"random", feelingWord);
+//        }
+//        NSLog(@"Finished seeding database");
+//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"seedAnonymousImagesComplete3"];
+//    }
     
     return YES;
 }

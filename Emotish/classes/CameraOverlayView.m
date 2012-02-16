@@ -45,7 +45,7 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
         CGFloat letterboxWhiteAmount = 0.2;
         
         self.topBar = [[TopBarView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, CAMERA_OVERLAY_TOP_BAR_HEIGHT)];
-        self.topBar.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"top_bar_camera_view.png"]];
+        self.topBar.backgroundView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"top_bar_camera_view.png"]];
         self.topBar.buttonBranding.alpha = 0.0;
         [self addSubview:self.topBar];
         self.topBar.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.topBar.bounds].CGPath;
@@ -76,6 +76,7 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
         [self setFeelingText:self.feelingPlaceholderText];
         
         self.bottomBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.frame.size.height - CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT, self.frame.size.width, CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT)];
+        self.bottomBar.contentMode = UIViewContentModeBottom;
         self.bottomBar.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bottom_bar_camera_view.png"]];
         [self addSubview:self.bottomBar];
         self.bottomBar.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.bottomBar.bounds].CGPath;

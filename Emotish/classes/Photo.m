@@ -17,5 +17,7 @@
 @dynamic datetime;
 @dynamic feeling;
 @dynamic user;
+@dynamic serverID;
+@dynamic imageURL;
 
 @end

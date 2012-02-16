@@ -220,14 +220,14 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
             [self.topBar setViewMode:BrandingRight animated:NO];
             [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
             CGRect headerFrame = self.headerButton.frame;
-            CGRect captionFrame = self.photoViewCenter.photoCaptionLabel.frame;
+            CGRect captionFrame = self.photoViewCenter.photoCaptionTextField.frame;
             CGFloat headerTextWidth = MIN([self.headerButton.titleLabel.text sizeWithFont:self.headerButton.titleLabel.font].width, self.headerButton.frame.size.width - (self.headerButton.contentEdgeInsets.left + self.headerButton.contentEdgeInsets.right));
-            CGFloat captionTextWidth = MIN([self.photoViewCenter.photoCaptionLabel.text sizeWithFont:self.photoViewCenter.photoCaptionLabel.font].width, self.photoViewCenter.photoCaptionLabel.frame.size.width);
+            CGFloat captionTextWidth = MIN([self.photoViewCenter.photoCaptionTextField.text sizeWithFont:self.photoViewCenter.photoCaptionTextField.font].width, self.photoViewCenter.photoCaptionTextField.frame.size.width);
             CGRect headerOffscreenFrame = CGRectMake(-(self.headerButton.contentEdgeInsets.left + headerTextWidth + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), headerFrame.origin.y, headerFrame.size.width, headerFrame.size.height);
-            CGPoint offscreenPointToCaptionLabel = [self.photoViewCenter.photoCaptionLabel.superview convertPoint:CGPointMake(self.view.frame.size.width, 0) fromView:self.view];
+            CGPoint offscreenPointToCaptionLabel = [self.photoViewCenter.photoCaptionTextField.superview convertPoint:CGPointMake(self.view.frame.size.width, 0) fromView:self.view];
             CGRect captionOffscreenFrame = CGRectMake(offscreenPointToCaptionLabel.x + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN - (captionFrame.size.width - captionTextWidth), captionFrame.origin.y, captionFrame.size.width, captionFrame.size.height);
             self.headerButton.frame = headerOffscreenFrame;
-            self.photoViewCenter.photoCaptionLabel.frame = captionOffscreenFrame;
+            self.photoViewCenter.photoCaptionTextField.frame = captionOffscreenFrame;
             
         } else if (self.animationInSource == SubmitPhoto) {
             
@@ -261,9 +261,9 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
                 CGRect headerFrame = self.headerButton.frame;
                 headerFrame.origin.x = 0;
                 self.headerButton.frame = headerFrame;
-                CGRect captionFrame = self.photoViewCenter.photoCaptionLabel.frame;
+                CGRect captionFrame = self.photoViewCenter.photoCaptionTextField.frame;
                 captionFrame.origin.x = self.photoViewCenter.photoImageView.frame.origin.x;
-                self.photoViewCenter.photoCaptionLabel.frame = captionFrame;
+                self.photoViewCenter.photoCaptionTextField.frame = captionFrame;
             } else if (self.animationInSource == SubmitPhoto) {
                 [self.topBar setViewMode:BrandingRight animated:NO];
                 [self.topBar hideButtonInPosition:LeftNormal animated:NO];
@@ -392,18 +392,10 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     }
     
     Photo * photo = validIndexPathForPhotoView == nil ? nil : [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:validIndexPathForPhotoView];
-//    photoView.photoImageView.image = photo == nil ? nil : [UIImage localTestImageWithFilename:photo.filename];
     if (photo == nil) {
         photoView.photoImageView.image = nil;
     } else {
-        UIImage * image = [UIImage localTestImageWithFilename:photo.filename];
-        if (image != nil) {
-            photoView.photoImageView.image = image;
-        } else {
-//            photoView.photoImageView.image = nil;
-//            [photoView.photoImageView setImageWithURL:[NSURL URLWithString:[UIImage pathForLocalImageWithFilename:photo.filename]]];
-            [photoView.photoImageView setImageWithURL:[NSURL fileURLWithPath:[UIImage pathForLocalImageWithFilename:photo.filename]]];
-        }
+        [photoView.photoImageView setImageWithURL:[NSURL URLWithString:photo.imageURL] placeholderImage:[UIImage imageNamed:@"photo_image_placeholder.png"]];
     }
     [self updatePhotoViewCaption:photoView withDataFromPhoto:photo oppositeOfFocus:self.focus];
     
@@ -421,8 +413,8 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
             captionColor = [UIColor feelingColor];
         }
     }
-    photoView.photoCaptionLabel.text = captionText;
-    photoView.photoCaptionLabel.textColor = captionColor;
+    photoView.photoCaptionTextField.text = captionText;
+    photoView.photoCaptionTextField.textColor = captionColor;
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
@@ -552,13 +544,13 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 
     // Animate the transition
 //    CGRect headerFrame = self.headerButton.frame;
-//    CGRect captionFrame = photoView.photoCaptionLabel.frame;
+//    CGRect captionFrame = photoView.photoCaptionTextField.frame;
     [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
         CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
         CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
 //        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
         self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
-        photoView.photoCaptionLabel.frame = CGRectOffset(photoView.photoCaptionLabel.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
+        photoView.photoCaptionTextField.frame = CGRectOffset(photoView.photoCaptionTextField.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
         void(^photoViewAlpha)(PhotoView *)=^(PhotoView * photoViewInQuestion){
             photoViewInQuestion.alpha = photoView == photoViewInQuestion ? 1.0 : 0.0;
         };

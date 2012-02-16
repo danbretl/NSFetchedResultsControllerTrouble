@@ -168,7 +168,11 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
 
 - (void) scrollToOriginAnimated:(BOOL)animated {
     [self highlightLabel:NO];
-    [self.imagesTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:animated];
+    if ([self tableView:self.imagesTableView numberOfRowsInSection:0] > 0) {
+        [self.imagesTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:animated];        
+    } else {
+        [self.imagesTableView setContentOffset:CGPointZero animated:animated];
+    }
 }
 
 
@@ -211,16 +215,7 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
     
     // Configure the cell
     Photo * photo = [self.photos objectAtIndex:indexPath.row];
-    UIImage * image = [UIImage localTestImageWithFilename:photo.filename];
-    if (image != nil) {
-        [cell.button setImage:image forState:UIControlStateNormal];
-    } else {
-//        [cell.button setImage:nil forState:UIControlStateNormal];
-//        [cell.button.imageView setImageWithURL:[NSURL URLWithString:[UIImage pathForLocalImageWithFilename:photo.filename]]];
-        [cell.button setImageWithURL:[NSURL fileURLWithPath:[UIImage pathForLocalImageWithFilename:photo.filename]]];
-    }
-    
-//    [cell.button setImage:[UIImage imageNamed:photo.filename] forState:UIControlStateNormal];
+    [cell.button setImageWithURL:[NSURL URLWithString:photo.imageURL] placeholderImage:[UIImage imageNamed:@"photo_image_placeholder.png"]];
     cell.feelingIndex = self.feelingIndex;
     cell.imageIndex = indexPath.row;
     cell.feelingCell = self;

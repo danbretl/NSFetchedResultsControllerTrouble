@@ -21,7 +21,8 @@ const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
 
 @synthesize button=_button;
 @synthesize photoImageView=_photoImageView;
-@synthesize photoCaptionLabel=_photoCaptionLabel;
+//@synthesize photoCaptionLabel=_photoCaptionLabel;
+@synthesize photoCaptionTextField=_photoCaptionTextField;
 @synthesize delegate=_delegate;
 
 - (id)initWithFrame:(CGRect)frame
@@ -47,11 +48,17 @@ const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
     self.photoImageView.clipsToBounds = YES;
     [self addSubview:self.photoImageView];
     
-    self.photoCaptionLabel = [[UILabel alloc] initWithFrame:CGRectMake(self.photoImageView.frame.origin.x, CGRectGetMaxY(self.photoImageView.frame) + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM, self.photoImageView.frame.size.width, PC_PHOTO_CELL_LABEL_HEIGHT)];
-    self.photoCaptionLabel.textAlignment = UITextAlignmentRight;
-    self.photoCaptionLabel.font = [UIFont boldSystemFontOfSize:PC_PHOTO_CELL_LABEL_FONT_SIZE];
-    self.photoCaptionLabel.backgroundColor = [UIColor clearColor];
-    [self addSubview:self.photoCaptionLabel];
+    self.photoCaptionTextField = [[UITextFieldWithInset alloc] initWithFrame:CGRectMake(self.photoImageView.frame.origin.x, CGRectGetMaxY(self.photoImageView.frame), self.photoImageView.frame.size.width, PC_PHOTO_CELL_PADDING_BOTTOM +  PC_PHOTO_CELL_LABEL_HEIGHT + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM)];
+    self.photoCaptionTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
+    self.photoCaptionTextField.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+    self.photoCaptionTextField.textAlignment = UITextAlignmentRight;
+    self.photoCaptionTextField.textFieldInsets = UIEdgeInsetsMake(PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM - 4.0, 0, 0, 0);
+    self.photoCaptionTextField.font = [UIFont boldSystemFontOfSize:PC_PHOTO_CELL_LABEL_FONT_SIZE];
+    self.photoCaptionTextField.backgroundColor = [UIColor clearColor];
+    self.photoCaptionTextField.userInteractionEnabled = NO;
+    self.photoCaptionTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    self.photoCaptionTextField.autocorrectionType = UITextAutocorrectionTypeNo;
+    [self addSubview:self.photoCaptionTextField];
     
     self.button = [UIButton buttonWithType:UIButtonTypeCustom];
     self.button.frame = self.bounds;
@@ -64,7 +71,7 @@ const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
     BOOL debugging = NO;
     if (debugging) {
         self.photoImageView.backgroundColor = [UIColor blueColor];
-        self.photoCaptionLabel.backgroundColor = [UIColor greenColor];
+        self.photoCaptionTextField.backgroundColor = [UIColor greenColor];
     } else {
         self.backgroundColor = [UIColor clearColor];
     }

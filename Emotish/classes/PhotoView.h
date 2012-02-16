@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "UITextFieldWithInset.h"
 
 @protocol PhotoViewDelegate;
 
@@ -14,7 +15,8 @@
 
 @property (strong, nonatomic) UIButton * button;
 @property (strong, nonatomic) UIImageView * photoImageView;
-@property (strong, nonatomic) UILabel * photoCaptionLabel;
+//@property (strong, nonatomic) UILabel * photoCaptionLabel;
+@property (strong, nonatomic) UITextFieldWithInset * photoCaptionTextField;
 
 @property (unsafe_unretained, nonatomic) id<PhotoViewDelegate> delegate;
 

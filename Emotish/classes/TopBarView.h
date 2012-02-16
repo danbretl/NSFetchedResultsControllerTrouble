@@ -34,6 +34,7 @@ typedef enum {
 @property (strong, nonatomic) UIButton * buttonLeftSpecial;
 @property (strong, nonatomic) UIButton * buttonLeftNormal;
 @property (strong, nonatomic) UIButton * buttonRightNormal;
+@property (strong, nonatomic) UIView * backgroundView;
 
 - (void) setViewMode:(TopBarViewMode)viewMode animated:(BOOL)animated;
 - (void) showButtonType:(TopBarButtonType)buttonType inPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;
