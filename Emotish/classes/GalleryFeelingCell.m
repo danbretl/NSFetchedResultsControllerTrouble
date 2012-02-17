@@ -10,7 +10,6 @@
 #import "GalleryConstants.h"
 #import "UIColor+Emotish.h"
 #import "GalleryFeelingImageCell.h"
-#import "UIImage+LocalStore.h"
 #import "UIButton+WebCache.h"
 
 //#define GFC_ANIMATION_DURATION 0.25

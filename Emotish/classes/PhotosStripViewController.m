@@ -11,7 +11,6 @@
 #import "ViewConstants.h"
 #import "UIColor+Emotish.h"
 #import <QuartzCore/QuartzCore.h>
-#import "UIImage+LocalStore.h"
 #import "UIImageView+WebCache.h"
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;

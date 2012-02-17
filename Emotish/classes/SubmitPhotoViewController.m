@@ -11,7 +11,6 @@
 #import <MobileCoreServices/UTCoreTypes.h>
 #import "UIImage+Crop.h"
 #import "UIColor+Emotish.h"
-#import "UIImage+LocalStore.h"
 
 static NSString * SPVC_FEELING_PLACEHOLDER_TEXT = @"something";
 static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
