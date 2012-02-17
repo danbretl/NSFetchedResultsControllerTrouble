@@ -225,7 +225,7 @@ typedef enum {
     [self.layer addSublayer:self.stripeRightLayer];
     
     self.icon = [CALayer layer];
-    UIImage * iconImage = [UIImage imageNamed:@"flag_stretch_arrow.png"];
+    UIImage * iconImage = [UIImage imageNamed:@"pull_to_refresh_arrow.png"];
     self.icon.frame = CGRectMake(0, 0, iconImage.size.width, iconImage.size.height);
     self.icon.contents = (__bridge id)iconImage.CGImage;
     self.icon.contentsScale = [UIScreen mainScreen].scale;

@@ -15,6 +15,10 @@ const CGFloat COV_TOP_BAR_PADDING_HORIZONTAL = 20.0;
 const CGFloat COV_BOTTOM_BAR_PADDING_LEFT = 3.0;
 const CGFloat COV_BOTTOM_BAR_PADDING_RIGHT = 5.0;
 const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
+const CGFloat COV_SWAP_CAMERAS_BUTTON_SIDE_LENGTH = 50.0;
+const CGFloat COV_SWAP_CAMERAS_BUTTON_MARGIN_RIGHT = 10.0;
+const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
+
 
 @interface CameraOverlayView()
 @property (strong, nonatomic, readonly) NSString * feelingPlaceholderText;
@@ -42,12 +46,14 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
         BOOL debugging = NO;
         
         CGFloat shadowOpacity = 0.5;
-        CGFloat letterboxWhiteAmount = 0.2;
         
         self.topBar = [[TopBarView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, CAMERA_OVERLAY_TOP_BAR_HEIGHT)];
         self.topBar.backgroundView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"top_bar_camera_view.png"]];
         self.topBar.buttonBranding.alpha = 0.0;
         [self addSubview:self.topBar];
+//        self.topBar.clipsToBounds = NO;
+//        self.topBar.backgroundView.clipsToBounds = NO;
+        // The shadow seems to be included in the image, but I can't see it in the app. Going to keep drawing the shadow in code for now.
         self.topBar.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.topBar.bounds].CGPath;
         self.topBar.layer.shadowOpacity = shadowOpacity;
         self.topBar.layer.shadowOffset = CGSizeMake(0, 0);
@@ -76,41 +82,48 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
         [self setFeelingText:self.feelingPlaceholderText];
         
         self.bottomBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.frame.size.height - CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT, self.frame.size.width, CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT)];
-        self.bottomBar.contentMode = UIViewContentModeBottom;
-        self.bottomBar.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bottom_bar_camera_view.png"]];
+        self.bottomBar.contentMode = UIViewContentModeBottomLeft;
+        UIImageView * bottomBarBackgroundImageView = [[UIImageView alloc] initWithFrame:self.bottomBar.bounds];
+        bottomBarBackgroundImageView.contentMode = UIViewContentModeBottom;
+        bottomBarBackgroundImageView.image = [UIImage imageNamed:@"bottom_bar_camera_view.png"];
+        [self.bottomBar addSubview:bottomBarBackgroundImageView];
         [self addSubview:self.bottomBar];
         self.bottomBar.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.bottomBar.bounds].CGPath;
+        // The shadow seems to be included in the image, but I can't see it in the app. Going to keep drawing the shadow in code for now.
         self.bottomBar.layer.shadowOpacity = shadowOpacity;
         self.bottomBar.layer.shadowOffset = CGSizeMake(0, 0);
+//        self.bottomBar.clipsToBounds = NO;
         
         self.cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
         self.cancelButton.frame = CGRectMake(COV_BOTTOM_BAR_PADDING_LEFT, 0, self.bottomBar.frame.size.height, self.bottomBar.frame.size.height);
         self.cancelButton.contentMode = UIViewContentModeCenter;
-        [self.cancelButton setImage:[UIImage imageNamed:@"btn_camera_view_cancel.png"] forState:UIControlStateNormal];
-        self.cancelButton.adjustsImageWhenHighlighted = NO;
+        [self.cancelButton setImage:[UIImage imageNamed:@"icon_camera_view_cancel.png"] forState:UIControlStateNormal];
+        [self.cancelButton setImage:[UIImage imageNamed:@"icon_camera_view_cancel_touch.png"] forState:UIControlStateHighlighted];
         [self.bottomBar addSubview:self.cancelButton];
         
         self.photoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        self.photoButton.frame = CGRectMake(floorf((self.bottomBar.frame.size.width - self.bottomBar.frame.size.height) / 2.0), 0, self.bottomBar.frame.size.height, self.bottomBar.frame.size.height);
+        self.photoButton.frame = CGRectMake(floorf((self.bottomBar.frame.size.width - COV_CAMERA_BUTTON_WIDTH) / 2.0), 0, COV_CAMERA_BUTTON_WIDTH, self.bottomBar.frame.size.height);
+        self.photoButton.imageView.contentMode = UIViewContentModeCenter;
         self.photoButton.contentMode = UIViewContentModeCenter;
-        [self.photoButton setImage:[UIImage imageNamed:@"btn_camera_view_photo.png"] forState:UIControlStateNormal];
-        self.photoButton.adjustsImageWhenHighlighted = NO;
+        [self.photoButton setImage:[UIImage imageNamed:@"icon_camera_view_camera_glow.png"] forState:UIControlStateNormal];
+        [self.photoButton setImage:[UIImage imageNamed:@"icon_camera_view_camera_glow_touch.png"] forState:UIControlStateHighlighted];
+//        self.photoButton.clipsToBounds = NO;
+//        self.photoButton.imageView.clipsToBounds = NO;
         [self.bottomBar addSubview:self.photoButton];        
         
         self.acceptButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        self.acceptButton.frame = CGRectMake(floorf((self.bottomBar.frame.size.width - self.bottomBar.frame.size.height) / 2.0), 0, self.bottomBar.frame.size.height, self.bottomBar.frame.size.height);
+        self.acceptButton.frame = self.photoButton.frame;
         self.acceptButton.contentMode = UIViewContentModeCenter;
-        [self.acceptButton setImage:[UIImage imageNamed:@"btn_camera_view_accept.png"] forState:UIControlStateNormal];
-        self.acceptButton.adjustsImageWhenHighlighted = NO;
+        [self.acceptButton setImage:[UIImage imageNamed:@"icon_camera_view_done.png"] forState:UIControlStateNormal];
+        [self.acceptButton setImage:[UIImage imageNamed:@"icon_camera_view_done_touch.png"] forState:UIControlStateHighlighted];
         self.acceptButton.hidden = YES;
         [self.bottomBar addSubview:self.acceptButton];
 
         self.libraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
         self.libraryButton.frame = CGRectMake(self.bottomBar.frame.size.width - self.bottomBar.frame.size.height - COV_BOTTOM_BAR_PADDING_RIGHT, 0, self.bottomBar.frame.size.height, self.bottomBar.frame.size.height);
         self.libraryButton.contentMode = UIViewContentModeCenter;
-        [self.libraryButton setImage:[UIImage imageNamed:@"btn_camera_view_library.png"] forState:UIControlStateNormal];
-        [self.libraryButton setImage:[UIImage imageNamed:@"btn_camera_view_library_disabled.png"] forState:UIControlStateDisabled];
-        self.libraryButton.adjustsImageWhenHighlighted = NO;
+        [self.libraryButton setImage:[UIImage imageNamed:@"icon_camera_view_library.png"] forState:UIControlStateNormal];
+        [self.libraryButton setImage:[UIImage imageNamed:@"icon_camera_view_library_touch.png"] forState:UIControlStateHighlighted];
         [self.bottomBar addSubview:self.libraryButton];
         
         CGRect imageFrame = CGRectMake(0, CAMERA_VIEW_SCREEN_DISPLAY_ORIGIN_Y, CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH, CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH);
@@ -118,12 +131,15 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
 //        NSLog(@"floorf((CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0)");
 //        NSLog(@"\nCGRectGetMinY(self.bottomBar.frame) = %f\nCGRectGetMaxY(self.topBar.frame) = %f\nCAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH = %f\n(CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) = %f\n(CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0 = %f\nfloorf((CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0) = %f", CGRectGetMinY(self.bottomBar.frame), CGRectGetMaxY(self.topBar.frame), CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH, (CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH), (CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0, floorf((CGRectGetMinY(self.bottomBar.frame) - CGRectGetMaxY(self.topBar.frame) - CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH) / 2.0));
         
+        UIColor * letterboxBackgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bg_blue_compressed.png"]];
         UIView * imageLetterboxViewTop = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, CGRectGetMinY(imageFrame))];
-        imageLetterboxViewTop.backgroundColor = [UIColor colorWithWhite:letterboxWhiteAmount alpha:1.0];
+        imageLetterboxViewTop.backgroundColor = letterboxBackgroundColor;
+        imageLetterboxViewTop.contentMode = UIViewContentModeTop;
         imageLetterboxViewTop.clipsToBounds = YES;
         [self insertSubview:imageLetterboxViewTop belowSubview:self.topBar];
         UIView * imageLetterboxViewBottom = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(imageFrame), self.frame.size.width, self.frame.size.height - CGRectGetMaxY(imageFrame))];
-        imageLetterboxViewBottom.backgroundColor = [UIColor colorWithWhite:letterboxWhiteAmount alpha:1.0];
+        imageLetterboxViewBottom.backgroundColor = letterboxBackgroundColor;
+        imageLetterboxViewBottom.contentMode = UIViewContentModeBottom;
         imageLetterboxViewBottom.clipsToBounds = YES;
         [self insertSubview:imageLetterboxViewBottom belowSubview:self.bottomBar];
         
@@ -147,14 +163,11 @@ const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
         [self insertSubview:self.imageOverlay belowSubview:imageLetterboxViewTop];
         
         self.swapCamerasButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        CGFloat swapCamerasButtonWidth = 50.0;
-        self.swapCamerasButton.frame = CGRectMake(CGRectGetMaxX(imageFrame) - swapCamerasButtonWidth, CGRectGetMinY(imageFrame), swapCamerasButtonWidth, swapCamerasButtonWidth);
-        [self.swapCamerasButton setTitle:@"Swap" forState:UIControlStateNormal];
-        [self.swapCamerasButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        [self.swapCamerasButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-        self.swapCamerasButton.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.40];
+        self.swapCamerasButton.frame = CGRectMake(CGRectGetMaxX(imageFrame) - COV_SWAP_CAMERAS_BUTTON_SIDE_LENGTH - COV_SWAP_CAMERAS_BUTTON_MARGIN_RIGHT, CGRectGetMinY(imageFrame), COV_SWAP_CAMERAS_BUTTON_SIDE_LENGTH, COV_SWAP_CAMERAS_BUTTON_SIDE_LENGTH);
+        self.swapCamerasButton.contentMode = UIViewContentModeCenter;
+        [self.swapCamerasButton setImage:[UIImage imageNamed:@"icon_camera_swap.png"] forState:UIControlStateNormal];
+        [self.swapCamerasButton setImage:[UIImage imageNamed:@"icon_camera_swap_touch.png"] forState:UIControlStateHighlighted];
         [self insertSubview:self.swapCamerasButton belowSubview:self.imageOverlay];
-        
         
         if (debugging) {
             self.topBar.backgroundColor = [UIColor greenColor];
