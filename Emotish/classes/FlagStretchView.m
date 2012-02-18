@@ -17,10 +17,11 @@ const CGFloat FSV_PULL_OUT_DISTANCE_FOR_ALL_BASE = 10.0;
 @property (nonatomic) CGFloat paddingHorizontal; // Does not apply to the point
 @property (nonatomic) CGFloat visibleWidth;
 @property (nonatomic) CGFloat drainPercentage;
+@property (nonatomic) CGFloat drainedBorderWidth;
 //@property (nonatomic) BOOL shouldFill;
 @end
 @implementation FSV_MiddleLayer
-@synthesize paddingHorizontal=_paddingHorizontal, pointHeight=_pointHeight,/*shouldFill=_shouldFill,*/ visibleWidth=_visibleWidth, drainPercentage=_drainPercentage;
+@synthesize paddingHorizontal=_paddingHorizontal, pointHeight=_pointHeight,/*shouldFill=_shouldFill,*/ visibleWidth=_visibleWidth, drainPercentage=_drainPercentage, drainedBorderWidth=_drainedBorderWidth;
 - (void)setPointHeight:(CGFloat)pointHeight {
     if (_pointHeight != pointHeight) {
         _pointHeight = pointHeight; [self setNeedsDisplay];
@@ -46,6 +47,11 @@ const CGFloat FSV_PULL_OUT_DISTANCE_FOR_ALL_BASE = 10.0;
 //        _shouldFill = shouldFill; [self setNeedsDisplay];
 //    }
 //}
+- (void)setBorderWidth:(CGFloat)drainedBorderWidth {
+    if (_drainedBorderWidth != drainedBorderWidth) {
+        _drainedBorderWidth = drainedBorderWidth; [self setNeedsDisplay];
+    }
+}
 - (void)drawInContext:(CGContextRef)ctx {
     
     CGMutablePathRef outerArrowPath = CGPathCreateMutable();
@@ -64,7 +70,7 @@ const CGFloat FSV_PULL_OUT_DISTANCE_FOR_ALL_BASE = 10.0;
         CGContextSetMiterLimit(ctx, 10.0); // Doesn't seem to have any effect. Solved by using clipping instead.
         CGContextSetLineJoin(ctx, kCGLineJoinMiter); // Doesn't seem to have any effect. Solved by using clipping instead.
         CGContextSetLineCap(ctx, kCGLineCapSquare); // Doesn't seem to have any effect. Solved by using clipping instead.
-        CGContextSetLineWidth(ctx, 6.0);
+        CGContextSetLineWidth(ctx, self.drainedBorderWidth);
         CGContextAddPath(ctx, outerArrowPath);
         CGContextClip(ctx);
         CGContextAddPath(ctx, outerArrowPath);
@@ -294,18 +300,40 @@ typedef enum {
     }
 }
 
-- (void)setAngledShapes:(BOOL)angledShapes {
+- (void)setAngledShapes:(BOOL)angledShapes angleSeverity:(AngleSeverity)angleSeverity {
+    
     if (_angledShapes != angledShapes) {
         _angledShapes = angledShapes;
     }
-//    self.stripeLeftLayer.shouldFill = !self.angledShapes;
-//    self.stripeRightLayer.shouldFill = !self.angledShapes;
-    // 3/4/5 Triangle
-//    CGFloat middlePointHeightMultiplier = 3.0 / 8.0;
-//    CGFloat sidesWedgeHeightMultiplier = 3.0 / 4.0;
-    // 1/1/sq(2) Triangle
-    CGFloat middlePointHeightMultiplier = 1.0 / 2.0;
-    CGFloat sidesWedgeHeightMultiplier = 1.0 / 1.0;
+    //    self.stripeLeftLayer.shouldFill = !self.angledShapes;
+    //    self.stripeRightLayer.shouldFill = !self.angledShapes;
+    
+    CGFloat middlePointHeightMultiplier = 0;
+    CGFloat sidesWedgeHeightMultiplier = 0;
+    
+    if (angledShapes) {
+        switch (angleSeverity) {
+            case Subtle51213:
+                // 5/12/13 Triangle
+                sidesWedgeHeightMultiplier = 5.0 / 12.0;
+                middlePointHeightMultiplier = 5.0 / 24.0;
+                break;
+            case Mild345:
+                // 3/4/5 Triangle
+                sidesWedgeHeightMultiplier = 3.0 / 4.0;
+                middlePointHeightMultiplier = 3.0 / 8.0;
+                break;
+            case Sharp112:
+            default:
+                // 1/1/sq(2) Triangle
+                middlePointHeightMultiplier = 1.0 / 2.0;
+                sidesWedgeHeightMultiplier = 1.0 / 1.0;
+                break;                
+        }        
+    } else {
+        angleSeverity = None;
+    }
+    
     self.stripeMiddleLayer.pointHeight = self.angledShapes ? (2 * self.arrowSideOverhangWidth + self.stripeWidth) * middlePointHeightMultiplier : 0.0;
     self.stripeMiddleLayer.paddingHorizontal = self.arrowSideOverhangWidth;
     CGFloat sidesPaddingBottom = 0;
@@ -326,6 +354,11 @@ typedef enum {
     // THE FOLLOWING IS TO FIX AN ANIMATION STUTTER WHEN FLIPPING THE ICON OVER A CUSTOM DRAWN CALayer. NOT SURE WHY IT'S HAPPENING. HIDING IT IN MOST CASES BY HIDING THE MIDDLE CUSTOM DRAWN LAYER WHEN NOT USING ANGLED SHAPES (AND USING A BACKGROUND COLOR ON THE VIEW FOR THE MIDDLE STRIPE INSTEAD).
     self.stripeMiddleLayer.hidden = !self.angledShapes;
     self.backgroundColor = self.angledShapes ? [UIColor whiteColor] : [UIColor feelingColor];
+    
+}
+
+- (void)setAngledShapes:(BOOL)angledShapes {
+    [self setAngledShapes:angledShapes angleSeverity:angledShapes ? Sharp112 : None];
 }
 
 - (void) updateStripesAlpha {
@@ -367,5 +400,9 @@ typedef enum {
 
 - (CGFloat)stripeWidth { return floorf(self.bounds.size.width / 3.0); }
 - (CGFloat)arrowSideOverhangWidth { return floorf(self.bounds.size.width / 4.0); }
+
+- (void)setMiddleStripeBorderWidth:(CGFloat)middleStripeBorderWidth {
+    self.stripeMiddleLayer.drainedBorderWidth = middleStripeBorderWidth;
+}
 
 @end

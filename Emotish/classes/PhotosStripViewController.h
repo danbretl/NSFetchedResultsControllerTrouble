@@ -14,6 +14,7 @@
 #import "ClipView.h"
 #import "TopBarView.h"
 #import "SubmitPhotoViewController.h"
+#import "FlagStretchView.h"
 
 typedef enum {
     NoFocus = 0,
@@ -51,6 +52,7 @@ typedef enum {
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * headerButton;
 @property (unsafe_unretained, nonatomic) IBOutlet ClipView * photosClipView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIScrollView * photosScrollView;
+@property (strong, nonatomic) FlagStretchView * flagStretchView;
 @property (strong, nonatomic) IBOutlet UIView *photosContainer;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewLeftmost;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewLeftCenter;

@@ -524,6 +524,7 @@
     }
 }
 
+// THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     NSLog(@"%@", NSStringFromSelector(_cmd));
@@ -538,6 +539,7 @@
     [photosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerForFeelingCallback:error:)];
 }
 
+// THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     NSLog(@"%@", NSStringFromSelector(_cmd));

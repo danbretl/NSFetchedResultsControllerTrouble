@@ -104,6 +104,7 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
         self.flagStretchView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.flagStretchView.icon.hidden = YES;
         self.flagStretchView.angledShapes = YES;
+        [self.flagStretchView setMiddleStripeBorderWidth:6.0];
 //        self.flagStretchView.alpha = 0.5;
 //        self.flagStretchView.pullOutSides = NO; // This, combined with angled shapes, is far too phallic.
         self.flagStretchView.activationDistanceStart = GFC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START;

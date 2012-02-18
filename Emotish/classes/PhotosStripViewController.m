@@ -16,6 +16,9 @@
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int PSVC_PHOTO_VIEWS_COUNT = 5;
 const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
+const CGFloat PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START = 35.0;
+const CGFloat PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_END = 65.0;
+const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGHT = 0.66;
 
 @interface PhotosStripViewController()
 @property (nonatomic) PhotosStripFocus focus;
@@ -45,6 +48,9 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 - (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView;
 - (void)emotishLogoTouched:(UIButton *)button;
 - (IBAction)addPhotoButtonTouched:(id)sender;
+- (void)getPhotosFromServerForFeeling:(Feeling *)feeling;
+- (void)getPhotosFromServerForUser:(User *)user;
+- (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
 @end
 
 @implementation PhotosStripViewController
@@ -65,6 +71,7 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
 @synthesize headerButton=_headerButton;
 @synthesize photosClipView = _photosClipView;
 @synthesize photosScrollView=_photosScrollView;
+@synthesize flagStretchView=_flagStretchView;
 @synthesize photosContainer = _photosContainer;
 @synthesize photoViewLeftmost = _photoViewLeftmost;
 @synthesize photoViewLeftCenter = _photoViewLeftCenter;
@@ -127,6 +134,33 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     UITapGestureRecognizer * tapToSelectPhotoViewGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tappedToSelectPhotoView:)];
     [self.photosScrollView addGestureRecognizer:tapToSelectPhotoViewGestureRecognizer];
     self.photosClipView.backgroundColor = [UIColor clearColor];
+    
+    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+//    CGFloat flagStretchViewHeight = floorf(self.photoViewCenter.photoImageView.bounds.size.height / 2.0);
+    CGFloat flagStretchViewHeight = floorf(self.photoViewCenter.photoImageView.bounds.size.height * PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGHT);
+    CGRect photoViewRectInScrollView = [self.photosScrollView convertRect:self.photoViewCenter.photoImageView.frame fromView:self.photoViewCenter.superview];
+    NSLog(@"photoViewRectInScrollView = %@", NSStringFromCGRect(photoViewRectInScrollView));
+    self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake((photoViewRectInScrollView.size.height - flagStretchViewHeight) / 2.0, -screenWidth - self.photosScrollView.frame.origin.x, flagStretchViewHeight, screenWidth)];
+    self.flagStretchView.transform = CGAffineTransformMakeRotation(-M_PI * 0.5);
+    self.flagStretchView.frame = CGRectMake(-screenWidth - self.photosScrollView.frame.origin.x, (photoViewRectInScrollView.size.height - flagStretchViewHeight) / 2.0, screenWidth, flagStretchViewHeight);
+    NSLog(@"flagStretchView.frame = %@", NSStringFromCGRect(self.flagStretchView.frame));
+    self.flagStretchView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.flagStretchView setAngledShapes:YES angleSeverity:Subtle51213];
+    [self.flagStretchView setMiddleStripeBorderWidth:10.0];
+//    self.flagStretchView.angledShapes = NO;
+    self.flagStretchView.activationDistanceStart = PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START;
+    self.flagStretchView.activationDistanceEnd = PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_END;
+    self.flagStretchView.activationAffectsAlpha = YES;
+    self.flagStretchView.sidesAlphaNormal = 0.5;
+    self.flagStretchView.sidesAlphaActivated = .9;
+    self.flagStretchView.middleAlphaNormal = 0.5;
+    self.flagStretchView.middleAlphaActivated = .9;
+//    self.flagStretchView.activationAffectsIcon = YES;
+//    self.flagStretchView.icon.opacity = 0.75;
+    self.flagStretchView.icon.hidden = YES;
+//    self.flagStretchView.iconDistanceFromBottom = 20.0;
+//    self.flagStretchView.activationDistanceEnd = 2 * self.flagStretchView.iconDistanceFromBottom + self.flagStretchView.icon.frame.size.height;
+    [self.photosScrollView insertSubview:self.flagStretchView aboveSubview:self.photosContainer];
     
     self.headerButton.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photosClipView.frame));
     self.headerButton.contentEdgeInsets = UIEdgeInsetsMake(0, self.photosScrollView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_MARGIN_TOP, 320 - (CGRectGetMaxX(self.photosScrollView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
@@ -416,6 +450,14 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     photoView.photoCaptionTextField.textColor = captionColor;
 }
 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+//    CGFloat pulledOutDistance = MAX(0, -scrollView.contentOffset.x);
+//    NSLog(@"pulledOutDistance = %f", MAX(0, -scrollView.contentOffset.x));
+    self.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.x);//pulledOutDistance;
+    [self.flagStretchView setActivated:scrollView.isTracking && self.flagStretchView.pulledOutDistance >= self.flagStretchView.activationDistanceEnd animated:YES];
+//    [self.flagStretchView setActivated:scrollView.isTracking && -scrollView.contentOffset.x >= self.flagStretchView.activationDistanceEnd animated:YES];
+}
+
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     CGFloat contentOffsetToMiddleX = scrollView.contentOffset.x + (scrollView.frame.size.width / 2.0);
     contentOffsetToMiddleX = MAX(contentOffsetToMiddleX, 0);
@@ -430,6 +472,13 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     [self reloadPhotoViewsFocusedOnPhoto:photoInView];
 //    self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
 //    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
+    if (self.flagStretchView.activated) {
+        if (self.focus == FeelingFocus) {
+            [self getPhotosFromServerForFeeling:self.feelingFocus];
+        } else {
+            [self getPhotosFromServerForUser:self.userFocus];
+        }
+    }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
@@ -738,6 +787,56 @@ const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
     submitPhotoViewController.coreDataManager = self.coreDataManager;
     submitPhotoViewController.delegate = self.delegate;
     [self presentModalViewController:submitPhotoViewController animated:NO];
+}
+
+// THIS METHOD IS DUPLICATED IN VARIOUS PLACES
+- (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
+    PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
+    feelingServer.objectId = feeling.serverID;
+    [photosQuery whereKey:@"feeling" equalTo:feelingServer];
+    photosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
+    [photosQuery orderByDescending:@"createdAt"];
+    [photosQuery includeKey:@"feeling"];
+    [photosQuery includeKey:@"user"];
+    [photosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
+}
+
+- (void)getPhotosFromServerForUser:(User *)user {
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
+    PFUser * userServer = [PFUser user];
+    userServer.objectId = user.serverID;
+    [userServer setObject:user.name forKey:@"username"];
+    [photosQuery whereKey:@"user" equalTo:userServer];
+    photosQuery.limit = [NSNumber numberWithInt:100]; // This should be revisited.
+    [photosQuery orderByDescending:@"createdAt"];
+    [photosQuery includeKey:@"feeling"];
+    [photosQuery includeKey:@"user"];
+    [photosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
+}
+
+// THIS METHOD IS DUPLICATED IN VARIOUS PLACES
+- (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error {
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    if (!error) {
+        NSLog(@"Success - %d results", results.count);
+        for (PFObject * photoServer in results) {
+            PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
+            PFObject * userServer = [photoServer objectForKey:@"user"];
+            [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
+        }
+        [self.coreDataManager saveCoreData];
+    } else {
+        NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
+        UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [errorAlert show];
+    }
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    [self updateViewsForCurrentFocus]; // This has issues with contentOffset
 }
 
 @end

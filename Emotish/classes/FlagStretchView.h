@@ -9,6 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 
+typedef enum {
+    None = 0,
+    Sharp112 = 112,
+    Mild345 = 345,
+    Subtle51213 = 51213,
+} AngleSeverity;
+
 @interface FlagStretchView : UIView
 
 @property (strong, nonatomic) CALayer * icon;
@@ -26,6 +33,8 @@
 @property (nonatomic) CFTimeInterval activationAnimationDuration;
 
 @property (nonatomic) BOOL angledShapes;
+- (void) setAngledShapes:(BOOL)angledShapes angleSeverity:(AngleSeverity)angleSeverity;
+- (void) setMiddleStripeBorderWidth:(CGFloat)middleStripeBorderWidth;
 @property (nonatomic) BOOL pullOutSides;
 @property (nonatomic) BOOL pullOutMiddle;
 @property (nonatomic) CGFloat pulledOutDistance;
