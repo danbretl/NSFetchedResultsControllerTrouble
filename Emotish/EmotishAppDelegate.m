@@ -31,9 +31,9 @@
         for (Feeling * feeling in [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
             [self.coreDataManager.managedObjectContext deleteObject:feeling];
         }
-        for (User * user in [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil]) {
-            [self.coreDataManager.managedObjectContext deleteObject:user];
-        }
+//        for (User * user in [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil]) {
+//            [self.coreDataManager.managedObjectContext deleteObject:user];
+//        }
         [self.coreDataManager saveCoreData];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData"];
     }
