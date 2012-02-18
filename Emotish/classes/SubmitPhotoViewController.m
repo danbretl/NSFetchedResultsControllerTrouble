@@ -324,7 +324,8 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
             textField.text = SPVC_USER_PLACEHOLDER_TEXT;
         }
     }
-    self.photoView.photoCaptionTextField.text = self.photoView.photoCaptionTextField.text.lowercaseString;
+    self.feelingTextField.text = [self.feelingTextField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    self.photoView.photoCaptionTextField.text = [self.photoView.photoCaptionTextField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     self.feelingWord = self.feelingTextField.text;
     self.userName = self.photoView.photoCaptionTextField.text;
     

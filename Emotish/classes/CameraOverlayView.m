@@ -210,6 +210,9 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     if ([textField.text isEqualToString:@""]) {
         textField.text = self.feelingPlaceholderText;
+    } else {
+        textField.text = [textField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        [self adjustFeelingPromptLabelForFeelingString:textField.text];
     }
 }
 
