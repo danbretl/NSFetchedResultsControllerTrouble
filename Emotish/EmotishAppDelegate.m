@@ -34,6 +34,9 @@
 //        for (User * user in [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil]) {
 //            [self.coreDataManager.managedObjectContext deleteObject:user];
 //        }
+        for (Photo * photo in [self.coreDataManager getAllObjectsForEntityName:@"Photo" predicate:nil sortDescriptors:nil]) {
+            [self.coreDataManager.managedObjectContext deleteObject:photo];
+        }
         [self.coreDataManager saveCoreData];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData"];
     }
