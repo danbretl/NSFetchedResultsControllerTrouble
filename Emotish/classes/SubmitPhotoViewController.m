@@ -76,6 +76,9 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
     
     self.scrollView.contentSize = self.view.bounds.size;
     
+    self.feelingTextField.text = self.feelingWord;
+    self.photoView.photoCaptionTextField.text = self.userName;
+    
     // Register for keyboard events
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
