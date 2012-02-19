@@ -22,6 +22,15 @@
     
     [Parse setApplicationId:@"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC" 
                   clientKey:@"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"];
+
+    // For server database QA...
+//    PFQuery * specialQuery = [PFQuery queryWithClassName:@"Photo"];
+//    PFObject * photo = [specialQuery getObjectWithId:@"t4Y2eS153G"];
+//    NSData * imageData = UIImageJPEGRepresentation([UIImage imageNamed:@"happy-bob-1329529876.jpeg"], 1.0);
+//    PFFile * imageFile = [PFFile fileWithName:@"happy-bob-1329529876.jpeg" data:imageData];
+//    [imageFile save];
+//    [photo setObject:imageFile forKey:@"image"];
+//    [photo save];
     
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
