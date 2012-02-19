@@ -13,6 +13,11 @@
 - (UIImage *)imageWithEmotishCameraViewCrop;
 //- (UIImage *)imageWithCrop:(CGRect)cropRect;
 - (UIImage *)imageWithCrop:(CGRect)cropRect;
+- (UIImage *)imageScaledDownToEmotishThumb;
+- (UIImage *)imageScaledDownToEmotishFull;
+- (UIImage *)imageScaledDownToSize:(CGSize)imageSize;
+- (UIImage *)imageScaledToSize:(CGSize)imageSize;
+
 + (NSString *) stringForImageOrientation:(UIImageOrientation)orientation;
 
 - (UIImage *) imageByScalingToSize:(CGSize)targetSize;

@@ -360,7 +360,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
         NSLog(@"  filename set to %@", filename);
         
         NSLog(@"setting up imageFile");
-        NSData * imageData = UIImageJPEGRepresentation(self.feelingImageSquare, 1.0);
+        NSData * imageData = UIImageJPEGRepresentation([self.feelingImageSquare imageScaledDownToEmotishFull], 1.0);
         PFFile * imageFile = [PFFile fileWithName:filename data:imageData];    
         NSLog(@"  imageFile = %@", imageFile);
         

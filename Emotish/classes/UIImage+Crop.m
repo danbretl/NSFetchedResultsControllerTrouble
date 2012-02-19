@@ -9,6 +9,7 @@
 #import "UIImage+Crop.h"
 #import "ViewConstants.h"
 #import "UIImage+Resize.h"
+#import "GalleryConstants.h"
 
 @implementation UIImage(Crop)
 
@@ -121,6 +122,33 @@ static inline double radians (double degrees) { return degrees * M_PI/180; }
             break;
     }
     return string;
+}
+
+- (UIImage *)imageScaledToSize:(CGSize)imageSize {
+    UIGraphicsBeginImageContext(imageSize);
+    [self drawInRect:CGRectMake(0, 0, imageSize.width, imageSize.height)];
+    UIImage * newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
+- (UIImage *)imageScaledDownToSize:(CGSize)imageSize {
+    if (self.size.width > imageSize.width ||
+        self.size.height > imageSize.height) {
+        return [self imageScaledToSize:imageSize];
+    } else {
+        return self;
+    }
+}
+
+- (UIImage *)imageScaledDownToEmotishThumb {
+    CGFloat thumbDimension2X = GC_FEELING_IMAGE_SIDE_LENGTH * 2.0;
+    return [self imageScaledDownToSize:CGSizeMake(thumbDimension2X, thumbDimension2X)];
+}
+
+- (UIImage *)imageScaledDownToEmotishFull {
+    CGFloat screenMinDimension2X = MIN([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) * 2.0;
+    return [self imageScaledDownToSize:CGSizeMake(screenMinDimension2X, screenMinDimension2X)];
 }
 
 - (UIImage *) imageByScalingToSize:(CGSize)targetSize {
