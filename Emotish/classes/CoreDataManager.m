@@ -37,11 +37,14 @@
     return fetchedObjects;
 }
 
-- (NSManagedObject *)getFirstObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors shouldMakeObjectIfNoMatch:(BOOL)shouldMakeObjectIfNoMatch {
+- (NSManagedObject *)getFirstObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors shouldMakeObjectIfNoMatch:(BOOL)shouldMakeObjectIfNoMatch newObjectMadeIndicator:(BOOL *)newObjectMadeIndicator {
     NSArray * matchingObjects = [self getAllObjectsForEntityName:entityName predicate:predicate sortDescriptors:sortDescriptors];
     NSManagedObject * matchingObject = matchingObjects.count > 0 ? [matchingObjects objectAtIndex:0] : nil;
     if (shouldMakeObjectIfNoMatch && matchingObject == nil) {
         matchingObject = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.managedObjectContext];
+        *newObjectMadeIndicator = YES;
+    } else {
+        *newObjectMadeIndicator = NO;
     }
     return matchingObject;
 }
@@ -56,25 +59,29 @@
 //}
 
 - (Feeling *)addOrUpdateFeelingFromServer:(PFObject *)feelingServer {
-    Feeling * feeling = (Feeling *)[self getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", feelingServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES];
+    BOOL newObjectMadeIndicator;
+    Feeling * feeling = (Feeling *)[self getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", feelingServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
     feeling.serverID = feelingServer.objectId;
     feeling.word = [feelingServer objectForKey:@"word"];
     return feeling;
 }
 
 - (User *)addOrUpdateUserFromServer:(PFObject *)userServer {
-    User * user = (User *)[self getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", userServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES];
+    BOOL newObjectMadeIndicator;
+    User * user = (User *)[self getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", userServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
     user.serverID = userServer.objectId;
     user.name = [userServer objectForKey:@"username"];
     return user;
 }
 
 - (Photo *)addOrUpdatePhotoFromServer:(PFObject *)photoServer {
-    Photo * photo = (Photo *)[self getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", photoServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES];
+    BOOL newObjectMadeIndicator;
+    Photo * photo = (Photo *)[self getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", photoServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
     photo.serverID = photoServer.objectId;
     PFFile * imageFile = [photoServer objectForKey:@"image"];
     photo.imageURL = imageFile.url;
     photo.datetime = photoServer.createdAt;
+//    photo.shouldHighlight = [NSNumber numberWithBool:newObjectMadeIndicator]; // This is unnecessary, for now. This value defaults to YES, which is what we want. Otherwise, it is set to NO when an image is viewed.
     return photo;
 }
 

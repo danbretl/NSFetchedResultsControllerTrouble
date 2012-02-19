@@ -146,6 +146,8 @@
 		325C287914E9843500019977 /* btn_done.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C287114E9843500019977 /* btn_done.png */; };
 		325C287A14E9843500019977 /* btn_done@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C287214E9843500019977 /* btn_done@2x.png */; };
 		326127CA14DCC25E001FD065 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 326127C914DCC25E001FD065 /* QuartzCore.framework */; };
+		3279146A14F0CE7900CFDAC4 /* gallery_image_highlight_tab.png in Resources */ = {isa = PBXBuildFile; fileRef = 3279146814F0CE7900CFDAC4 /* gallery_image_highlight_tab.png */; };
+		3279146B14F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3279146914F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png */; };
 		327BE6E814D74EAE0051C549 /* PhotosStripViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */; };
 		327BE6E914D74EAE0051C549 /* PhotosStripViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */; };
 		32835D7E14ED8A3700CE66A8 /* photo_image_placeholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 32835D7C14ED8A3700CE66A8 /* photo_image_placeholder.png */; };
@@ -304,6 +306,7 @@
 		322177A114EC2E0200D48F99 /* top_bar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = top_bar.png; sourceTree = "<group>"; };
 		322177A214EC2E0200D48F99 /* top_bar@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "top_bar@2x.png"; sourceTree = "<group>"; };
 		322177A914EC601A00D48F99 /* Emotish 003.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 003.xcdatamodel"; sourceTree = "<group>"; };
+		322C294714F0C6D50001E580 /* Emotish 004.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 004.xcdatamodel"; sourceTree = "<group>"; };
 		322C4E5714E31AC50012FA78 /* bottom_bar_smaller.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bottom_bar_smaller.png; sourceTree = "<group>"; };
 		322C4E5814E31AC50012FA78 /* bottom_bar_smaller@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bottom_bar_smaller@2x.png"; sourceTree = "<group>"; };
 		322C4E5B14E325C00012FA78 /* btn_camera_touch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_camera_touch.png; sourceTree = "<group>"; };
@@ -342,6 +345,8 @@
 		325C287214E9843500019977 /* btn_done@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "btn_done@2x.png"; sourceTree = "<group>"; };
 		326127C914DCC25E001FD065 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3263210C14DC7AE400E2E10A /* Emotish 002.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 002.xcdatamodel"; sourceTree = "<group>"; };
+		3279146814F0CE7900CFDAC4 /* gallery_image_highlight_tab.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gallery_image_highlight_tab.png; sourceTree = "<group>"; };
+		3279146914F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gallery_image_highlight_tab@2x.png"; sourceTree = "<group>"; };
 		327BE6E514D74EAE0051C549 /* PhotosStripViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhotosStripViewController.h; path = classes/PhotosStripViewController.h; sourceTree = "<group>"; };
 		327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotosStripViewController.m; path = classes/PhotosStripViewController.m; sourceTree = "<group>"; };
 		327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = PhotosStripViewController.xib; path = classes/PhotosStripViewController.xib; sourceTree = "<group>"; };
@@ -612,6 +617,8 @@
 		322C4E6314E333DD0012FA78 /* Mock */ = {
 			isa = PBXGroup;
 			children = (
+				3279146814F0CE7900CFDAC4 /* gallery_image_highlight_tab.png */,
+				3279146914F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png */,
 				32835D7C14ED8A3700CE66A8 /* photo_image_placeholder.png */,
 				32835D7D14ED8A3700CE66A8 /* photo_image_placeholder@2x.png */,
 				322C4E5714E31AC50012FA78 /* bottom_bar_smaller.png */,
@@ -1012,6 +1019,8 @@
 				320730BB14EEDDED00F95618 /* btn_image_overlay_twitter_touch@2x.png in Resources */,
 				320730BC14EEDDED00F95618 /* btn_image_overlay_twitter.png in Resources */,
 				320730BD14EEDDED00F95618 /* btn_image_overlay_twitter@2x.png in Resources */,
+				3279146A14F0CE7900CFDAC4 /* gallery_image_highlight_tab.png in Resources */,
+				3279146B14F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1191,11 +1200,12 @@
 			isa = XCVersionGroup;
 			children = (
 				322177A914EC601A00D48F99 /* Emotish 003.xcdatamodel */,
+				322C294714F0C6D50001E580 /* Emotish 004.xcdatamodel */,
 				3263210C14DC7AE400E2E10A /* Emotish 002.xcdatamodel */,
 				323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */,
 				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
 			);
-			currentVersion = 322177A914EC601A00D48F99 /* Emotish 003.xcdatamodel */;
+			currentVersion = 322C294714F0C6D50001E580 /* Emotish 004.xcdatamodel */;
 			path = Emotish.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

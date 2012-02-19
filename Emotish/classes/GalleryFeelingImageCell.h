@@ -15,10 +15,13 @@
 
 //@property (strong, nonatomic) UIImageView * feelingImageView;
 @property (strong, nonatomic) UIButton * button;
+@property (strong, nonatomic) UIView * highlightTab;
 @property (nonatomic) NSInteger feelingIndex;
 @property (nonatomic) NSInteger imageIndex;
 @property (unsafe_unretained, nonatomic) GalleryFeelingCell * feelingCell;
 @property (unsafe_unretained, nonatomic) id<GalleryFeelingImageCellDelegate> delegate;
+
+- (void)setHighlightTabVisible:(BOOL)visibility animated:(BOOL)animated;
 
 @end
 

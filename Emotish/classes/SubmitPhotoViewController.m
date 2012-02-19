@@ -369,7 +369,8 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
         NSLog(@"  saving imageFile success? %d", savingSuccess);
         
         NSLog(@"setting up feeling");
-        Feeling * feelingLocal = (Feeling *)[self.coreDataManager getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", self.feelingWord.lowercaseString] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO];
+        BOOL objectMadeIndicator;
+        Feeling * feelingLocal = (Feeling *)[self.coreDataManager getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", self.feelingWord.lowercaseString] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:&objectMadeIndicator];
         PFObject * feelingServer = nil;
         if (feelingLocal != nil) {
             feelingServer = [PFObject objectWithClassName:@"Feeling"];
@@ -399,7 +400,8 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
                 NSLog(@"  currentUser is not nil, but currentUser.username is not the same as given userName");
                 [PFUser logOut];
             }
-            User * userLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"name == %@", self.userName] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO];
+            BOOL * objectMadeIndicator;
+            User * userLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"name == %@", self.userName] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:objectMadeIndicator];
             if (userLocal != nil) {
                 NSLog(@"  userLocal is not nil, userLocal.serverID = %@", userLocal.serverID);
                 userServer = [PFQuery getUserObjectWithId:userLocal.serverID];

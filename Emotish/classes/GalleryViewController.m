@@ -141,8 +141,14 @@
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+    NSLog(@"GalleryViewController viewDidAppear");
     [super viewDidAppear:animated];
     self.galleryScreenshot = nil;
+    for (GalleryFeelingCell * galleryFeelingCell in self.feelingsTableView.visibleCells) {
+        for (GalleryFeelingImageCell * galleryFeelingImageCell in galleryFeelingCell.imagesTableView.visibleCells) {
+            [galleryFeelingImageCell setHighlightTabVisible:((Photo *)[galleryFeelingCell.photos objectAtIndex:galleryFeelingImageCell.imageIndex]).shouldHighlight.boolValue animated:YES];
+        }
+    }
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {

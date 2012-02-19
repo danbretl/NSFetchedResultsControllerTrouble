@@ -219,6 +219,7 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
     cell.feelingIndex = self.feelingIndex;
     cell.imageIndex = indexPath.row;
     cell.feelingCell = self;
+    [cell setHighlightTabVisible:photo.shouldHighlight.boolValue animated:NO];
                      
     // Return the cell
     return cell;

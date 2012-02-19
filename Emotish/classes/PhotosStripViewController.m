@@ -315,6 +315,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.animationInPersistentImage = nil;
         
     }
+    NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
 }
 
 
@@ -327,6 +328,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.focus = FeelingFocus;
     self.feelingFocus = feeling;
     self.photoInView = photo;
+    self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
     if (self.view.window) {
         [self updateViewsForCurrentFocus];
 //        self.photoViewInView = self.photoViewCenter;
@@ -338,6 +340,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.focus = UserFocus;
     self.userFocus = user;
     self.photoInView = photo;
+    self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
     if (self.view.window) {
         [self updateViewsForCurrentFocus];
 //        self.photoViewInView = self.photoViewCenter;
@@ -466,6 +469,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     Photo * photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
     if (!decelerate) {
         self.photoInView = photoInView;
+        self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
 //        NSLog(@"Photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
 //        NSLog(@"Photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
     }
@@ -484,6 +488,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     NSUInteger indexOfPhotoInView = (int)scrollView.contentOffset.x / (int)self.photosScrollView.frame.size.width;
     self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
+    self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
 //    NSLog(@"Photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
 //    NSLog(@"Photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
 //    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];

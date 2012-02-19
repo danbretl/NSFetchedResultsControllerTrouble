@@ -19,5 +19,6 @@
 @property (nonatomic, retain) User *user;
 @property (nonatomic, retain) NSString * serverID;
 @property (nonatomic, retain) NSString * imageURL;
+@property (nonatomic, retain) NSNumber * shouldHighlight;
 
 @end

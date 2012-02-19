@@ -19,5 +19,6 @@
 @dynamic user;
 @dynamic serverID;
 @dynamic imageURL;
+@dynamic shouldHighlight;
 
 @end
