@@ -51,6 +51,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling;
 - (void)getPhotosFromServerForUser:(User *)user;
 - (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
+@property (strong, nonatomic) PFQuery * getPhotosQuery;
 @end
 
 @implementation PhotosStripViewController
@@ -84,6 +85,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize addPhotoLabel = _addPhotoLabel;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
+@synthesize getPhotosQuery=_getPhotosQuery;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -316,6 +318,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         
     }
     NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.getPhotosQuery cancel];
 }
 
 
@@ -798,30 +805,30 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     NSLog(@"%@", NSStringFromSelector(_cmd));
-    PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
+    self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
     PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
     feelingServer.objectId = feeling.serverID;
-    [photosQuery whereKey:@"feeling" equalTo:feelingServer];
-    photosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
-    [photosQuery orderByDescending:@"createdAt"];
-    [photosQuery includeKey:@"feeling"];
-    [photosQuery includeKey:@"user"];
-    [photosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
+    [self.getPhotosQuery whereKey:@"feeling" equalTo:feelingServer];
+    self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
+    [self.getPhotosQuery orderByDescending:@"createdAt"];
+    [self.getPhotosQuery includeKey:@"feeling"];
+    [self.getPhotosQuery includeKey:@"user"];
+    [self.getPhotosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
 }
 
 - (void)getPhotosFromServerForUser:(User *)user {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     NSLog(@"%@", NSStringFromSelector(_cmd));
-    PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
+    self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
     PFUser * userServer = [PFUser user];
     userServer.objectId = user.serverID;
     [userServer setObject:user.name forKey:@"username"];
-    [photosQuery whereKey:@"user" equalTo:userServer];
-    photosQuery.limit = [NSNumber numberWithInt:100]; // This should be revisited.
-    [photosQuery orderByDescending:@"createdAt"];
-    [photosQuery includeKey:@"feeling"];
-    [photosQuery includeKey:@"user"];
-    [photosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
+    [self.getPhotosQuery whereKey:@"user" equalTo:userServer];
+    self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be revisited.
+    [self.getPhotosQuery orderByDescending:@"createdAt"];
+    [self.getPhotosQuery includeKey:@"feeling"];
+    [self.getPhotosQuery includeKey:@"user"];
+    [self.getPhotosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
 }
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
