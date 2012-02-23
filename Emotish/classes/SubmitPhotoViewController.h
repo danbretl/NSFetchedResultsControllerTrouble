@@ -13,10 +13,11 @@
 #import "Photo.h"
 #import "CoreDataManager.h"
 #import "UITextFieldWithInset.h"
+#import "AccountViewController.h"
 
 @protocol SubmitPhotoViewControllerDelegate;
 
-@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate>
+@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate>
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;

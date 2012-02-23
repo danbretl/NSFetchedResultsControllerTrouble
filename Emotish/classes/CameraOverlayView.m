@@ -48,8 +48,9 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
         CGFloat shadowOpacity = 0.5;
         
         self.topBar = [[TopBarView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, CAMERA_OVERLAY_TOP_BAR_HEIGHT)];
-        self.topBar.backgroundView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"top_bar_camera_view.png"]];
-        self.topBar.buttonBranding.alpha = 0.0;
+        self.topBar.backgroundView.image = [UIImage imageNamed:@"top_bar_camera_view.png"];
+        self.topBar.buttonBranding.hidden = YES;
+        self.topBar.backgroundFlagView.hidden = YES;
         [self addSubview:self.topBar];
 //        self.topBar.clipsToBounds = NO;
 //        self.topBar.backgroundView.clipsToBounds = NO;

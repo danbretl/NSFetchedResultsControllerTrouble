@@ -14,8 +14,9 @@
 #import "FlagStretchView.h"
 #import "TopBarView.h"
 #import "SubmitPhotoViewController.h"
+#import "AccountViewController.h"
 
-@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate> {
+@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate, AccountViewControllerDelegate> {
     
     BOOL debugging;
     

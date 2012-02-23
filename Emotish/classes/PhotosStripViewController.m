@@ -12,6 +12,7 @@
 #import "UIColor+Emotish.h"
 #import <QuartzCore/QuartzCore.h>
 #import "UIImageView+WebCache.h"
+#import <Parse/Parse.h>
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int PSVC_PHOTO_VIEWS_COUNT = 5;
@@ -52,6 +53,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)getPhotosFromServerForUser:(User *)user;
 - (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
 @property (strong, nonatomic) PFQuery * getPhotosQuery;
+- (void) profileButtonTouched:(UIButton *)button;
+- (void) settingsButtonTouched:(UIButton *)button;
 @end
 
 @implementation PhotosStripViewController
@@ -274,7 +277,15 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         }
         
     } else {
-        [self.topBar showButtonType:self.focus == FeelingFocus ? ProfileButton : SettingsButton inPosition:LeftSpecial animated:NO];
+        TopBarButtonType leftSpecialButtonType = 0;
+        if (self.focus == FeelingFocus) {
+            leftSpecialButtonType = ProfileButton;
+        } else {
+            PFUser * currentUser = [PFUser currentUser];
+            leftSpecialButtonType = currentUser && [currentUser.objectId isEqualToString:self.userFocus.serverID] ? SettingsButton : ProfileButton;
+        }
+        [self.topBar showButtonType:leftSpecialButtonType inPosition:LeftSpecial animated:NO];
+        self.topBar.buttonLeftSpecial.enabled = NO;
     }
 }
 
@@ -305,7 +316,15 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                 [self.topBar hideButtonInPosition:RightNormal animated:NO];
                 self.addPhotoButton.alpha = 1.0;
             }
-            [self.topBar showButtonType:self.focus == FeelingFocus ? ProfileButton : SettingsButton inPosition:LeftSpecial animated:NO];
+            TopBarButtonType leftSpecialButtonType = 0;
+            if (self.focus == FeelingFocus) {
+                leftSpecialButtonType = ProfileButton;
+            } else {
+                PFUser * currentUser = [PFUser currentUser];
+                leftSpecialButtonType = currentUser && [currentUser.objectId isEqualToString:self.userFocus.serverID] ? SettingsButton : ProfileButton;
+            }
+            [self.topBar showButtonType:leftSpecialButtonType inPosition:LeftSpecial animated:NO];
+            self.topBar.buttonLeftSpecial.enabled = NO;
             
         } completion:^(BOOL finished){
             self.floatingImageView.alpha = 0.0;
@@ -849,6 +868,14 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     }
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     [self updateViewsForCurrentFocus]; // This has issues with contentOffset
+}
+
+- (void)profileButtonTouched:(UIButton *)button {
+    
+}
+
+- (void)settingsButtonTouched:(UIButton *)button {
+    
 }
 
 @end

@@ -18,6 +18,7 @@
 @interface GalleryViewController()
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
 - (void) emotishLogoTouched:(UIButton *)button;
+- (void) profileButtonTouched:(UIButton *)button;
 - (IBAction)addPhotoButtonTouched:(id)sender;
 - (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 @property (strong, nonatomic) UIImage * galleryScreenshot;
@@ -42,6 +43,26 @@
 @synthesize bottomBar = _bottomBar;
 @synthesize addPhotoButton = _addPhotoButton;
 @synthesize galleryScreenshot=_galleryScreenshot;
+
+//- (void) changeColor:(NSTimer *)timer {
+//    if ([self.topBar.backgroundView.backgroundColor isEqual:[UIColor whiteColor]]) {
+//        self.topBar.backgroundView.backgroundColor = [UIColor blackColor];
+//    } else {
+//        self.topBar.backgroundView.backgroundColor = [UIColor whiteColor];
+//    }
+//}
+//
+//- (void) animateTopBar {
+//    self.topBar.backgroundView.image = nil;
+//    NSTimer * timer = [NSTimer timerWithTimeInterval:0.25 target:self selector:@selector(changeColor:) userInfo:nil repeats:YES];
+//    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+////    [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionRepeat animations:^{
+////        NSLog(@"animateTopBar");
+////        self.topBar.backgroundView.backgroundColor = whiteBool ? [UIColor whiteColor] : [UIColor blackColor];
+////        whiteBool = !whiteBool;
+////        NSLog(@"animateTopBar");
+////    } completion:NULL];
+//}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -74,12 +95,14 @@
     
     [self.topBar.buttonBranding addTarget:self action:@selector(emotishLogoTouched:) forControlEvents:UIControlEventTouchUpInside];
     [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
+    NSLog(@"self.topBar.buttonLeftSpecial = %@", self.topBar.buttonLeftSpecial);
+    [self.topBar.buttonLeftSpecial addTarget:self action:@selector(profileButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
         
     self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
     self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL + VC_BOTTOM_BAR_HEIGHT, 0);
     self.feelingsTableView.scrollsToTop = YES;
 
-    CGFloat tableHeaderViewFlagVisibleHeight = 3.0;
+    CGFloat tableHeaderViewFlagVisibleHeight = 1.0;
     UIView * tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, tableHeaderViewFlagVisibleHeight + GC_FEELING_IMAGE_MARGIN_VERTICAL)];
     
     self.feelingsTableView.tableHeaderView = tableHeaderView;
@@ -113,6 +136,8 @@
 	}
     
     [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
+    
+//    [self animateTopBar];
     
 }
 
@@ -454,6 +479,47 @@
         [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
     } else {
         [self.feelingsTableView setContentOffset:CGPointMake(0, -(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL)) animated:YES];
+    }
+}
+
+- (void)profileButtonTouched:(UIButton *)button {
+    NSLog(@"profileButtonTouched");
+    PFUser * currentUser = [PFUser currentUser];
+    if (currentUser == nil) {
+        AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
+        accountViewController.delegate = self;
+        accountViewController.coreDataManager = self.coreDataManager;
+        [self presentModalViewController:accountViewController animated:YES];
+    } else {
+
+        BOOL newObjectMadeIndicator;
+        User * currentUserLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", currentUser.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:&newObjectMadeIndicator];
+        
+        PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+        feelingStripViewController.delegate = self;
+        feelingStripViewController.coreDataManager = self.coreDataManager;
+        feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
+        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]] shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:&newObjectMadeIndicator];
+        [feelingStripViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
+        [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:nil];
+        self.galleryScreenshot = self.galleryScreenshotCurrent;
+        feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
+        
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            self.feelingsTableView.alpha = 0.0;
+            self.feelingsTableView.userInteractionEnabled = NO;
+        } completion:^(BOOL finished){
+            [self.navigationController pushViewController:feelingStripViewController animated:NO];
+        }];
+        
+    }
+}
+
+- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
+    [self dismissModalViewControllerAnimated:YES];
+    if (finishedWithConnection) {
+        UIAlertView * loggedInAlertView = [[UIAlertView alloc] initWithTitle:@"Logged In" message:@"Have fun expressing yourself!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [loggedInAlertView show];
     }
 }
 

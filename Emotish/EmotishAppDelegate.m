@@ -22,6 +22,7 @@
     
     [Parse setApplicationId:@"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC" 
                   clientKey:@"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"];
+    [Parse setFacebookApplicationId:@"247509625333388"];
 
     // For server database QA...
 //    PFQuery * specialQuery = [PFQuery queryWithClassName:@"Photo"];
@@ -31,6 +32,13 @@
 //    [imageFile save];
 //    [photo setObject:imageFile forKey:@"image"];
 //    [photo save];
+    
+    BOOL shouldLogOut = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeLogOutComplete"]);
+    if (shouldLogOut) {
+        NSLog(@"Forcibly logging current user out");
+        [PFUser logOut];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeLogOutComplete"];
+    }
     
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
@@ -99,6 +107,15 @@
 {
     // Saves changes in the application's managed object context before the application terminates.
     [self saveContext];
+}
+
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+    return [[PFUser facebook] handleOpenURL:url];
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url
+  sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    return [[PFUser facebook] handleOpenURL:url]; 
 }
 
 - (void)saveContext

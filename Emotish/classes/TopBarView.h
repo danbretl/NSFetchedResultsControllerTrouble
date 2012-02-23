@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FlagStretchView.h"
 
 typedef enum {
     BrandingRight = 100,
@@ -34,7 +35,8 @@ typedef enum {
 @property (strong, nonatomic) UIButton * buttonLeftSpecial;
 @property (strong, nonatomic) UIButton * buttonLeftNormal;
 @property (strong, nonatomic) UIButton * buttonRightNormal;
-@property (strong, nonatomic) UIView * backgroundView;
+@property (strong, nonatomic) UIImageView * backgroundView;
+@property (strong, nonatomic) FlagStretchView * backgroundFlagView;
 
 - (void) setViewMode:(TopBarViewMode)viewMode animated:(BOOL)animated;
 - (void) showButtonType:(TopBarButtonType)buttonType inPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;

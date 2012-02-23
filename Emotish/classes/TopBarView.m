@@ -47,7 +47,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
 @synthesize buttonsDictionary=_buttonsDictionary;
 @synthesize buttonBranding=_buttonBranding, buttonLeftSpecial=_buttonLeftSpecial, buttonLeftSpecialA=_buttonLeftSpecialA, buttonLeftSpecialB=_buttonLeftSpecialB, buttonLeftNormal=_buttonLeftNormal, buttonLeftNormalA=_buttonLeftNormalA, buttonLeftNormalB=_buttonLeftNormalB, buttonRightNormal=_buttonRightNormal, buttonRightNormalA=_buttonRightNormalA, buttonRightNormalB=_buttonRightNormalB, dividerLayer=_dividerLayer;
 @synthesize viewMode=_viewMode;
-@synthesize backgroundView=_backgroundView;
+@synthesize backgroundView=_backgroundView, backgroundFlagView=_backgroundFlagView;
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -68,10 +68,18 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     
     self.backgroundColor = [UIColor blackColor];
     
-    self.backgroundView = [[UIView alloc] initWithFrame:self.bounds];
-    self.backgroundView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"top_bar.png"]];
+    UIImage * backgroundViewImage = [UIImage imageNamed:@"top_bar.png"];
+    self.backgroundView = [[UIImageView alloc] initWithFrame:self.bounds];// CGRectMake(0, 0, backgroundViewImage.size.width, backgroundViewImage.size.height)];
+    self.backgroundView.image = backgroundViewImage;
     self.backgroundView.contentMode = UIViewContentModeTop;
+    self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:self.backgroundView];
+    
+    self.backgroundFlagView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, 10, self.bounds.size.width, self.bounds.size.height - 10)];
+    self.backgroundFlagView.angledShapes = NO;
+    self.backgroundFlagView.icon.hidden = YES;
+    self.backgroundFlagView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self insertSubview:self.backgroundFlagView belowSubview:self.backgroundView];
     
     _viewMode = BrandingRight;
     self.buttonBranding = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -159,8 +167,10 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     NSNumber * buttonCurrentButtonType = [self.buttonsDictionary valueForKey:[NSString stringWithFormat:@"%d", buttonPosition]];
     if (buttonCurrentButtonType == nil ||
         buttonCurrentButtonType.intValue != buttonType) {
+        NSLog(@"buttonCurrentButtonType == nil || buttonCurrentButtonType.intValue != buttonType ---> YES");
           
         UIButton * buttonSpare = [self buttonSpareForPosition:buttonPosition];
+        NSLog(@"buttonSpareForPosition:%d ---> %@", buttonPosition, buttonSpare);
         
         UIImage * buttonImage = nil;
         UIImage * buttonImageTouch = nil;
@@ -172,29 +182,32 @@ const double  TBV_ANIMATION_DURATION = 0.25;
             buttonImageTouch = [UIImage imageNamed:@"icon_settings_touch.png"];        
         } else if (buttonType == BackButton) {
             buttonImage = [UIImage imageNamed:@"btn_back.png"];
-            buttonImageTouch = [UIImage imageNamed:@"btn_back.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_back_touch.png"];
         } else if (buttonType == CancelButton) {
             buttonImage = [UIImage imageNamed:@"btn_cancel.png"];
-            buttonImageTouch = [UIImage imageNamed:@"btn_cancel.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_cancel_touch.png"];
         } else if (buttonType == DoneButton) {
             buttonImage = [UIImage imageNamed:@"btn_done.png"];
-            buttonImageTouch = [UIImage imageNamed:@"btn_done.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_done_touch.png"];
         } else if (buttonType == SendButton) {
             buttonImage = [UIImage imageNamed:@"btn_send.png"];
-            buttonImageTouch = [UIImage imageNamed:@"btn_send.png"];
+            buttonImageTouch = [UIImage imageNamed:@"btn_send_touch.png"];
         }
         [buttonSpare setImage:buttonImage forState:UIControlStateNormal];
         [buttonSpare setImage:buttonImageTouch forState:UIControlStateHighlighted];
-        void(^buttonChanges)(void) = ^{
-            buttonCurrent.alpha = 0.0;
-            buttonSpare.alpha = 1.0;
-            if (buttonPosition == LeftSpecial) {
+        void(^buttonChanges)(UIButton *, UIButton *, TopBarButtonPosition) = ^(UIButton * buttonToHide, UIButton * buttonToShow, TopBarButtonPosition buttonsPosition) {
+            buttonToHide.alpha = 0.0;
+            buttonToShow.alpha = 1.0;
+//            buttonCurrent.alpha = 0.0;
+//            buttonSpare.alpha = 1.0;
+            if (buttonsPosition == LeftSpecial) {
                 self.dividerLayer.opacity = 1.0;
             }
         };
-        [UIView animateWithDuration:animated ? TBV_ANIMATION_DURATION : 0.0 animations:buttonChanges completion:^(BOOL finished){
-            [self setButtonCurrent:buttonSpare forPosition:buttonPosition];
-            [self.buttonsDictionary setValue:[NSNumber numberWithInt:buttonType] forKey:[NSString stringWithFormat:@"%d", buttonPosition]];
+        [self setButtonCurrent:buttonSpare forPosition:buttonPosition];
+        [self.buttonsDictionary setValue:[NSNumber numberWithInt:buttonType] forKey:[NSString stringWithFormat:@"%d", buttonPosition]];
+        [UIView animateWithDuration:animated ? TBV_ANIMATION_DURATION : 0.0 animations:^{
+            buttonChanges(buttonCurrent, buttonSpare, buttonPosition);
         }];
     }
 
@@ -241,6 +254,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
 
 // To avoid a dumb ARC compiler warning "PerformSelector may cause a leak because its selector is unknown."
 - (void) setButtonCurrent:(UIButton *)button forPosition:(TopBarButtonPosition)buttonPosition {
+    NSLog(@"setButtonCurrent:(UIButton *)%@ forPosition:(TopBarButtonPosition)%d", button, buttonPosition);
     if (buttonPosition == LeftSpecial) {
         self.buttonLeftSpecial = button;
     } else if (buttonPosition == LeftNormal) {

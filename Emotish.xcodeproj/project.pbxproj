@@ -130,11 +130,16 @@
 		322C4E7114E334300012FA78 /* icon_settings_touch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 322C4E6914E334300012FA78 /* icon_settings_touch@2x.png */; };
 		322C4E7214E334300012FA78 /* icon_settings.png in Resources */ = {isa = PBXBuildFile; fileRef = 322C4E6A14E334300012FA78 /* icon_settings.png */; };
 		322C4E7314E334300012FA78 /* icon_settings@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 322C4E6B14E334300012FA78 /* icon_settings@2x.png */; };
+		323401B014F5731900B887F2 /* UIView+GetFirstResponder.m in Sources */ = {isa = PBXBuildFile; fileRef = 323401AF14F5731900B887F2 /* UIView+GetFirstResponder.m */; };
+		323401B414F5733300B887F2 /* AccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 323401B214F5733300B887F2 /* AccountViewController.m */; };
+		323401B514F5733300B887F2 /* AccountViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 323401B314F5733300B887F2 /* AccountViewController.xib */; };
 		323B2FD614D765250035BF74 /* UIColor+Emotish.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FD514D765250035BF74 /* UIColor+Emotish.m */; };
 		323B2FDD14D77B0E0035BF74 /* CoreDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */; };
 		323B2FE014D77C4A0035BF74 /* User.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FDF14D77C4A0035BF74 /* User.m */; };
 		323B2FE314D77C4A0035BF74 /* Photo.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FE214D77C4A0035BF74 /* Photo.m */; };
 		323B2FE614D77C4A0035BF74 /* Feeling.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FE514D77C4A0035BF74 /* Feeling.m */; };
+		323F2EFF14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.m in Sources */ = {isa = PBXBuildFile; fileRef = 323F2EFE14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.m */; };
+		3240621014F46054001F0A89 /* NSString+EmailValidity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3240620F14F46054001F0A89 /* NSString+EmailValidity.m */; };
 		3244017B14D9A0F30056DC81 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017A14D9A0F30056DC81 /* icon.png */; };
 		3244017D14D9A0F80056DC81 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017C14D9A0F80056DC81 /* icon@2x.png */; };
 		3244017F14D9A47D0056DC81 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017E14D9A47D0056DC81 /* Default.png */; };
@@ -321,6 +326,11 @@
 		322C4E6914E334300012FA78 /* icon_settings_touch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_settings_touch@2x.png"; sourceTree = "<group>"; };
 		322C4E6A14E334300012FA78 /* icon_settings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_settings.png; sourceTree = "<group>"; };
 		322C4E6B14E334300012FA78 /* icon_settings@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_settings@2x.png"; sourceTree = "<group>"; };
+		323401AE14F5731900B887F2 /* UIView+GetFirstResponder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIView+GetFirstResponder.h"; path = "classes/UIView+GetFirstResponder.h"; sourceTree = "<group>"; };
+		323401AF14F5731900B887F2 /* UIView+GetFirstResponder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIView+GetFirstResponder.m"; path = "classes/UIView+GetFirstResponder.m"; sourceTree = "<group>"; };
+		323401B114F5733300B887F2 /* AccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AccountViewController.h; path = classes/AccountViewController.h; sourceTree = "<group>"; };
+		323401B214F5733300B887F2 /* AccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AccountViewController.m; path = classes/AccountViewController.m; sourceTree = "<group>"; };
+		323401B314F5733300B887F2 /* AccountViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = AccountViewController.xib; path = classes/AccountViewController.xib; sourceTree = "<group>"; };
 		323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 001.xcdatamodel"; sourceTree = "<group>"; };
 		323B2FD414D765250035BF74 /* UIColor+Emotish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIColor+Emotish.h"; path = "classes/UIColor+Emotish.h"; sourceTree = "<group>"; };
 		323B2FD514D765250035BF74 /* UIColor+Emotish.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIColor+Emotish.m"; path = "classes/UIColor+Emotish.m"; sourceTree = "<group>"; };
@@ -332,6 +342,10 @@
 		323B2FE214D77C4A0035BF74 /* Photo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Photo.m; path = classes/Photo.m; sourceTree = "<group>"; };
 		323B2FE414D77C4A0035BF74 /* Feeling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Feeling.h; path = classes/Feeling.h; sourceTree = "<group>"; };
 		323B2FE514D77C4A0035BF74 /* Feeling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Feeling.m; path = classes/Feeling.m; sourceTree = "<group>"; };
+		323F2EFD14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UITextFieldWithInsetAndUnderline.h; path = classes/UITextFieldWithInsetAndUnderline.h; sourceTree = "<group>"; };
+		323F2EFE14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UITextFieldWithInsetAndUnderline.m; path = classes/UITextFieldWithInsetAndUnderline.m; sourceTree = "<group>"; };
+		3240620E14F46054001F0A89 /* NSString+EmailValidity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+EmailValidity.h"; path = "classes/NSString+EmailValidity.h"; sourceTree = "<group>"; };
+		3240620F14F46054001F0A89 /* NSString+EmailValidity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+EmailValidity.m"; path = "classes/NSString+EmailValidity.m"; sourceTree = "<group>"; };
 		3241E5EC14D3340B00D46F63 /* ViewConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ViewConstants.h; path = classes/ViewConstants.h; sourceTree = "<group>"; };
 		3244017A14D9A0F30056DC81 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		3244017C14D9A0F80056DC81 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
@@ -627,6 +641,13 @@
 			name = Mock;
 			sourceTree = "<group>";
 		};
+		323401A914F572D800B887F2 /* AFNetworking */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = AFNetworking;
+			sourceTree = "<group>";
+		};
 		323B2FCF14D759E50035BF74 /* PhotosStripViewController */ = {
 			isa = PBXGroup;
 			children = (
@@ -637,6 +658,16 @@
 				329D113114D9DBF900F69263 /* ClipView.m */,
 			);
 			name = PhotosStripViewController;
+			sourceTree = "<group>";
+		};
+		324061FD14F41A1C001F0A89 /* Account */ = {
+			isa = PBXGroup;
+			children = (
+				323401B114F5733300B887F2 /* AccountViewController.h */,
+				323401B214F5733300B887F2 /* AccountViewController.m */,
+				323401B314F5733300B887F2 /* AccountViewController.xib */,
+			);
+			name = Account;
 			sourceTree = "<group>";
 		};
 		3241E5DF14D30BB200D46F63 /* Elements */ = {
@@ -670,6 +701,7 @@
 		3281ED5C14E9A58A00BC45DC /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
+				323401A914F572D800B887F2 /* AFNetworking */,
 				32602BF914EADCCB00BEB1D5 /* UIImage Categories */,
 				32B980AC14E9F45E002B351F /* SDWebImage */,
 			);
@@ -688,8 +720,14 @@
 				32D240D014E4D6D300AB368C /* TopBarView.m */,
 				3211736C14E9C4A90081CD3E /* UITextFieldWithInset.h */,
 				3211736D14E9C4A90081CD3E /* UITextFieldWithInset.m */,
+				323F2EFD14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.h */,
+				323F2EFE14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.m */,
 				329D112D14D9B0BD00F69263 /* PhotoView.h */,
 				329D112E14D9B0BD00F69263 /* PhotoView.m */,
+				323401AE14F5731900B887F2 /* UIView+GetFirstResponder.h */,
+				323401AF14F5731900B887F2 /* UIView+GetFirstResponder.m */,
+				3240620E14F46054001F0A89 /* NSString+EmailValidity.h */,
+				3240620F14F46054001F0A89 /* NSString+EmailValidity.m */,
 			);
 			name = Shared;
 			sourceTree = "<group>";
@@ -778,6 +816,7 @@
 				32E2F20A14D092B800191C6F /* GalleryViewController */,
 				323B2FCF14D759E50035BF74 /* PhotosStripViewController */,
 				32EB6C0314E40F33003D7105 /* AddPhoto */,
+				324061FD14F41A1C001F0A89 /* Account */,
 				32E2F20714D092B100191C6F /* Data Models */,
 				32E2F1F414D0929F00191C6F /* Supporting Files */,
 				3281ED5C14E9A58A00BC45DC /* 3rd Party */,
@@ -1021,6 +1060,7 @@
 				320730BD14EEDDED00F95618 /* btn_image_overlay_twitter@2x.png in Resources */,
 				3279146A14F0CE7900CFDAC4 /* gallery_image_highlight_tab.png in Resources */,
 				3279146B14F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png in Resources */,
+				323401B514F5733300B887F2 /* AccountViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1062,6 +1102,10 @@
 				3221779C14EC2D9D00D48F99 /* SDWebImagePrefetcher.m in Sources */,
 				3221779D14EC2D9D00D48F99 /* UIButton+WebCache.m in Sources */,
 				3221779E14EC2D9D00D48F99 /* UIImageView+WebCache.m in Sources */,
+				3240621014F46054001F0A89 /* NSString+EmailValidity.m in Sources */,
+				323F2EFF14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.m in Sources */,
+				323401B014F5731900B887F2 /* UIView+GetFirstResponder.m in Sources */,
+				323401B414F5733300B887F2 /* AccountViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

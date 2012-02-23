@@ -13,7 +13,7 @@
 #import "UIColor+Emotish.h"
 
 static NSString * SPVC_FEELING_PLACEHOLDER_TEXT = @"something";
-static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
+static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 
 @interface SubmitPhotoViewController()
 - (void) updateViewsWithCurrentData;
@@ -21,6 +21,11 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
 - (void) doneButtonTouched:(UIButton *)button;
 - (void) keyboardWillShow:(NSNotification *)notification;
 - (void) keyboardWillHide:(NSNotification *)notification;
+- (void) userButtonTouched:(UIButton *)button;
+@property (strong, nonatomic, readonly) UIAlertView * logOutConfirmAlertView;
+@property (strong, nonatomic, readonly) UIAlertView * noFeelingAlertView;
+@property (strong, nonatomic, readonly) UIAlertView * noUserAlertView;
+- (void) presentAccountViewController;
 @end
 
 @implementation SubmitPhotoViewController
@@ -32,6 +37,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
 
 @synthesize shouldPushImagePicker=_shouldPushImagePicker;
 @synthesize imagePickerControllerCamera=_imagePickerControllerCamera, imagePickerControllerLibrary=_imagePickerControllerLibrary, cameraOverlayViewHandler=_cameraOverlayViewHandler;
+@synthesize logOutConfirmAlertView=_logOutConfirmAlertView, noFeelingAlertView=_noFeelingAlertView, noUserAlertView=_noUserAlertView;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -63,9 +69,11 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
     self.photoView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT + PC_PHOTO_CELL_PADDING_BOTTOM);
     self.photoView.photoImageView.clipsToBounds = YES;
     self.photoView.userInteractionEnabled = YES;
-    self.photoView.photoCaptionTextField.userInteractionEnabled = YES;
-    self.photoView.button.userInteractionEnabled = NO;
-    self.photoView.photoCaptionTextField.delegate = self;
+//    self.photoView.photoCaptionTextField.userInteractionEnabled = YES;
+//    self.photoView.button.userInteractionEnabled = NO;
+//    self.photoView.photoCaptionTextField.delegate = self;
+    self.photoView.photoCaptionTextField.textColor = [UIColor userColor];
+    [self.photoView.button addTarget:self action:@selector(userButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     
 //    self.feelingTextField.frame = CGRectMake(self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, CGRectGetMaxY(self.topBar.frame), PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, CGRectGetMinY(self.photoView.frame) - CGRectGetMaxY(self.topBar.frame));
 //    self.feelingTextField.textFieldInsets = UIEdgeInsetsMake(0, 0, PC_PHOTO_CELL_MARGIN_TOP, 0);
@@ -250,7 +258,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
 
         self.feelingImageSquare = image;
         self.feelingWord = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
-        self.userName = self.photoView.photoCaptionTextField.text;
+//        self.userName = self.photoView.photoCaptionTextField.text;
         
         [self updateViewsWithCurrentData];
         [self dismissModalViewControllerAnimated:NO];
@@ -277,7 +285,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
     
     self.feelingWord = feelingText;
     self.feelingImageSquare = image;
-    self.userName = self.photoView.photoCaptionTextField.text;
+//    self.userName = self.photoView.photoCaptionTextField.text;
     [self updateViewsWithCurrentData];
     
     [self dismissModalViewControllerAnimated:NO];
@@ -290,7 +298,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
     self.feelingTextField.text = self.feelingWord && self.feelingWord.length > 0 ? self.feelingWord : SPVC_FEELING_PLACEHOLDER_TEXT;
     self.photoView.photoImageView.image = self.feelingImageSquare;
     self.photoView.photoCaptionTextField.text = self.userName && self.userName.length > 0 ? self.userName : SPVC_USER_PLACEHOLDER_TEXT;
-    self.photoView.photoCaptionTextField.textColor = [UIColor userColor];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
@@ -343,19 +350,19 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
 
 - (void) doneButtonTouched:(UIButton *)button {
     NSLog(@"doneButtonTouched");
-    
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    
+        
     [self.feelingTextField resignFirstResponder];
     [self.photoView.photoCaptionTextField resignFirstResponder];
     
-    if ([self.feelingWord isEqualToString:SPVC_FEELING_PLACEHOLDER_TEXT] ||
-        [self.userName isEqualToString:SPVC_USER_PLACEHOLDER_TEXT]) {
-        
-        UIAlertView * missingSomethingAlertView = [[UIAlertView alloc] initWithTitle:@"Missing Info" message:@"Please enter a Feeling and a Username" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [missingSomethingAlertView show];
-        
+    PFUser * currentUser = [PFUser currentUser];
+    
+    if ([self.feelingWord isEqualToString:SPVC_FEELING_PLACEHOLDER_TEXT]) {
+        [self.noFeelingAlertView show];
+    } else if (currentUser == nil) {
+        [self.noUserAlertView show];
     } else {
+        
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
         
         NSLog(@"setting up filename");
         NSString * nowString = [NSString stringWithFormat:@"%d", abs([[NSDate date] timeIntervalSince1970])];
@@ -394,47 +401,47 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
         savingSuccess = [feelingServer save];
         NSLog(@"  saving feelingServer success? %d", savingSuccess);
         
-        NSLog(@"setting up user");
-        PFUser * userServer = nil;
-        PFUser * currentUser = [PFUser currentUser];
-        if (currentUser == nil || ![currentUser.username isEqualToString:self.userName]) {
-            NSLog(@"  currentUser is nil, or currentUser.username is same as given userName");
-            if (currentUser != nil) { 
-                NSLog(@"  currentUser is not nil, but currentUser.username is not the same as given userName");
-                [PFUser logOut];
-            }
-            BOOL * objectMadeIndicator;
-            User * userLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"name == %@", self.userName] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:objectMadeIndicator];
-            if (userLocal != nil) {
-                NSLog(@"  userLocal is not nil, userLocal.serverID = %@", userLocal.serverID);
-                userServer = [PFQuery getUserObjectWithId:userLocal.serverID];
-                userServer = [PFUser logInWithUsername:userServer.username password:userServer.username];
-            } else {
-                NSLog(@"  userLocal is nil");
-                PFQuery * userQuery = [PFQuery queryForUser];
-                [userQuery whereKey:@"username" equalTo:self.userName];
-                NSArray * matchingUsers = [userQuery findObjects];
-                if (matchingUsers != nil && matchingUsers.count > 0) {
-                    userServer = [matchingUsers objectAtIndex:0];
-                    userServer = [PFUser logInWithUsername:userServer.username password:userServer.username];
-                } else {
-                    userServer = [PFUser user];
-                    userServer.username = self.userName;
-                    userServer.email = [NSString stringWithFormat:@"fake%@@fakegmail.com", self.userName];
-                    userServer.password = self.userName;
-                    [userServer signUp];
-                }
-            }
-        } else {
-            NSLog(@"  currentUser is not nil, and currentUser.username is same as given userName");
-            userServer = currentUser;
-        }
-        NSLog(@"  userServer = %@", userServer);
+//        NSLog(@"setting up user");
+//        PFUser * userServer = nil;
+//        PFUser * currentUser = [PFUser currentUser];
+//        if (currentUser == nil || ![currentUser.username isEqualToString:self.userName]) {
+//            NSLog(@"  currentUser is nil, or currentUser.username is same as given userName");
+//            if (currentUser != nil) { 
+//                NSLog(@"  currentUser is not nil, but currentUser.username is not the same as given userName");
+//                [PFUser logOut];
+//            }
+//            BOOL * objectMadeIndicator;
+//            User * userLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"name == %@", self.userName] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:objectMadeIndicator];
+//            if (userLocal != nil) {
+//                NSLog(@"  userLocal is not nil, userLocal.serverID = %@", userLocal.serverID);
+//                userServer = [PFQuery getUserObjectWithId:userLocal.serverID];
+//                userServer = [PFUser logInWithUsername:userServer.username password:userServer.username];
+//            } else {
+//                NSLog(@"  userLocal is nil");
+//                PFQuery * userQuery = [PFQuery queryForUser];
+//                [userQuery whereKey:@"username" equalTo:self.userName];
+//                NSArray * matchingUsers = [userQuery findObjects];
+//                if (matchingUsers != nil && matchingUsers.count > 0) {
+//                    userServer = [matchingUsers objectAtIndex:0];
+//                    userServer = [PFUser logInWithUsername:userServer.username password:userServer.username];
+//                } else {
+//                    userServer = [PFUser user];
+//                    userServer.username = self.userName;
+//                    userServer.email = [NSString stringWithFormat:@"fake%@@fakegmail.com", self.userName];
+//                    userServer.password = self.userName;
+//                    [userServer signUp];
+//                }
+//            }
+//        } else {
+//            NSLog(@"  currentUser is not nil, and currentUser.username is same as given userName");
+//            userServer = currentUser;
+//        }
+//        NSLog(@"  userServer = %@", userServer);
         
         NSLog(@"setting up photo");
         PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
         [photoServer setObject:feelingServer forKey:@"feeling"];
-        [photoServer setObject:userServer forKey:@"user"];
+        [photoServer setObject:currentUser forKey:@"user"];
         [photoServer setObject:imageFile forKey:@"image"];
         NSLog(@"  photoServer = %@", photoServer);
         
@@ -442,7 +449,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
         savingSuccess = [photoServer save];
         NSLog(@"  saving photoServer success? %d", savingSuccess);
         
-        Photo * photo = [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
+        Photo * photo = [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:currentUser];
         [self.coreDataManager saveCoreData];
         
         [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
@@ -477,6 +484,70 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"username";
         [self.scrollView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:NO];
 //        self.photoView.photoCaptionTextField.backgroundColor = [UIColor clearColor];
     } completion:NULL];
+}
+
+- (UIAlertView *)logOutConfirmAlertView {
+    if (_logOutConfirmAlertView == nil) {
+        _logOutConfirmAlertView = [[UIAlertView alloc] initWithTitle:@"Change Users?" message:@"Do you want to sign in to a different Emotish account?" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Change Users", nil];
+        _logOutConfirmAlertView.delegate = self;
+    }
+    return _logOutConfirmAlertView;
+}
+
+- (UIAlertView *)noFeelingAlertView {
+    if (_noFeelingAlertView == nil) {
+        _noFeelingAlertView = [[UIAlertView alloc] initWithTitle:@"Enter Feeling" message:@"Please enter your Feeling for this Photo!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        _noFeelingAlertView.delegate = self;
+    }
+    return _noFeelingAlertView;
+}
+
+- (UIAlertView *)noUserAlertView {
+    if (_noUserAlertView == nil) {
+        _noUserAlertView = [[UIAlertView alloc] initWithTitle:@"Sign In" message:@"You must connect to an Emotish account to submit a Photo." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        _noUserAlertView.delegate = self;
+    }
+    return _noUserAlertView;
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (alertView == self.logOutConfirmAlertView) {
+        if (buttonIndex != self.logOutConfirmAlertView.cancelButtonIndex) {
+            [self presentAccountViewController];
+        }
+    } else if (alertView == self.noFeelingAlertView) {
+        [self.feelingTextField becomeFirstResponder];
+    } else if (alertView == self.noUserAlertView) {
+        [self presentAccountViewController];
+    }
+}
+
+- (void)userButtonTouched:(UIButton *)button {
+    PFUser * currentUser = [PFUser currentUser];
+    if (currentUser) {
+        [self.logOutConfirmAlertView show];
+    } else {
+        [self presentAccountViewController];
+    }
+}
+
+- (void) presentAccountViewController {
+    AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
+    accountViewController.delegate = self;
+    accountViewController.coreDataManager = self.coreDataManager;
+    [self presentModalViewController:accountViewController animated:YES];
+}
+
+- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
+    PFUser * currentUser = [PFUser currentUser];
+    if (currentUser) {
+        self.userName = currentUser.username;
+        self.photoView.photoCaptionTextField.text = self.userName;
+    } else {
+        self.userName = nil;
+        self.photoView.photoCaptionTextField.text = SPVC_USER_PLACEHOLDER_TEXT;
+    }
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 @end
