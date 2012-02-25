@@ -15,6 +15,7 @@
 #import "TopBarView.h"
 #import "SubmitPhotoViewController.h"
 #import "FlagStretchView.h"
+#import "SettingsViewController.h"
 
 typedef enum {
     NoFocus = 0,
@@ -26,12 +27,13 @@ typedef enum {
     NoSource = 0,
     Gallery = 1,
     PhotosStripOpposite = 2,
+    PhotosStripUnrelated = 4,
     SubmitPhoto = 3,
 } PhotosStripAnimationInSource;
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/, SettingsViewControllerDelegate, AccountViewControllerDelegate>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;

@@ -183,6 +183,9 @@
 		32EB6C0914E43534003D7105 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32EB6C0814E43534003D7105 /* MobileCoreServices.framework */; };
 		32EB6C0C14E43C0A003D7105 /* CameraOverlayViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 32EB6C0B14E43C0A003D7105 /* CameraOverlayViewHandler.m */; };
 		32EB6C0F14E448A9003D7105 /* UIImage+Crop.m in Sources */ = {isa = PBXBuildFile; fileRef = 32EB6C0E14E448A9003D7105 /* UIImage+Crop.m */; };
+		32F1F45314F7F28F005A4803 /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45114F7F28F005A4803 /* SettingsViewController.m */; };
+		32F1F45414F7F28F005A4803 /* SettingsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32F1F45214F7F28F005A4803 /* SettingsViewController.xib */; };
+		32F1F45714F8826F005A4803 /* SettingsItemTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -408,6 +411,11 @@
 		32EB6C0B14E43C0A003D7105 /* CameraOverlayViewHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CameraOverlayViewHandler.m; path = classes/CameraOverlayViewHandler.m; sourceTree = "<group>"; };
 		32EB6C0D14E448A9003D7105 /* UIImage+Crop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+Crop.h"; path = "classes/UIImage+Crop.h"; sourceTree = "<group>"; };
 		32EB6C0E14E448A9003D7105 /* UIImage+Crop.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+Crop.m"; path = "classes/UIImage+Crop.m"; sourceTree = "<group>"; };
+		32F1F45014F7F28F005A4803 /* SettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SettingsViewController.h; path = classes/SettingsViewController.h; sourceTree = "<group>"; };
+		32F1F45114F7F28F005A4803 /* SettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SettingsViewController.m; path = classes/SettingsViewController.m; sourceTree = "<group>"; };
+		32F1F45214F7F28F005A4803 /* SettingsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SettingsViewController.xib; path = classes/SettingsViewController.xib; sourceTree = "<group>"; };
+		32F1F45514F8826F005A4803 /* SettingsItemTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SettingsItemTableViewCell.h; path = classes/SettingsItemTableViewCell.h; sourceTree = "<group>"; };
+		32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SettingsItemTableViewCell.m; path = classes/SettingsItemTableViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -817,6 +825,7 @@
 				323B2FCF14D759E50035BF74 /* PhotosStripViewController */,
 				32EB6C0314E40F33003D7105 /* AddPhoto */,
 				324061FD14F41A1C001F0A89 /* Account */,
+				32F1F44F14F7E9A0005A4803 /* Settings */,
 				32E2F20714D092B100191C6F /* Data Models */,
 				32E2F1F414D0929F00191C6F /* Supporting Files */,
 				3281ED5C14E9A58A00BC45DC /* 3rd Party */,
@@ -880,6 +889,18 @@
 				32D240C414E4D56700AB368C /* SubmitPhotoViewController.xib */,
 			);
 			name = AddPhoto;
+			sourceTree = "<group>";
+		};
+		32F1F44F14F7E9A0005A4803 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				32F1F45014F7F28F005A4803 /* SettingsViewController.h */,
+				32F1F45114F7F28F005A4803 /* SettingsViewController.m */,
+				32F1F45214F7F28F005A4803 /* SettingsViewController.xib */,
+				32F1F45514F8826F005A4803 /* SettingsItemTableViewCell.h */,
+				32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */,
+			);
+			name = Settings;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1061,6 +1082,7 @@
 				3279146A14F0CE7900CFDAC4 /* gallery_image_highlight_tab.png in Resources */,
 				3279146B14F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png in Resources */,
 				323401B514F5733300B887F2 /* AccountViewController.xib in Resources */,
+				32F1F45414F7F28F005A4803 /* SettingsViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1106,6 +1128,8 @@
 				323F2EFF14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.m in Sources */,
 				323401B014F5731900B887F2 /* UIView+GetFirstResponder.m in Sources */,
 				323401B414F5733300B887F2 /* AccountViewController.m in Sources */,
+				32F1F45314F7F28F005A4803 /* SettingsViewController.m in Sources */,
+				32F1F45714F8826F005A4803 /* SettingsItemTableViewCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

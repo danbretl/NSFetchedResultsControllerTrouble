@@ -492,14 +492,13 @@
         [self presentModalViewController:accountViewController animated:YES];
     } else {
 
-        BOOL newObjectMadeIndicator;
-        User * currentUserLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", currentUser.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:&newObjectMadeIndicator];
+        User * currentUserLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", currentUser.objectId] usingSortDescriptors:nil];
         
         PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
         feelingStripViewController.delegate = self;
         feelingStripViewController.coreDataManager = self.coreDataManager;
         feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]] shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:&newObjectMadeIndicator];
+        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
         [feelingStripViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
         [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:nil];
         self.galleryScreenshot = self.galleryScreenshotCurrent;

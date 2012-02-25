@@ -246,7 +246,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.photoViewLeftCenter.alpha = 0.0;
         self.photoViewRightCenter.alpha = 0.0;
         
-        if (self.animationInSource == Gallery) {
+        if (self.animationInSource == Gallery ||
+            self.animationInSource == PhotosStripUnrelated) {
             
             self.headerButton.alpha = 0.0;
             self.photoViewCenter.alpha = 0.0;
@@ -285,7 +286,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             leftSpecialButtonType = currentUser && [currentUser.objectId isEqualToString:self.userFocus.serverID] ? SettingsButton : ProfileButton;
         }
         [self.topBar showButtonType:leftSpecialButtonType inPosition:LeftSpecial animated:NO];
-        self.topBar.buttonLeftSpecial.enabled = NO;
+        [self.topBar.buttonLeftSpecial removeTarget:self action:@selector(profileButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+        [self.topBar.buttonLeftSpecial removeTarget:self action:@selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+        [self.topBar.buttonLeftSpecial addTarget:self action:leftSpecialButtonType == ProfileButton ? @selector(profileButtonTouched:) : @selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     }
 }
 
@@ -300,7 +303,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             self.photoViewLeftCenter.alpha = 1.0;
             self.photoViewRightCenter.alpha = 1.0;
             
-            if (self.animationInSource == Gallery) {
+            if (self.animationInSource == Gallery ||
+                self.animationInSource == PhotosStripUnrelated) {
                 self.headerButton.alpha = 1.0;
                 self.photoViewCenter.alpha = 1.0;
             } else if (self.animationInSource == PhotosStripOpposite) {
@@ -324,7 +328,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                 leftSpecialButtonType = currentUser && [currentUser.objectId isEqualToString:self.userFocus.serverID] ? SettingsButton : ProfileButton;
             }
             [self.topBar showButtonType:leftSpecialButtonType inPosition:LeftSpecial animated:NO];
-            self.topBar.buttonLeftSpecial.enabled = NO;
+            [self.topBar.buttonLeftSpecial removeTarget:self action:@selector(profileButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+            [self.topBar.buttonLeftSpecial removeTarget:self action:@selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+            [self.topBar.buttonLeftSpecial addTarget:self action:leftSpecialButtonType == ProfileButton ? @selector(profileButtonTouched:) : @selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
             
         } completion:^(BOOL finished){
             self.floatingImageView.alpha = 0.0;
@@ -871,11 +877,62 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)profileButtonTouched:(UIButton *)button {
+    NSLog(@"Profile button touched...");
     
+    PFUser * currentUser = [PFUser currentUser];
+    if (currentUser == nil) {
+        AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
+        accountViewController.delegate = self;
+        accountViewController.coreDataManager = self.coreDataManager;
+        [self presentModalViewController:accountViewController animated:YES];
+    } else {
+        
+        User * currentUserLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", currentUser.objectId] usingSortDescriptors:nil];
+        
+        PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+        feelingViewController.delegate = self.delegate;
+        feelingViewController.coreDataManager = self.coreDataManager;
+        feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
+        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
+        [feelingViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
+        [feelingViewController setShouldAnimateIn:YES fromSource:PhotosStripUnrelated withPersistentImage:nil];
+        feelingViewController.galleryScreenshot = self.galleryScreenshot;
+        
+        [UIView animateWithDuration:0.25 animations:^{
+            self.contentView.alpha = 0.0;
+            self.addPhotoLabel.alpha = 0.0;
+            [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
+        } completion:^(BOOL finished){
+            [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
+        }];
+        
+    }
+        
+}
+
+- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
+    [self dismissModalViewControllerAnimated:YES];
+    if (finishedWithConnection) {
+        UIAlertView * loggedInAlertView = [[UIAlertView alloc] initWithTitle:@"Logged In" message:@"Have fun expressing yourself!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [loggedInAlertView show];
+    }
 }
 
 - (void)settingsButtonTouched:(UIButton *)button {
-    
+    NSLog(@"Settings button touched...");
+    SettingsViewController * settingsViewController = [[SettingsViewController alloc] initWithNibName:@"SettingsViewController" bundle:[NSBundle mainBundle]];
+    settingsViewController.delegate = self;
+    settingsViewController.coreDataManager = self.coreDataManager;
+    settingsViewController.userServer = [PFUser currentUser];
+    User * currentUserLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", settingsViewController.userServer.objectId] usingSortDescriptors:nil];
+    settingsViewController.userLocal = currentUserLocal;
+    UINavigationController * settingsNavController = [[UINavigationController alloc] initWithRootViewController:settingsViewController];
+    settingsNavController.navigationBarHidden = YES;
+    [self presentModalViewController:settingsNavController animated:YES];
+}
+
+- (void) settingsViewControllerFinished:(SettingsViewController *)settingsViewController {
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 @end
