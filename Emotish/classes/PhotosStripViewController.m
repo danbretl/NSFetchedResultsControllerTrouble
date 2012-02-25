@@ -251,8 +251,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             
             self.headerButton.alpha = 0.0;
             self.photoViewCenter.alpha = 0.0;
+            
             [self.topBar setViewMode:BrandingRight animated:NO];
-            [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
+            if (self.animationInSource == Gallery) {
+                [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];                
+            } else {
+                [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
+            }
             
         } else if (self.animationInSource == PhotosStripOpposite) {
             
