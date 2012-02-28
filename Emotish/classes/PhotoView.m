@@ -39,7 +39,7 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
         case Facebook:    filenameID = @"facebook"; break;
         case Email:       filenameID = @"email";    break;
         case TextMessage: filenameID = @"text";     break;
-        case LikePhoto:        filenameID = @"like";     break;
+        case LikePhoto:   filenameID = @"like";     break;
         case Flag:        filenameID = @"flag";     break;
         case Delete:      filenameID = @"delete";   break;            
         default: break;

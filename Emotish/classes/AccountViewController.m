@@ -219,7 +219,6 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-//    [PFUser logOut];
     self.facebookButton.enabled = NO;
     self.facebookButton.alpha   = 0.5;    
     self.twitterButton.enabled  = NO;
@@ -543,6 +542,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                     }
                 }
             }];
+            [PFPush subscribeToChannelInBackground:user.objectId];
             [self.delegate accountViewController:self didFinishWithConnection:YES];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
@@ -638,6 +638,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                 // Hooray! Let them use the app now.
                 PFUser * userSignedUp = [PFUser currentUser];
                 [self.coreDataManager addOrUpdateUserFromServer:userSignedUp];
+                [PFPush subscribeToChannelInBackground:userSignedUp.objectId];
                 [self.delegate accountViewController:self didFinishWithConnection:YES];
             } else {
                 NSLog(@"error: %@", error);

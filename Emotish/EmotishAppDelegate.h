@@ -10,8 +10,9 @@
 #import "GalleryViewController.h"
 #import "CoreDataManager.h"
 
-@interface EmotishAppDelegate : UIResponder <UIApplicationDelegate>
+@interface EmotishAppDelegate : UIResponder <UIApplicationDelegate, UIAlertViewDelegate>
 
+@property (strong, nonatomic) UINavigationController * rootNavController;
 @property (strong, nonatomic) GalleryViewController * galleryViewController;
 
 @property (strong, nonatomic) UIWindow * window;
@@ -20,6 +21,10 @@
 @property (readonly, strong, nonatomic) NSManagedObjectContext *managedObjectContext;
 @property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+
+@property (strong, nonatomic) UIAlertView * notificationAlertView;
+@property (strong, nonatomic) NSString * notificationPhotoServerID;
+- (void) attemptNavigateToPhotoWithServerID:(NSString *)photoServerID;
 
 - (void)saveContext;
 - (NSURL *)applicationDocumentsDirectory;

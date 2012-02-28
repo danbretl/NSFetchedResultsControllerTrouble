@@ -14,6 +14,7 @@
 #import "UIImageView+WebCache.h"
 #import <Parse/Parse.h>
 #import "Like.h"
+#import "PushConstants.h"
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int PSVC_PHOTO_VIEWS_COUNT = 5;
@@ -714,6 +715,19 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                     [self.coreDataManager addOrUpdatePhotoFromServer:object];
                 }
             }];
+            
+            // Client push notification
+            BOOL testingWithOnlyOneDeviceAvailable = NO;
+            if (![userCurrent.objectId isEqualToString:photoLiked.user.serverID] ||
+                testingWithOnlyOneDeviceAvailable) {
+                NSMutableDictionary * pushNotificationData = [NSMutableDictionary dictionary];
+                [pushNotificationData setObject:[NSString stringWithFormat:@"%@ liked your %@ photo!", userCurrent.username, photoLiked.feeling.word] forKey:@"alert"];
+//                [pushNotificationData setObject:userCurrent.objectId forKey:PUSH_LIKER_USER_SERVER_ID];
+                [pushNotificationData setObject:photoLiked.serverID forKey:PUSH_LIKED_PHOTO_SERVER_ID];
+//                [pushNotificationData setObject:photoLiked.feeling.serverID forKey:PUSH_LIKED_FEELING_SERVER_ID];
+//                [pushNotificationData setObject:photoLiked.user.serverID forKey:PUSH_LIKED_USER_SERVER_ID];
+                [PFPush sendPushDataToChannelInBackground:photoLiked.user.serverID withData:pushNotificationData];
+            }
             
         } else {
             UIAlertView * connectionError = [[UIAlertView alloc] initWithTitle:@"Connection Error" message:@"Sorry - there was a problem connecting with Emotish. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];

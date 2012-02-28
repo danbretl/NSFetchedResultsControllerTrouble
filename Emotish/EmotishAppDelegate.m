@@ -8,21 +8,25 @@
 
 #import "EmotishAppDelegate.h"
 #import <Parse/Parse.h>
+#import "PushConstants.h"
 
 @implementation EmotishAppDelegate
 
 @synthesize coreDataManager=_coreDataManager;
-@synthesize galleryViewController = _galleryViewController;
+@synthesize rootNavController=_rootNavController, galleryViewController = _galleryViewController;
 @synthesize window = _window;
 @synthesize managedObjectContext = __managedObjectContext;
 @synthesize managedObjectModel = __managedObjectModel;
 @synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
+@synthesize notificationAlertView=_notificationAlertView, notificationPhotoServerID=_notificationPhotoServerID;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     [Parse setApplicationId:@"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC" 
                   clientKey:@"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"];
     [Parse setFacebookApplicationId:@"247509625333388"];
+
+    [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge|UIRemoteNotificationTypeAlert|UIRemoteNotificationTypeSound];
 
     // For server database QA...
 //    PFQuery * specialQuery = [PFQuery queryWithClassName:@"Photo"];
@@ -33,12 +37,16 @@
 //    [photo setObject:imageFile forKey:@"image"];
 //    [photo save];
     
-    BOOL shouldLogOut = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeLogOutComplete"]);
-    if (shouldLogOut) {
-        NSLog(@"Forcibly logging current user out");
-        [PFUser logOut];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeLogOutComplete"];
-    }
+//    BOOL shouldLogOut = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeLogOutComplete"]);
+//    if (shouldLogOut) {
+//        NSLog(@"Forcibly logging current user out");
+//        PFUser * currentUser = [PFUser currentUser];
+//        if (currentUser != nil) {
+//            [PFPush unsubscribeFromChannelInBackground:currentUser.objectId];
+//        }
+//        [PFUser logOut];
+//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeLogOutComplete"];
+//    }
     
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
@@ -65,10 +73,10 @@
     self.galleryViewController = [[GalleryViewController alloc] initWithNibName:@"GalleryViewController" bundle:[NSBundle mainBundle]];
     self.galleryViewController.coreDataManager = self.coreDataManager;
     
-    UINavigationController * navigationController = [[UINavigationController alloc] initWithRootViewController:self.galleryViewController];
-    navigationController.navigationBarHidden = YES;
+    self.rootNavController = [[UINavigationController alloc] initWithRootViewController:self.galleryViewController];
+    self.rootNavController.navigationBarHidden = YES;
 
-    self.window.rootViewController = navigationController;
+    self.window.rootViewController = self.rootNavController;
     [self.window makeKeyAndVisible];
         
     return YES;
@@ -116,6 +124,61 @@
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url
   sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     return [[PFUser facebook] handleOpenURL:url]; 
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken {
+    // Tell Parse about the device token.
+    [PFPush storeDeviceToken:newDeviceToken];
+    // Subscribe to the global broadcast channel.
+    [PFPush subscribeToChannelInBackground:@""];
+    PFUser * currentUser = [PFUser currentUser];
+    if (currentUser != nil) {
+        [PFPush subscribeToChannelInBackground:currentUser.objectId];
+    }
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    NSLog(@"EmotishAppDelegate application didReceiveRemoteNotification %@", userInfo);
+    self.notificationPhotoServerID = [userInfo objectForKey:PUSH_LIKED_PHOTO_SERVER_ID];
+    if (self.notificationPhotoServerID == nil) {
+        [PFPush handlePush:userInfo];
+    } else {
+        if (application.applicationState == UIApplicationStateActive) {
+            NSLog(@"Application is active");
+            self.notificationAlertView = [[UIAlertView alloc] initWithTitle:@"Emotish" message:[[userInfo objectForKey:@"aps"] objectForKey:@"alert"] delegate:self cancelButtonTitle:@"OK" otherButtonTitles:@"Show Me", nil];
+            self.notificationAlertView.delegate = self;
+            [self.notificationAlertView show];
+        } else {
+            NSLog(@"Application was inactive");
+            // Should navigate user to photo...
+            [self attemptNavigateToPhotoWithServerID:self.notificationPhotoServerID];
+        }
+    }
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (alertView == self.notificationAlertView && buttonIndex != self.notificationAlertView.cancelButtonIndex) {
+        // Should navigate user to photo...
+        [self attemptNavigateToPhotoWithServerID:self.notificationPhotoServerID];
+    }
+    self.notificationAlertView = nil;
+}
+
+- (void)attemptNavigateToPhotoWithServerID:(NSString *)photoServerID {
+    // Currently either...
+    // - In Gallery
+    // - In Feeling or User PhotosStrip
+    // - In Camera View or Photo Submission Screen
+    // - In Settings
+    UIAlertView * inDevelopmentAlertView = [[UIAlertView alloc] initWithTitle:@"In Development..." message:@"Sorry, we can't yet navigate you to the photo that was liked - we're working on this feature!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [inDevelopmentAlertView show];
+//    [self.rootNavController popToRootViewControllerAnimated:NO];
+//    [self.galleryViewController 
+//    if (self.rootNavController.visibleViewController == self.galleryViewController) {
+//        
+//    } else {
+//        
+//    }
 }
 
 - (void)saveContext

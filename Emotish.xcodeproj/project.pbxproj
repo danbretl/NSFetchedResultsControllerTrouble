@@ -191,6 +191,7 @@
 		32F1F45314F7F28F005A4803 /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45114F7F28F005A4803 /* SettingsViewController.m */; };
 		32F1F45414F7F28F005A4803 /* SettingsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32F1F45214F7F28F005A4803 /* SettingsViewController.xib */; };
 		32F1F45714F8826F005A4803 /* SettingsItemTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */; };
+		32FF146014FCA6E500829FB0 /* PushConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 32FF145F14FCA6E500829FB0 /* PushConstants.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -428,6 +429,8 @@
 		32F1F45214F7F28F005A4803 /* SettingsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SettingsViewController.xib; path = classes/SettingsViewController.xib; sourceTree = "<group>"; };
 		32F1F45514F8826F005A4803 /* SettingsItemTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SettingsItemTableViewCell.h; path = classes/SettingsItemTableViewCell.h; sourceTree = "<group>"; };
 		32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SettingsItemTableViewCell.m; path = classes/SettingsItemTableViewCell.m; sourceTree = "<group>"; };
+		32FF145E14FCA6E500829FB0 /* PushConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PushConstants.h; path = classes/PushConstants.h; sourceTree = "<group>"; };
+		32FF145F14FCA6E500829FB0 /* PushConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PushConstants.m; path = classes/PushConstants.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -736,6 +739,8 @@
 			isa = PBXGroup;
 			children = (
 				3241E5EC14D3340B00D46F63 /* ViewConstants.h */,
+				32FF145E14FCA6E500829FB0 /* PushConstants.h */,
+				32FF145F14FCA6E500829FB0 /* PushConstants.m */,
 				323B2FD414D765250035BF74 /* UIColor+Emotish.h */,
 				323B2FD514D765250035BF74 /* UIColor+Emotish.m */,
 				32EB6C0D14E448A9003D7105 /* UIImage+Crop.h */,
@@ -1153,6 +1158,7 @@
 				32F1F45314F7F28F005A4803 /* SettingsViewController.m in Sources */,
 				32F1F45714F8826F005A4803 /* SettingsItemTableViewCell.m in Sources */,
 				3248245E14FC3F5F00BF5E65 /* Like.m in Sources */,
+				32FF146014FCA6E500829FB0 /* PushConstants.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

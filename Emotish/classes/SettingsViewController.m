@@ -198,6 +198,10 @@
 - (void) logoutTouched:(SettingsItem *)settingsItem {
     // Log the user out
     NSLog(@"%@", NSStringFromSelector(_cmd));
+    PFUser * currentUser = [PFUser currentUser];
+    if (currentUser != nil) {
+        [PFPush unsubscribeFromChannelInBackground:currentUser.objectId];
+    }
     [PFUser logOut];
     self.userServer = nil;
     self.userLocal = nil;
