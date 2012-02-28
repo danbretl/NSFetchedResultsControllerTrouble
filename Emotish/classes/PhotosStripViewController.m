@@ -654,7 +654,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)photoView:(PhotoView *)photoView tapSingleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
     if (photoView == self.photoViewInView) {
-        [photoView showActionButtons:NO animated:YES];
+        if (photoView.actionButtonsVisible) {
+            [photoView showActionButtons:NO animated:YES];
+        } else {
+            [self photoInView:self.photoInView selectedFromPhotoView:self.photoViewInView];
+        }
     }
 }
 
