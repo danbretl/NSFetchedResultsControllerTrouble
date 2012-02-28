@@ -27,6 +27,11 @@
     [Parse setFacebookApplicationId:@"247509625333388"];
 
     [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge|UIRemoteNotificationTypeAlert|UIRemoteNotificationTypeSound];
+    
+    if ([PFUser currentUser] == nil) {
+        [self.coreDataManager deleteAllLikes];
+        [self.coreDataManager saveCoreData];
+    }
 
     // For server database QA...
 //    PFQuery * specialQuery = [PFQuery queryWithClassName:@"Photo"];
@@ -49,22 +54,22 @@
 //    }
     
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
-    NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
-    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"]);
-    if (shouldFlush && allFeelings != nil && allFeelings.count > 0) {
-        NSLog(@"Flushing database");
-        for (Feeling * feeling in [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
-            [self.coreDataManager.managedObjectContext deleteObject:feeling];
-        }
-//        for (User * user in [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil]) {
-//            [self.coreDataManager.managedObjectContext deleteObject:user];
+//    NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
+//    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"]);
+//    if (shouldFlush && allFeelings != nil && allFeelings.count > 0) {
+//        NSLog(@"Flushing database");
+//        for (Feeling * feeling in [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
+//            [self.coreDataManager.managedObjectContext deleteObject:feeling];
 //        }
-        for (Photo * photo in [self.coreDataManager getAllObjectsForEntityName:@"Photo" predicate:nil sortDescriptors:nil]) {
-            [self.coreDataManager.managedObjectContext deleteObject:photo];
-        }
-        [self.coreDataManager saveCoreData];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"];
-    }
+////        for (User * user in [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil]) {
+////            [self.coreDataManager.managedObjectContext deleteObject:user];
+////        }
+//        for (Photo * photo in [self.coreDataManager getAllObjectsForEntityName:@"Photo" predicate:nil sortDescriptors:nil]) {
+//            [self.coreDataManager.managedObjectContext deleteObject:photo];
+//        }
+//        [self.coreDataManager saveCoreData];
+//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"];
+//    }
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.

@@ -16,5 +16,7 @@
 @dynamic photo;
 @dynamic user;
 @dynamic serverID;
+@dynamic photoServerID;
+@dynamic userServerID;
 
 @end

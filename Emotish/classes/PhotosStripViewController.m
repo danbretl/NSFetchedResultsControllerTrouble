@@ -433,7 +433,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.addPhotoLabel.text = addPhotoString;
     
     [NSFetchedResultsController deleteCacheWithName:self.fetchedResultsControllerForCurrentFocus.cacheName];
-    NSPredicate * fetchPredicate = self.focus == FeelingFocus ? [NSPredicate predicateWithFormat:@"feeling == %@", self.feelingFocus] : [NSPredicate predicateWithFormat:@"user == %@", self.userFocus];
+    NSPredicate * fetchPredicate = self.focus == FeelingFocus ? [NSPredicate predicateWithFormat:@"feeling == %@ && hidden == NO", self.feelingFocus] : [NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", self.userFocus];
     self.fetchedResultsControllerForCurrentFocus.fetchRequest.predicate = fetchPredicate;
     [self performFetchForCurrentFocus];
     self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
@@ -598,7 +598,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     
     NSFetchRequest * fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [NSEntityDescription entityForName:@"Photo" inManagedObjectContext:self.coreDataManager.managedObjectContext];
-    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"feeling == %@", self.feelingFocus];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"feeling == %@ && hidden == NO", self.feelingFocus];
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]];
     fetchRequest.fetchBatchSize = 10;
     
@@ -617,7 +617,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     
     NSFetchRequest * fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [NSEntityDescription entityForName:@"Photo" inManagedObjectContext:self.coreDataManager.managedObjectContext];
-    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"user == %@", self.userFocus];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", self.userFocus];
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]];
     fetchRequest.fetchBatchSize = 10;
     
@@ -713,6 +713,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             [photoUpdatedQuery getObjectInBackgroundWithId:photoInViewServerID block:^(PFObject * object, NSError * error){
                 if (object != nil) {
                     [self.coreDataManager addOrUpdatePhotoFromServer:object];
+                    [self.coreDataManager saveCoreData];
                 }
             }];
             
@@ -1022,6 +1023,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
     feelingServer.objectId = feeling.serverID;
     [self.getPhotosQuery whereKey:@"feeling" equalTo:feelingServer];
+//    [self.getPhotosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
+//    [self.getPhotosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
     self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
     [self.getPhotosQuery orderByDescending:@"createdAt"];
     [self.getPhotosQuery includeKey:@"feeling"];
@@ -1037,6 +1040,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     userServer.objectId = user.serverID;
     [userServer setObject:user.name forKey:@"username"];
     [self.getPhotosQuery whereKey:@"user" equalTo:userServer];
+//    [self.getPhotosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
+//    [self.getPhotosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
     self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be revisited.
     [self.getPhotosQuery orderByDescending:@"createdAt"];
     [self.getPhotosQuery includeKey:@"feeling"];
@@ -1078,7 +1083,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         feelingViewController.delegate = self.delegate;
         feelingViewController.coreDataManager = self.coreDataManager;
         feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
-        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
+        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
         [feelingViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
         [feelingViewController setShouldAnimateIn:YES fromSource:PhotosStripUnrelated withPersistentImage:nil];
         feelingViewController.galleryScreenshot = self.galleryScreenshot;

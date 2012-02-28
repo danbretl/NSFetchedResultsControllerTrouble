@@ -429,6 +429,7 @@
 		32F1F45214F7F28F005A4803 /* SettingsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SettingsViewController.xib; path = classes/SettingsViewController.xib; sourceTree = "<group>"; };
 		32F1F45514F8826F005A4803 /* SettingsItemTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SettingsItemTableViewCell.h; path = classes/SettingsItemTableViewCell.h; sourceTree = "<group>"; };
 		32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SettingsItemTableViewCell.m; path = classes/SettingsItemTableViewCell.m; sourceTree = "<group>"; };
+		32F7221514FD6D930092278F /* Emotish 006.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 006.xcdatamodel"; sourceTree = "<group>"; };
 		32FF145E14FCA6E500829FB0 /* PushConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PushConstants.h; path = classes/PushConstants.h; sourceTree = "<group>"; };
 		32FF145F14FCA6E500829FB0 /* PushConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PushConstants.m; path = classes/PushConstants.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1298,6 +1299,7 @@
 		32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				32F7221514FD6D930092278F /* Emotish 006.xcdatamodel */,
 				3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */,
 				322177A914EC601A00D48F99 /* Emotish 003.xcdatamodel */,
 				322C294714F0C6D50001E580 /* Emotish 004.xcdatamodel */,
@@ -1305,7 +1307,7 @@
 				323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */,
 				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
 			);
-			currentVersion = 3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */;
+			currentVersion = 32F7221514FD6D930092278F /* Emotish 006.xcdatamodel */;
 			path = Emotish.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

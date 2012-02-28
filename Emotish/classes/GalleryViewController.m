@@ -26,6 +26,7 @@
 - (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
 - (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
 - (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
+//- (void) updateConfigureVisibleCells;
 @end
 
 @implementation GalleryViewController
@@ -135,7 +136,9 @@
 		exit(-1);  // Fail
 	}
     
-    [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
+    if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0) {
+        [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
+    }
     
 //    [self animateTopBar];
     
@@ -246,7 +249,8 @@
 - (void) feelingCellSelected:(GalleryFeelingCell *)feelingCell fromImageCell:(GalleryFeelingImageCell *)imageCell {
     
     if (!(self.activeFeelingCell != nil &&
-          self.activeFeelingCell.imagesTableView.isTracking)) {
+          self.activeFeelingCell.imagesTableView.isTracking) &&
+        feelingCell.photos.count > 0) {
         NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", feelingCell.feelingLabel.text, imageCell != nil ? [NSString stringWithFormat:@"the image that was located at index %d)",  imageCell.imageIndex] : @"the first image");
             
         // Old behavior, arguably 'slicker' - if a feeling cell is pulled out (and is thus the active feeling cell), but the user then taps the label or image from a different (not pulled out) feeling cell, while that new tapped feeling cell is being pushed to a view controller etc, the old active cell is deactivated (and starts to scroll towards the origin), and the new tapped cell is offically the new active one.
@@ -288,7 +292,7 @@
         feelingStripViewController.delegate = self;
         feelingStripViewController.coreDataManager = self.coreDataManager;
         feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:feelingCell.feelingIndex inSection:0]];
+        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[self.feelingsTableView indexPathForCell:feelingCell]];
         [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
         [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:imageCell.button.imageView.image];
         
@@ -317,6 +321,15 @@
     
 }
 
+//- (void) updateConfigureVisibleCells {
+//    NSLog(@"updateConfigureVisibleCells");
+//    NSArray * visibleCells = self.feelingsTableView.visibleCells;
+//    NSArray * visibleIndexPaths = self.feelingsTableView.indexPathsForVisibleRows;
+//    for (int i=0; i<visibleCells.count; i++) {
+//        [self tableView:self.feelingsTableView configureCell:[visibleCells objectAtIndex:i] atIndexPath:[visibleIndexPaths objectAtIndex:i]];
+//    }
+//}
+
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
     [self.feelingsTableView beginUpdates];
@@ -328,10 +341,14 @@
             
         case NSFetchedResultsChangeInsert:
             [self.feelingsTableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            // Need to update feelingIndex for visible cells
+//            [self updateConfigureVisibleCells];
             break;
             
         case NSFetchedResultsChangeDelete:
             [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            // Need to update feelingIndex for visible cells
+//            [self updateConfigureVisibleCells];
             break;
             
         case NSFetchedResultsChangeUpdate:
@@ -401,7 +418,7 @@
         }
         GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
         if (cell.flagStretchView.activated) {
-            [self getPhotosFromServerForFeeling:[self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:cell.feelingIndex inSection:0]]];
+            [self getPhotosFromServerForFeeling:[self.fetchedResultsController objectAtIndexPath:[self.feelingsTableView indexPathForCell:cell]]];
         }
     } else {
         if (self.flagStretchView.activated) {
@@ -464,6 +481,8 @@
     
     NSFetchRequest * fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [NSEntityDescription entityForName:@"Feeling" inManagedObjectContext:self.coreDataManager.managedObjectContext];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"ANY photos.hidden == NO"];
+//    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"foo == YES"];
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES selector:@selector(localizedCaseInsensitiveCompare:)]];
     fetchRequest.fetchBatchSize = 20;
     
@@ -498,7 +517,7 @@
         feelingStripViewController.delegate = self;
         feelingStripViewController.coreDataManager = self.coreDataManager;
         feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
+        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
         [feelingStripViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
         [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:nil];
         self.galleryScreenshot = self.galleryScreenshotCurrent;
@@ -603,6 +622,8 @@
     PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
     feelingServer.objectId = feeling.serverID;
     [photosQuery whereKey:@"feeling" equalTo:feelingServer];
+//    [photosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
+//    [photosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
     photosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
     [photosQuery orderByDescending:@"createdAt"];
     [photosQuery includeKey:@"feeling"];
@@ -613,9 +634,8 @@
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    NSLog(@"%@", NSStringFromSelector(_cmd));
     if (!error) {
-        NSLog(@"Success - %d results", results.count);
+        NSLog(@"getPhotosFromServerForFeelingCallback - Success - %d results", results.count);
         for (PFObject * photoServer in results) {
             PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
             PFObject * userServer = [photoServer objectForKey:@"user"];
@@ -623,7 +643,7 @@
         }
         [self.coreDataManager saveCoreData];
     } else {
-        NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
+        NSLog(@"getPhotosFromServerForFeelingCallback - Network Connection Error: %@ %@", error, error.userInfo);
         UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [errorAlert show];
     }

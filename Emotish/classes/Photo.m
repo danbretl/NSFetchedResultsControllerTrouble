@@ -22,6 +22,7 @@
 @dynamic shouldHighlight;
 @dynamic likesCount;
 @dynamic likes;
+@dynamic hidden;
 
 - (BOOL)likeExistsForUserServerID:(NSString *)userServerID {
     BOOL likeExists = NO;

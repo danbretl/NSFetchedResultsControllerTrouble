@@ -54,6 +54,14 @@
     return matchingObject;
 }
 
+- (void)deleteAllLikes {
+    NSLog(@"Deleting all likes");
+    NSArray * allLikes = [self getAllObjectsForEntityName:@"Like" predicate:nil sortDescriptors:nil];
+    for (Like * like in allLikes) {
+        [self.managedObjectContext deleteObject:like];
+    }
+}
+
 //- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors {
 //    NSArray * matchingObjects = [self getAllObjectsForEntityName:entityName predicate:predicate sortDescriptors:sortDescriptors];
 //    NSManagedObject * matchingObject = matchingObjects.count > 0 ? [matchingObjects objectAtIndex:0] : nil;
@@ -87,6 +95,7 @@
     photo.imageURL = imageFile.url;
     photo.datetime = photoServer.createdAt;
     photo.likesCount = [photoServer objectForKey:@"likesCount"];
+    photo.hidden = [NSNumber numberWithBool:[[photoServer objectForKey:@"deleted"] boolValue] || [[photoServer objectForKey:@"flagged"] boolValue]];
 //    photo.shouldHighlight = [NSNumber numberWithBool:newObjectMadeIndicator]; // This is unnecessary, for now. This value defaults to YES, which is what we want. Otherwise, it is set to NO when an image is viewed.
     return photo;
 }
@@ -109,7 +118,7 @@
     NSLog(@"Add or update like from server, photo.serverID=%@, user.serverID=%@", photoServer.objectId, userServer.objectId);
     Photo * photoLocal = [self addOrUpdatePhotoFromServer:photoServer];
     User * userLocal = [self addOrUpdateUserFromServer:userServer];
-    Like * likeLocal = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@ || (photo.serverID == %@ && user.serverID == %@)", likeServer.objectId, photoServer.objectId, userServer.objectId] usingSortDescriptors:nil];
+    Like * likeLocal = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@ || (photo.serverID == %@ && user.serverID == %@) || (photoServerID == %@ && userServerID == %@)", likeServer.objectId, photoServer.objectId, userServer.objectId, photoServer.objectId, userServer.objectId] usingSortDescriptors:nil];
     if (likeLocal == nil) {
         NSLog(@"Like did not exist. Creating.");
         likeLocal = [self addOrUpdateLikeFromServer:likeServer];
@@ -117,6 +126,8 @@
         NSLog(@"Like already existed. Updating.");
         likeLocal.serverID = likeServer.objectId;
     }
+    likeLocal.userServerID = userServer.objectId;
+    likeLocal.photoServerID = photoServer.objectId;
     likeLocal.photo = photoLocal;
     likeLocal.user = userLocal;
     return likeLocal;

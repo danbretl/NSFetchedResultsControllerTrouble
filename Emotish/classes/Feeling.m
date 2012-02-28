@@ -15,9 +15,22 @@
 @dynamic word;
 @dynamic photos;
 @dynamic serverID;
+//@dynamic photosVisibleExist;
+
+//- (NSNumber *)foo {
+//    return [NSNumber numberWithBool:YES];
+//}
+
+- (NSSet *)photosVisible {
+    return [self.photos filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"hidden == NO"]];
+}
+
+//- (NSNumber *)photosVisibleExist {
+//    return [NSNumber numberWithBool:self.photosVisible.count > 0];
+//}
 
 - (NSArray *)mostRecentPhotos {
-    NSArray * sortedPhotos = [self.photos sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
+    NSArray * sortedPhotos = [self.photosVisible sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
     return [sortedPhotos subarrayWithRange:NSMakeRange(0, MIN(10, sortedPhotos.count))];
 }
 

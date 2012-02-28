@@ -184,6 +184,9 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
     _feelingIndex = feelingIndex;
     self.imagesTableView.tag = self.feelingIndex;
     self.feelingLabelButton.tag = self.feelingIndex;
+    for (GalleryFeelingImageCell * visibleCell in self.imagesTableView.visibleCells) {
+        visibleCell.feelingIndex = self.feelingIndex;
+    }
 }
 
 - (void)feelingLabelButtonTouched:(UIButton *)button {

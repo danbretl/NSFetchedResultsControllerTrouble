@@ -22,6 +22,7 @@
 @property (nonatomic, retain) NSNumber * shouldHighlight;
 @property (nonatomic, retain) NSNumber * likesCount;
 @property (nonatomic, retain) NSSet *likes;
+@property (nonatomic, retain) NSNumber * hidden;
 
 @end
 

@@ -13,8 +13,10 @@
 
 @interface Feeling : NSManagedObject
 @property (nonatomic, retain) NSString * word;
-@property (nonatomic, retain) NSSet *photos;
+@property (nonatomic, retain) NSSet * photos;
 @property (nonatomic, retain) NSString * serverID;
+//@property (nonatomic, retain) NSNumber * photosVisibleExist; // This is SO DUMB
+//@property (nonatomic, readonly) NSNumber * foo;
 @end
 
 @interface Feeling (CoreDataGeneratedAccessors)
@@ -25,5 +27,7 @@
 @end
 
 @interface Feeling (Convenience)
+@property (nonatomic, strong, readonly) NSSet * photosVisible;
+//@property (nonatomic, readonly) NSNumber * photosVisibleExist;
 @property (nonatomic, strong, readonly) NSArray * mostRecentPhotos;
 @end
