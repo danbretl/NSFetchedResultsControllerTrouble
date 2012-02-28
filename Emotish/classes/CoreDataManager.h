@@ -10,6 +10,7 @@
 #import "Photo.h"
 #import "Feeling.h"
 #import "User.h"
+#import "Like.h"
 #import <Parse/Parse.h>
 
 @interface CoreDataManager : NSObject
@@ -31,7 +32,11 @@
 // The following methods will get an existing object that matches the given server object's objectID (serverID, locally speaking), or will create one if it doesn't exist already.
 - (Feeling *) addOrUpdateFeelingFromServer:(PFObject *)feelingServer;
 - (User *) addOrUpdateUserFromServer:(PFObject *)userServer;
+//
 - (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer;
 - (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer;
+//
+- (Like *) addOrUpdateLikeFromServer:(PFObject *)likeServer;
+- (Like *) addOrUpdateLikeFromServer:(PFObject *)likeServer photoFromServer:(PFObject *)photoServer userFromServer:(PFObject *)userServer;
 
 @end

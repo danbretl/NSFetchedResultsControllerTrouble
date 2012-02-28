@@ -15,6 +15,7 @@
 @dynamic name;
 @dynamic photos;
 @dynamic serverID;
+@dynamic likes;
 
 - (NSArray *)mostRecentPhotos {
     NSArray * sortedPhotos = [self.photos sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];

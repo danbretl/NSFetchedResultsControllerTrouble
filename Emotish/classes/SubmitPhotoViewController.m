@@ -21,7 +21,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 - (void) doneButtonTouched:(UIButton *)button;
 - (void) keyboardWillShow:(NSNotification *)notification;
 - (void) keyboardWillHide:(NSNotification *)notification;
-- (void) userButtonTouched:(UIButton *)button;
 @property (strong, nonatomic, readonly) UIAlertView * logOutConfirmAlertView;
 @property (strong, nonatomic, readonly) UIAlertView * noFeelingAlertView;
 @property (strong, nonatomic, readonly) UIAlertView * noUserAlertView;
@@ -73,7 +72,9 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 //    self.photoView.button.userInteractionEnabled = NO;
 //    self.photoView.photoCaptionTextField.delegate = self;
     self.photoView.photoCaptionTextField.textColor = [UIColor userColor];
-    [self.photoView.button addTarget:self action:@selector(userButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+    self.photoView.delegate = self;
+    self.photoView.actionButtonsEnabled = NO;
+    [self.photoView showLikes:NO animated:NO];
     
 //    self.feelingTextField.frame = CGRectMake(self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, CGRectGetMaxY(self.topBar.frame), PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, CGRectGetMinY(self.photoView.frame) - CGRectGetMaxY(self.topBar.frame));
 //    self.feelingTextField.textFieldInsets = UIEdgeInsetsMake(0, 0, PC_PHOTO_CELL_MARGIN_TOP, 0);
@@ -341,6 +342,15 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     
 }
 
+- (void)photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
+    PFUser * currentUser = [PFUser currentUser];
+    if (currentUser) {
+        [self.logOutConfirmAlertView show];
+    } else {
+        [self presentAccountViewController];
+    }
+}
+
 - (void) backButtonTouched:(UIButton *)button {
     NSLog(@"backButtonTouched");
     [self.feelingTextField resignFirstResponder];
@@ -379,8 +389,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
         NSLog(@"  saving imageFile success? %d", savingSuccess);
         
         NSLog(@"setting up feeling");
-        BOOL objectMadeIndicator;
-        Feeling * feelingLocal = (Feeling *)[self.coreDataManager getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", self.feelingWord.lowercaseString] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:&objectMadeIndicator];
+        Feeling * feelingLocal = (Feeling *)[self.coreDataManager getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", self.feelingWord.lowercaseString] usingSortDescriptors:nil];
         PFObject * feelingServer = nil;
         if (feelingLocal != nil) {
             feelingServer = [PFObject objectWithClassName:@"Feeling"];
@@ -400,43 +409,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
         NSLog(@"saving feelingServer");
         savingSuccess = [feelingServer save];
         NSLog(@"  saving feelingServer success? %d", savingSuccess);
-        
-//        NSLog(@"setting up user");
-//        PFUser * userServer = nil;
-//        PFUser * currentUser = [PFUser currentUser];
-//        if (currentUser == nil || ![currentUser.username isEqualToString:self.userName]) {
-//            NSLog(@"  currentUser is nil, or currentUser.username is same as given userName");
-//            if (currentUser != nil) { 
-//                NSLog(@"  currentUser is not nil, but currentUser.username is not the same as given userName");
-//                [PFUser logOut];
-//            }
-//            BOOL * objectMadeIndicator;
-//            User * userLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"name == %@", self.userName] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:NO newObjectMadeIndicator:objectMadeIndicator];
-//            if (userLocal != nil) {
-//                NSLog(@"  userLocal is not nil, userLocal.serverID = %@", userLocal.serverID);
-//                userServer = [PFQuery getUserObjectWithId:userLocal.serverID];
-//                userServer = [PFUser logInWithUsername:userServer.username password:userServer.username];
-//            } else {
-//                NSLog(@"  userLocal is nil");
-//                PFQuery * userQuery = [PFQuery queryForUser];
-//                [userQuery whereKey:@"username" equalTo:self.userName];
-//                NSArray * matchingUsers = [userQuery findObjects];
-//                if (matchingUsers != nil && matchingUsers.count > 0) {
-//                    userServer = [matchingUsers objectAtIndex:0];
-//                    userServer = [PFUser logInWithUsername:userServer.username password:userServer.username];
-//                } else {
-//                    userServer = [PFUser user];
-//                    userServer.username = self.userName;
-//                    userServer.email = [NSString stringWithFormat:@"fake%@@fakegmail.com", self.userName];
-//                    userServer.password = self.userName;
-//                    [userServer signUp];
-//                }
-//            }
-//        } else {
-//            NSLog(@"  currentUser is not nil, and currentUser.username is same as given userName");
-//            userServer = currentUser;
-//        }
-//        NSLog(@"  userServer = %@", userServer);
         
         NSLog(@"setting up photo");
         PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
@@ -518,15 +490,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     } else if (alertView == self.noFeelingAlertView) {
         [self.feelingTextField becomeFirstResponder];
     } else if (alertView == self.noUserAlertView) {
-        [self presentAccountViewController];
-    }
-}
-
-- (void)userButtonTouched:(UIButton *)button {
-    PFUser * currentUser = [PFUser currentUser];
-    if (currentUser) {
-        [self.logOutConfirmAlertView show];
-    } else {
         [self presentAccountViewController];
     }
 }

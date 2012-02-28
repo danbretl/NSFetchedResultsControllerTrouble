@@ -144,6 +144,11 @@
 		3244017D14D9A0F80056DC81 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017C14D9A0F80056DC81 /* icon@2x.png */; };
 		3244017F14D9A47D0056DC81 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244017E14D9A47D0056DC81 /* Default.png */; };
 		3244018114D9A4810056DC81 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3244018014D9A4810056DC81 /* Default@2x.png */; };
+		3248245514FC1B6500BF5E65 /* icon_like_touch.png in Resources */ = {isa = PBXBuildFile; fileRef = 3248245114FC1B6500BF5E65 /* icon_like_touch.png */; };
+		3248245614FC1B6500BF5E65 /* icon_like_touch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3248245214FC1B6500BF5E65 /* icon_like_touch@2x.png */; };
+		3248245714FC1B6500BF5E65 /* icon_like.png in Resources */ = {isa = PBXBuildFile; fileRef = 3248245314FC1B6500BF5E65 /* icon_like.png */; };
+		3248245814FC1B6500BF5E65 /* icon_like@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3248245414FC1B6500BF5E65 /* icon_like@2x.png */; };
+		3248245E14FC3F5F00BF5E65 /* Like.m in Sources */ = {isa = PBXBuildFile; fileRef = 3248245D14FC3F5F00BF5E65 /* Like.m */; };
 		325C287514E9843500019977 /* btn_back.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C286D14E9843500019977 /* btn_back.png */; };
 		325C287614E9843500019977 /* btn_back@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C286E14E9843500019977 /* btn_back@2x.png */; };
 		325C287714E9843500019977 /* btn_cancel.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C286F14E9843500019977 /* btn_cancel.png */; };
@@ -354,6 +359,13 @@
 		3244017C14D9A0F80056DC81 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
 		3244017E14D9A47D0056DC81 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		3244018014D9A4810056DC81 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 005.xcdatamodel"; sourceTree = "<group>"; };
+		3248245114FC1B6500BF5E65 /* icon_like_touch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_like_touch.png; sourceTree = "<group>"; };
+		3248245214FC1B6500BF5E65 /* icon_like_touch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_like_touch@2x.png"; sourceTree = "<group>"; };
+		3248245314FC1B6500BF5E65 /* icon_like.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_like.png; sourceTree = "<group>"; };
+		3248245414FC1B6500BF5E65 /* icon_like@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_like@2x.png"; sourceTree = "<group>"; };
+		3248245C14FC3F5F00BF5E65 /* Like.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Like.h; path = classes/Like.h; sourceTree = "<group>"; };
+		3248245D14FC3F5F00BF5E65 /* Like.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Like.m; path = classes/Like.m; sourceTree = "<group>"; };
 		325C286D14E9843500019977 /* btn_back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_back.png; sourceTree = "<group>"; };
 		325C286E14E9843500019977 /* btn_back@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "btn_back@2x.png"; sourceTree = "<group>"; };
 		325C286F14E9843500019977 /* btn_cancel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_cancel.png; sourceTree = "<group>"; };
@@ -607,6 +619,10 @@
 				3207309F14EEDDED00F95618 /* btn_image_overlay_twitter_touch@2x.png */,
 				320730A014EEDDED00F95618 /* btn_image_overlay_twitter.png */,
 				320730A114EEDDED00F95618 /* btn_image_overlay_twitter@2x.png */,
+				3248245114FC1B6500BF5E65 /* icon_like_touch.png */,
+				3248245214FC1B6500BF5E65 /* icon_like_touch@2x.png */,
+				3248245314FC1B6500BF5E65 /* icon_like.png */,
+				3248245414FC1B6500BF5E65 /* icon_like@2x.png */,
 			);
 			name = "Photos Strip";
 			sourceTree = "<group>";
@@ -854,6 +870,8 @@
 				323B2FE214D77C4A0035BF74 /* Photo.m */,
 				323B2FDE14D77C4A0035BF74 /* User.h */,
 				323B2FDF14D77C4A0035BF74 /* User.m */,
+				3248245C14FC3F5F00BF5E65 /* Like.h */,
+				3248245D14FC3F5F00BF5E65 /* Like.m */,
 				323B2FDB14D77B0E0035BF74 /* CoreDataManager.h */,
 				323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */,
 			);
@@ -1083,6 +1101,10 @@
 				3279146B14F0CE7900CFDAC4 /* gallery_image_highlight_tab@2x.png in Resources */,
 				323401B514F5733300B887F2 /* AccountViewController.xib in Resources */,
 				32F1F45414F7F28F005A4803 /* SettingsViewController.xib in Resources */,
+				3248245514FC1B6500BF5E65 /* icon_like_touch.png in Resources */,
+				3248245614FC1B6500BF5E65 /* icon_like_touch@2x.png in Resources */,
+				3248245714FC1B6500BF5E65 /* icon_like.png in Resources */,
+				3248245814FC1B6500BF5E65 /* icon_like@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1130,6 +1152,7 @@
 				323401B414F5733300B887F2 /* AccountViewController.m in Sources */,
 				32F1F45314F7F28F005A4803 /* SettingsViewController.m in Sources */,
 				32F1F45714F8826F005A4803 /* SettingsItemTableViewCell.m in Sources */,
+				3248245E14FC3F5F00BF5E65 /* Like.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1267,13 +1290,14 @@
 		32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */,
 				322177A914EC601A00D48F99 /* Emotish 003.xcdatamodel */,
 				322C294714F0C6D50001E580 /* Emotish 004.xcdatamodel */,
 				3263210C14DC7AE400E2E10A /* Emotish 002.xcdatamodel */,
 				323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */,
 				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
 			);
-			currentVersion = 322C294714F0C6D50001E580 /* Emotish 004.xcdatamodel */;
+			currentVersion = 3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */;
 			path = Emotish.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

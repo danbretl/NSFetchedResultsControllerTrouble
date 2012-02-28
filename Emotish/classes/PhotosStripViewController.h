@@ -33,7 +33,7 @@ typedef enum {
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate/*, PhotoViewDelegate*/, SettingsViewControllerDelegate, AccountViewControllerDelegate>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate, PhotoViewDelegate, SettingsViewControllerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;

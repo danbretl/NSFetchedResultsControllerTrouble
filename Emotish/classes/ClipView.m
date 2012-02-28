@@ -12,12 +12,35 @@
 
 @synthesize scrollView=_scrollView;
 
+// Modification:
+/*
+ The ClipView solution above worked for me, but I had to do a different -[UIView hitTest:withEvent:] implementation. Ed Marty's version didn't get user interaction working with vertical scrollviews I have inside the horizontal one.
+ 
+ The following version worked for me:
+ 
+ -(UIView*)hitTest:(CGPoint)point withEvent:(UIEvent*)event
+ {
+ UIView* child = nil;
+ if ((child = [super hitTest:point withEvent:event]) == self)
+ return self.scrollView;         
+ return child;
+ }
+ */
+
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-//    NSLog(@"%@", event.allTouches);
-    if ([self pointInside:point withEvent:event]) {
+    
+    UIView * child = nil;
+    if ((child = [super hitTest:point withEvent:event]) == self) {
         return self.scrollView;
+    } else {
+        return child;
     }
-    return nil;
+    
+//    NSLog(@"%@", event.allTouches);
+//    if ([self pointInside:point withEvent:event]) {
+//        return self.scrollView;
+//    }
+//    return nil;
 }
 
 /*

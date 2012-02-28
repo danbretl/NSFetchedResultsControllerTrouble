@@ -17,7 +17,7 @@
 
 @protocol SubmitPhotoViewControllerDelegate;
 
-@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate>
+@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, PhotoViewDelegate>
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;

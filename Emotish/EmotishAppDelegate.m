@@ -42,7 +42,7 @@
     
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
-    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData2"]);
+    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"]);
     if (shouldFlush && allFeelings != nil && allFeelings.count > 0) {
         NSLog(@"Flushing database");
         for (Feeling * feeling in [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
@@ -55,7 +55,7 @@
             [self.coreDataManager.managedObjectContext deleteObject:photo];
         }
         [self.coreDataManager saveCoreData];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData2"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"];
     }
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];

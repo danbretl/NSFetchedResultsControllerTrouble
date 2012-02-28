@@ -20,5 +20,16 @@
 @dynamic serverID;
 @dynamic imageURL;
 @dynamic shouldHighlight;
+@dynamic likesCount;
+@dynamic likes;
+
+- (BOOL)likeExistsForUserServerID:(NSString *)userServerID {
+    BOOL likeExists = NO;
+    if (userServerID != nil) {
+        NSSet * likesMatchingUser = [self.likes filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"user.serverID == %@", userServerID]];
+        likeExists = likesMatchingUser != nil && likesMatchingUser.count > 0;
+    }
+    return likeExists;
+}
 
 @end

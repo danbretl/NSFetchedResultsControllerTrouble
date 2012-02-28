@@ -86,6 +86,7 @@
     PFFile * imageFile = [photoServer objectForKey:@"image"];
     photo.imageURL = imageFile.url;
     photo.datetime = photoServer.createdAt;
+    photo.likesCount = [photoServer objectForKey:@"likesCount"];
 //    photo.shouldHighlight = [NSNumber numberWithBool:newObjectMadeIndicator]; // This is unnecessary, for now. This value defaults to YES, which is what we want. Otherwise, it is set to NO when an image is viewed.
     return photo;
 }
@@ -97,6 +98,23 @@
     return photo;
 }
 
+- (Like *)addOrUpdateLikeFromServer:(PFObject *)likeServer {
+    BOOL newObjectMadeIndicator;
+    Like * like = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", likeServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
+    like.serverID = likeServer.objectId;
+    return like;
+}
 
+- (Like *)addOrUpdateLikeFromServer:(PFObject *)likeServer photoFromServer:(PFObject *)photoServer userFromServer:(PFObject *)userServer {
+    Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
+    User * user = [self addOrUpdateUserFromServer:userServer];
+    Like * like = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"photo.serverID == %@ && user.serverID == %@", photo.serverID, user.serverID] usingSortDescriptors:nil];
+    if (like == nil) {
+        like = [self addOrUpdateLikeFromServer:likeServer];
+    } else {
+        like.serverID = likeServer.objectId;
+    }
+    return like;
+}
 
 @end

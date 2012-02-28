@@ -533,6 +533,16 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
         if (user != nil) {
             NSLog(@"Logged in with user %@", user);
             [self.coreDataManager addOrUpdateUserFromServer:user];
+            PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
+            [likesQuery whereKey:@"user" equalTo:user];
+            [likesQuery includeKey:@"photo"];
+            [likesQuery findObjectsInBackgroundWithBlock:^(NSArray * objects, NSError * error){
+                if (!error && objects != nil && objects.count > 0) {
+                    for (PFObject * likeServer in objects) {
+                        [self.coreDataManager addOrUpdateLikeFromServer:likeServer photoFromServer:[likeServer objectForKey:@"photo"] userFromServer:user];
+                    }
+                }
+            }];
             [self.delegate accountViewController:self didFinishWithConnection:YES];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
