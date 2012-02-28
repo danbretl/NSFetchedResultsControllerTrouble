@@ -53,6 +53,9 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 @property (nonatomic, strong, readonly) UIAlertView * anotherAccountWithUsernameExistsAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * anotherAccountWithEmailExistsAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * connectionErrorGeneralAlertView;
+// Utility BOOLs
+@property (nonatomic) BOOL waitingForLikes;
+@property (nonatomic) BOOL waitingToSubscribeToNotificationsChannel;
 
 // Methods - General
 - (void) cancelButtonTouched:(id)sender;
@@ -75,6 +78,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 //- (void) facebookGetBasicInfoFailure:(NSNotification *)notification;
 // Methods - Web
 - (void)logInWithUsernameCallback:(PFUser *)user error:(NSError **)error;
+- (void) attemptToProceedWithSuccessfulLogin;
 
 @end
 
@@ -90,6 +94,8 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 @synthesize emailAccountAssuranceLabel;
 @synthesize swipeDownGestureRecognizer=_swipeDownGestureRecognizer;
 @synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, emailInvalidAlertView=_emailInvalidAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView, connectionErrorGeneralAlertView=_connectionErrorGeneralAlertView;
+@synthesize waitingForLikes=_waitingForLikes, waitingToSubscribeToNotificationsChannel=_waitingToSubscribeToNotificationsChannel;
+
 @synthesize coreDataManager=_coreDataManager;
 @synthesize delegate=_delegate;
 
@@ -99,6 +105,8 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
         initialPromptScreenVisible = YES;
         accountCreationViewsVisible = YES;
         confirmPasswordVisible = YES;
+        self.waitingForLikes = NO;
+        self.waitingToSubscribeToNotificationsChannel = NO;
     }
     return self;
 }
@@ -532,18 +540,38 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
         if (user != nil) {
             NSLog(@"Logged in with user %@", user);
             [self.coreDataManager addOrUpdateUserFromServer:user];
+            [self.coreDataManager saveCoreData];
+            self.waitingForLikes = YES;
+            self.waitingToSubscribeToNotificationsChannel = YES;
             PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
             [likesQuery whereKey:@"user" equalTo:user];
             [likesQuery includeKey:@"photo"];
             [likesQuery findObjectsInBackgroundWithBlock:^(NSArray * objects, NSError * error){
-                if (!error && objects != nil && objects.count > 0) {
-                    for (PFObject * likeServer in objects) {
-                        [self.coreDataManager addOrUpdateLikeFromServer:likeServer photoFromServer:[likeServer objectForKey:@"photo"] userFromServer:user];
+                if (!error) {
+                    if (objects != nil && objects.count > 0) {
+                        NSLog(@"Logged in user has %d previous likes. Attempting to restore them locally.", objects.count);
+                        for (PFObject * likeServer in objects) {
+                            PFObject * photoServer = [likeServer objectForKey:@"photo"];
+                            [self.coreDataManager addOrUpdateLikeFromServer:likeServer photoFromServer:photoServer userFromServer:user];
+                        }
+                        [self.coreDataManager saveCoreData];
                     }
+                    self.waitingForLikes = NO;
+                    [self attemptToProceedWithSuccessfulLogin];
+                } else {
+                    [self.connectionErrorGeneralAlertView show];
+                    [PFUser logOut];
                 }
             }];
-            [PFPush subscribeToChannelInBackground:user.objectId];
-            [self.delegate accountViewController:self didFinishWithConnection:YES];
+            [PFPush subscribeToChannelInBackground:user.objectId block:^(BOOL succeeded, NSError * error){
+                if (!error && succeeded) {
+                    self.waitingToSubscribeToNotificationsChannel = NO;
+                    [self attemptToProceedWithSuccessfulLogin];
+                } else {
+                    [self.connectionErrorGeneralAlertView show];
+                    [PFUser logOut];
+                }
+            }];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
             [self.passwordIncorrectAlertView show];
@@ -556,6 +584,14 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 //        } else {
         [self.connectionErrorGeneralAlertView show];
 //        }        
+    }
+}
+
+- (void) attemptToProceedWithSuccessfulLogin {
+    if (!(self.waitingForLikes || self.waitingToSubscribeToNotificationsChannel)) {
+        [self.delegate accountViewController:self didFinishWithConnection:YES];
+    } else {
+        NSLog(@"waiting to proceed with successful login, self.waitingForLikes=%d, self.waitingToSubscribeToNotificationsChannel=%d", self.waitingForLikes, self.waitingToSubscribeToNotificationsChannel);
     }
 }
 

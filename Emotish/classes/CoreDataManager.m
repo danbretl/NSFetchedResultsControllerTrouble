@@ -106,15 +106,20 @@
 }
 
 - (Like *)addOrUpdateLikeFromServer:(PFObject *)likeServer photoFromServer:(PFObject *)photoServer userFromServer:(PFObject *)userServer {
-    Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
-    User * user = [self addOrUpdateUserFromServer:userServer];
-    Like * like = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"photo.serverID == %@ && user.serverID == %@", photo.serverID, user.serverID] usingSortDescriptors:nil];
-    if (like == nil) {
-        like = [self addOrUpdateLikeFromServer:likeServer];
+    NSLog(@"Add or update like from server, photo.serverID=%@, user.serverID=%@", photoServer.objectId, userServer.objectId);
+    Photo * photoLocal = [self addOrUpdatePhotoFromServer:photoServer];
+    User * userLocal = [self addOrUpdateUserFromServer:userServer];
+    Like * likeLocal = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@ || (photo.serverID == %@ && user.serverID == %@)", likeServer.objectId, photoServer.objectId, userServer.objectId] usingSortDescriptors:nil];
+    if (likeLocal == nil) {
+        NSLog(@"Like did not exist. Creating.");
+        likeLocal = [self addOrUpdateLikeFromServer:likeServer];
     } else {
-        like.serverID = likeServer.objectId;
+        NSLog(@"Like already existed. Updating.");
+        likeLocal.serverID = likeServer.objectId;
     }
-    return like;
+    likeLocal.photo = photoLocal;
+    likeLocal.user = userLocal;
+    return likeLocal;
 }
 
 @end
