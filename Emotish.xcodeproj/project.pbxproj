@@ -1251,6 +1251,7 @@
 					armv6,
 					armv7,
 				);
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Daniel Bretl";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -1264,6 +1265,7 @@
 					"-fobjc-arc",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "DA0B9B3D-FE00-4B7D-9998-0E6EF3ED8247";
 				USER_HEADER_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)/**";
 				WRAPPER_EXTENSION = app;
 			};
