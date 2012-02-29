@@ -132,13 +132,28 @@
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken {
+    NSLog(@"application:didRegisterForRemoteNotificationsWithDeviceToken:");
     // Tell Parse about the device token.
     [PFPush storeDeviceToken:newDeviceToken];
     // Subscribe to the global broadcast channel.
-    [PFPush subscribeToChannelInBackground:@""];
+    NSLog(@"Subscribing to channel \"\"");
+    [PFPush subscribeToChannelInBackground:@"" block:^(BOOL succeeded, NSError * error){
+        if (succeeded) {
+            NSLog(  @"Successfully subscribed to channel \"\"");
+        } else {
+            NSLog(  @"Failed to subscribe to channel \"\"");
+        }
+    }];
     PFUser * currentUser = [PFUser currentUser];
     if (currentUser != nil) {
-        [PFPush subscribeToChannelInBackground:currentUser.objectId];
+        NSLog(@"Subscribing to channel %@", currentUser.objectId);
+        [PFPush subscribeToChannelInBackground:currentUser.objectId block:^(BOOL succeeded, NSError * error){
+            if (succeeded) {
+                NSLog(  @"Successfully subscribed to channel %@", currentUser.objectId);
+            } else {
+                NSLog(  @"Failed to subscribe to channel %@", currentUser.objectId);
+            }
+        }];
     }
 }
 

@@ -163,7 +163,7 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
         [actionButton setImage:[UIImage imageNamed:actionButtonInfo.filenameIcon] forState:UIControlStateNormal];
         [actionButton setImage:[UIImage imageNamed:actionButtonInfo.filenameIconTouch] forState:UIControlStateHighlighted];
         [self.actionButtons replaceObjectAtIndex:(actionButtonInfo.position.section * actionButtonColumns + actionButtonInfo.position.row) withObject:actionButton];
-        NSLog(@"Placing action button (filename %@) with index path %d-%d at index %d", actionButtonInfo.filenameIcon, actionButtonInfo.position.section, actionButtonInfo.position.row, actionButtonInfo.position.section * actionButtonColumns + actionButtonInfo.position.row);
+//        NSLog(@"Placing action button (filename %@) with index path %d-%d at index %d", actionButtonInfo.filenameIcon, actionButtonInfo.position.section, actionButtonInfo.position.row, actionButtonInfo.position.section * actionButtonColumns + actionButtonInfo.position.row);
         // Below is TEMPORARY, while features are being developed...
         // Below is TEMPORARY, while features are being developed...
         // Below is TEMPORARY, while features are being developed...
@@ -217,9 +217,9 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
             id actionButtonID = [self.actionButtons objectAtIndex:index];
             if (actionButtonID != [NSNull null]) {
                 UIButton * actionButton = (UIButton *)actionButtonID;
-                NSLog(@"Setting frame for button with code %d", actionButton.tag);
+//                NSLog(@"Setting frame for button with code %d", actionButton.tag);
                 actionButton.frame = CGRectMake(actionButtonWidth * row, actionButtonHeight * column, actionButtonWidth, actionButtonHeight);
-                NSLog(@"%@", NSStringFromCGRect(actionButton.frame));
+//                NSLog(@"%@", NSStringFromCGRect(actionButton.frame));
             }
         }
     }

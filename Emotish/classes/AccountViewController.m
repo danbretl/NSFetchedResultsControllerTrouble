@@ -563,11 +563,14 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                     [PFUser logOut];
                 }
             }];
+            NSLog(@"Subscribing to channel %@", user.objectId);
             [PFPush subscribeToChannelInBackground:user.objectId block:^(BOOL succeeded, NSError * error){
-                if (!error && succeeded) {
+                if (succeeded) {
+                    NSLog(  @"Successfully subscribed to channel %@", user.objectId);
                     self.waitingToSubscribeToNotificationsChannel = NO;
                     [self attemptToProceedWithSuccessfulLogin];
                 } else {
+                    NSLog(  @"Failed to subscribe to channel %@", user.objectId);
                     [self.connectionErrorGeneralAlertView show];
                     [PFUser logOut];
                 }
@@ -674,8 +677,15 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                 // Hooray! Let them use the app now.
                 PFUser * userSignedUp = [PFUser currentUser];
                 [self.coreDataManager addOrUpdateUserFromServer:userSignedUp];
-                [PFPush subscribeToChannelInBackground:userSignedUp.objectId];
-                [self.delegate accountViewController:self didFinishWithConnection:YES];
+                NSLog(@"Subscribing to channel %@", userSignedUp.objectId);
+                [PFPush subscribeToChannelInBackground:userSignedUp.objectId block:^(BOOL succeeded, NSError * error){
+                    if (succeeded) {
+                        NSLog(  @"Successfully subscribed to channel %@", userSignedUp.objectId);
+                    } else {
+                        NSLog(  @"Failed to subscribe to channel %@", userSignedUp.objectId);
+                    }
+                    [self.delegate accountViewController:self didFinishWithConnection:YES];
+                }];
             } else {
                 NSLog(@"error: %@", error);
                 if (error.code == kPFErrorUsernameTakenError) {

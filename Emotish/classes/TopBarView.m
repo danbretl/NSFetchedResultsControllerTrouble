@@ -167,10 +167,10 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     NSNumber * buttonCurrentButtonType = [self.buttonsDictionary valueForKey:[NSString stringWithFormat:@"%d", buttonPosition]];
     if (buttonCurrentButtonType == nil ||
         buttonCurrentButtonType.intValue != buttonType) {
-        NSLog(@"buttonCurrentButtonType == nil || buttonCurrentButtonType.intValue != buttonType ---> YES");
+//        NSLog(@"buttonCurrentButtonType == nil || buttonCurrentButtonType.intValue != buttonType ---> YES");
           
         UIButton * buttonSpare = [self buttonSpareForPosition:buttonPosition];
-        NSLog(@"buttonSpareForPosition:%d ---> %@", buttonPosition, buttonSpare);
+//        NSLog(@"buttonSpareForPosition:%d ---> %@", buttonPosition, buttonSpare);
         
         UIImage * buttonImage = nil;
         UIImage * buttonImageTouch = nil;
@@ -254,7 +254,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
 
 // To avoid a dumb ARC compiler warning "PerformSelector may cause a leak because its selector is unknown."
 - (void) setButtonCurrent:(UIButton *)button forPosition:(TopBarButtonPosition)buttonPosition {
-    NSLog(@"setButtonCurrent:(UIButton *)%@ forPosition:(TopBarButtonPosition)%d", button, buttonPosition);
+//    NSLog(@"setButtonCurrent:(UIButton *)%@ forPosition:(TopBarButtonPosition)%d", button, buttonPosition);
     if (buttonPosition == LeftSpecial) {
         self.buttonLeftSpecial = button;
     } else if (buttonPosition == LeftNormal) {

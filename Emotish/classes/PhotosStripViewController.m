@@ -159,11 +159,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 //    CGFloat flagStretchViewHeight = floorf(self.photoViewCenter.photoImageView.bounds.size.height / 2.0);
     CGFloat flagStretchViewHeight = floorf(self.photoViewCenter.photoImageView.bounds.size.height * PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGHT);
     CGRect photoViewRectInScrollView = [self.photosScrollView convertRect:self.photoViewCenter.photoImageView.frame fromView:self.photoViewCenter.superview];
-    NSLog(@"photoViewRectInScrollView = %@", NSStringFromCGRect(photoViewRectInScrollView));
+//    NSLog(@"photoViewRectInScrollView = %@", NSStringFromCGRect(photoViewRectInScrollView));
     self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake((photoViewRectInScrollView.size.height - flagStretchViewHeight) / 2.0, -screenWidth - self.photosScrollView.frame.origin.x, flagStretchViewHeight, screenWidth)];
     self.flagStretchView.transform = CGAffineTransformMakeRotation(-M_PI * 0.5);
     self.flagStretchView.frame = CGRectMake(-screenWidth - self.photosScrollView.frame.origin.x, (photoViewRectInScrollView.size.height - flagStretchViewHeight) / 2.0, screenWidth, flagStretchViewHeight);
-    NSLog(@"flagStretchView.frame = %@", NSStringFromCGRect(self.flagStretchView.frame));
+//    NSLog(@"flagStretchView.frame = %@", NSStringFromCGRect(self.flagStretchView.frame));
     self.flagStretchView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.flagStretchView setAngledShapes:YES angleSeverity:Subtle51213];
     [self.flagStretchView setMiddleStripeBorderWidth:10.0];
@@ -718,7 +718,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             }];
             
             // Client push notification
-            BOOL testingWithOnlyOneDeviceAvailable = NO;
+            BOOL testingWithOnlyOneDeviceAvailable = YES;
             if (![userCurrent.objectId isEqualToString:photoLiked.user.serverID] ||
                 testingWithOnlyOneDeviceAvailable) {
                 NSMutableDictionary * pushNotificationData = [NSMutableDictionary dictionary];
