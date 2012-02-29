@@ -193,6 +193,7 @@
 		32F1F45314F7F28F005A4803 /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45114F7F28F005A4803 /* SettingsViewController.m */; };
 		32F1F45414F7F28F005A4803 /* SettingsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32F1F45214F7F28F005A4803 /* SettingsViewController.xib */; };
 		32F1F45714F8826F005A4803 /* SettingsItemTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */; };
+		32FBDF3A14FEA6E100C9C4DE /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32FBDF3914FEA6E100C9C4DE /* Parse.framework */; };
 		32FF146014FCA6E500829FB0 /* PushConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 32FF145F14FCA6E500829FB0 /* PushConstants.m */; };
 /* End PBXBuildFile section */
 
@@ -434,6 +435,7 @@
 		32F1F45514F8826F005A4803 /* SettingsItemTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SettingsItemTableViewCell.h; path = classes/SettingsItemTableViewCell.h; sourceTree = "<group>"; };
 		32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SettingsItemTableViewCell.m; path = classes/SettingsItemTableViewCell.m; sourceTree = "<group>"; };
 		32F7221514FD6D930092278F /* Emotish 006.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 006.xcdatamodel"; sourceTree = "<group>"; };
+		32FBDF3914FEA6E100C9C4DE /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		32FF145E14FCA6E500829FB0 /* PushConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PushConstants.h; path = classes/PushConstants.h; sourceTree = "<group>"; };
 		32FF145F14FCA6E500829FB0 /* PushConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PushConstants.m; path = classes/PushConstants.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -454,6 +456,7 @@
 				32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */,
 				32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */,
 				32E2F1F214D0929F00191C6F /* CoreData.framework in Frameworks */,
+				32FBDF3A14FEA6E100C9C4DE /* Parse.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -827,6 +830,7 @@
 		32E2F1EA14D0929F00191C6F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				32FBDF3914FEA6E100C9C4DE /* Parse.framework */,
 				32EB6C0814E43534003D7105 /* MobileCoreServices.framework */,
 				326127C914DCC25E001FD065 /* QuartzCore.framework */,
 				32E2F1EB14D0929F00191C6F /* UIKit.framework */,
