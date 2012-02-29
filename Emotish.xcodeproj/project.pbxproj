@@ -95,7 +95,6 @@
 		320730BB14EEDDED00F95618 /* btn_image_overlay_twitter_touch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3207309F14EEDDED00F95618 /* btn_image_overlay_twitter_touch@2x.png */; };
 		320730BC14EEDDED00F95618 /* btn_image_overlay_twitter.png in Resources */ = {isa = PBXBuildFile; fileRef = 320730A014EEDDED00F95618 /* btn_image_overlay_twitter.png */; };
 		320730BD14EEDDED00F95618 /* btn_image_overlay_twitter@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 320730A114EEDDED00F95618 /* btn_image_overlay_twitter@2x.png */; };
-		3209DCD214EBF66E0056AD4E /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3209DCD114EBF66E0056AD4E /* Parse.framework */; };
 		3209DCD514EBF6940056AD4E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3209DCD414EBF6940056AD4E /* AudioToolbox.framework */; };
 		3209DCD714EBF69E0056AD4E /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3209DCD614EBF69D0056AD4E /* CFNetwork.framework */; };
 		3209DCD914EBF6A50056AD4E /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3209DCD814EBF6A50056AD4E /* SystemConfiguration.framework */; };
@@ -286,7 +285,6 @@
 		3207309F14EEDDED00F95618 /* btn_image_overlay_twitter_touch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "btn_image_overlay_twitter_touch@2x.png"; sourceTree = "<group>"; };
 		320730A014EEDDED00F95618 /* btn_image_overlay_twitter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_image_overlay_twitter.png; sourceTree = "<group>"; };
 		320730A114EEDDED00F95618 /* btn_image_overlay_twitter@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "btn_image_overlay_twitter@2x.png"; sourceTree = "<group>"; };
-		3209DCD114EBF66E0056AD4E /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		3209DCD414EBF6940056AD4E /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		3209DCD614EBF69D0056AD4E /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		3209DCD814EBF6A50056AD4E /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -456,7 +454,6 @@
 				32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */,
 				32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */,
 				32E2F1F214D0929F00191C6F /* CoreData.framework in Frameworks */,
-				3209DCD214EBF66E0056AD4E /* Parse.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -836,7 +833,6 @@
 				32E2F1ED14D0929F00191C6F /* Foundation.framework */,
 				32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */,
 				32E2F1F114D0929F00191C6F /* CoreData.framework */,
-				3209DCD114EBF66E0056AD4E /* Parse.framework */,
 				3209DCDC14EBF6C00056AD4E /* Security.framework */,
 				3209DCD814EBF6A50056AD4E /* SystemConfiguration.framework */,
 				3209DCD614EBF69D0056AD4E /* CFNetwork.framework */,
