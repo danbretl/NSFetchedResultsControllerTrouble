@@ -122,7 +122,7 @@
 					<object class="IBUIButton" id="832324045">
 						<reference key="NSNextResponder" ref="286881777"/>
 						<int key="NSvFlags">293</int>
-						<string key="NSFrame">{{20, 137}, {272, 39}}</string>
+						<string key="NSFrame">{{23, 137}, {273, 41}}</string>
 						<reference key="NSSuperview" ref="286881777"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="1048378658"/>
@@ -164,7 +164,7 @@
 					<object class="IBUIButton" id="1048378658">
 						<reference key="NSNextResponder" ref="286881777"/>
 						<int key="NSvFlags">293</int>
-						<string key="NSFrame">{{20, 235}, {272, 39}}</string>
+						<string key="NSFrame">{{23, 235}, {273, 41}}</string>
 						<reference key="NSSuperview" ref="286881777"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="30641135"/>
@@ -193,7 +193,7 @@
 					<object class="IBUIButton" id="30641135">
 						<reference key="NSNextResponder" ref="286881777"/>
 						<int key="NSvFlags">293</int>
-						<string key="NSFrame">{{20.5, 290}, {272, 39}}</string>
+						<string key="NSFrame">{{23.5, 290}, {273, 41}}</string>
 						<reference key="NSSuperview" ref="286881777"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView"/>
@@ -1008,12 +1008,12 @@ Lg</string>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<string key="btn_connect_facebook.png">{272, 39}</string>
-			<string key="btn_connect_facebook_touch.png">{272, 39}</string>
-			<string key="btn_connect_twitter.png">{272, 39}</string>
-			<string key="btn_connect_twitter_touch.png">{272, 39}</string>
-			<string key="btn_connect_username.png">{272, 39}</string>
-			<string key="btn_connect_username_touch.png">{272, 39}</string>
+			<string key="btn_connect_facebook.png">{273, 41}</string>
+			<string key="btn_connect_facebook_touch.png">{273, 41}</string>
+			<string key="btn_connect_twitter.png">{273, 41}</string>
+			<string key="btn_connect_twitter_touch.png">{273, 41}</string>
+			<string key="btn_connect_username.png">{273, 41}</string>
+			<string key="btn_connect_username_touch.png">{273, 41}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">933</string>
 	</data>
