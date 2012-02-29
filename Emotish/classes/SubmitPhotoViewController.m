@@ -498,6 +498,7 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
     accountViewController.delegate = self;
     accountViewController.coreDataManager = self.coreDataManager;
+    accountViewController.swipeDownToCancelEnabled = YES;
     [self presentModalViewController:accountViewController animated:YES];
 }
 

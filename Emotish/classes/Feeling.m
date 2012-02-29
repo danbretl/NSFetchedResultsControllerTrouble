@@ -25,9 +25,9 @@
     return [self.photos filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"hidden == NO"]];
 }
 
-//- (NSNumber *)photosVisibleExist {
-//    return [NSNumber numberWithBool:self.photosVisible.count > 0];
-//}
+- (NSNumber *)photosVisibleExist {
+    return [NSNumber numberWithBool:self.photosVisible.count > 0];
+}
 
 - (NSArray *)mostRecentPhotos {
     NSArray * sortedPhotos = [self.photosVisible sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];

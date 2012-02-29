@@ -30,5 +30,7 @@
 @end
 
 @interface User (Convenience)
+@property (nonatomic, strong, readonly) NSSet * photosVisible;
+@property (nonatomic, readonly) NSNumber * photosVisibleExist;
 @property (nonatomic, strong, readonly) NSArray * mostRecentPhotos;
 @end

@@ -10,6 +10,14 @@
 #import <Parse/Parse.h>
 #import "PushConstants.h"
 
+#ifdef production_push
+#define emotish_parse_app_id @"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC"
+#define emotish_parse_app_client_key @"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"
+#else
+#define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
+#define emotish_parse_app_client_key @"14YPpATSB63ZrouAqkNfqOIxwdq5e6fjSTUk21Gr"
+#endif
+
 @implementation EmotishAppDelegate
 
 @synthesize coreDataManager=_coreDataManager;
@@ -22,8 +30,10 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
-    [Parse setApplicationId:@"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC" 
-                  clientKey:@"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"];
+    NSLog(@"emotish_parse_app_id=%@", emotish_parse_app_id);
+    NSLog(@"emotish_parse_app_client_key=%@", emotish_parse_app_client_key);
+    [Parse setApplicationId:emotish_parse_app_id
+                  clientKey:emotish_parse_app_client_key];
     [PFFacebookUtils initializeWithApplicationId:@"247509625333388"];
     [PFTwitterUtils initializeWithConsumerKey:@"mWfvpMuJ480juFn64Ejc1Q" consumerSecret:@"qPdtbIQCcMQdCjte4CVEfzFhjPC7tSEGuOsF8WbYo"];
 
@@ -191,6 +201,7 @@
     // - In Feeling or User PhotosStrip
     // - In Camera View or Photo Submission Screen
     // - In Settings
+    [self.rootNavController popToRootViewControllerAnimated:NO];
     UIAlertView * inDevelopmentAlertView = [[UIAlertView alloc] initWithTitle:@"In Development..." message:@"Sorry, we can't yet navigate you to the photo that was liked - we're working on this feature!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
     [inDevelopmentAlertView show];
 //    [self.rootNavController popToRootViewControllerAnimated:NO];

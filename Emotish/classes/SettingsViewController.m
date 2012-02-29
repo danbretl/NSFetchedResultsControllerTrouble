@@ -176,6 +176,7 @@
         AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
         accountViewController.delegate = self;
         accountViewController.coreDataManager = self.coreDataManager;
+        accountViewController.swipeRightToCancelEnabled = YES;
         [self.navigationController pushViewController:accountViewController animated:YES];
     } else {
         // Push a VC to edit account

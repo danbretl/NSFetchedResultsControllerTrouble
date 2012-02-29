@@ -26,6 +26,7 @@
 - (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
 - (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
 - (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
+- (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
 //- (void) updateConfigureVisibleCells;
 @end
 
@@ -501,34 +502,56 @@
     }
 }
 
+- (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer {
+    NSLog(@"Settings button touched...");
+    SettingsViewController * settingsViewController = [[SettingsViewController alloc] initWithNibName:@"SettingsViewController" bundle:[NSBundle mainBundle]];
+    settingsViewController.delegate = self;
+    settingsViewController.coreDataManager = self.coreDataManager;
+    settingsViewController.userServer = userServer;
+    settingsViewController.userLocal = userLocal;
+    UINavigationController * settingsNavController = [[UINavigationController alloc] initWithRootViewController:settingsViewController];
+    settingsNavController.navigationBarHidden = YES;
+    [self presentModalViewController:settingsNavController animated:YES];
+}
+
+- (void) settingsViewControllerFinished:(SettingsViewController *)settingsViewController {
+    [self dismissModalViewControllerAnimated:YES];
+}
+
 - (void)profileButtonTouched:(UIButton *)button {
     NSLog(@"profileButtonTouched");
     PFUser * currentUser = [PFUser currentUser];
+    User * currentUserLocal = currentUser == nil ? nil : (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", currentUser.objectId]  usingSortDescriptors:nil];
     if (currentUser == nil) {
         AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
         accountViewController.delegate = self;
         accountViewController.coreDataManager = self.coreDataManager;
+        accountViewController.swipeDownToCancelEnabled = YES;
         [self presentModalViewController:accountViewController animated:YES];
     } else {
-
-        User * currentUserLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", currentUser.objectId] usingSortDescriptors:nil];
         
-        PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-        feelingStripViewController.delegate = self;
-        feelingStripViewController.coreDataManager = self.coreDataManager;
-        feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-        Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
-        [feelingStripViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
-        [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:nil];
-        self.galleryScreenshot = self.galleryScreenshotCurrent;
-        feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
-        
-        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            self.feelingsTableView.alpha = 0.0;
-            self.feelingsTableView.userInteractionEnabled = NO;
-        } completion:^(BOOL finished){
-            [self.navigationController pushViewController:feelingStripViewController animated:NO];
-        }];
+        if (!currentUserLocal.photosVisibleExist.boolValue) {
+            [self showSettingsViewControllerForUserLocal:currentUserLocal userServer:currentUser];
+            
+        } else {
+            
+            PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+            feelingStripViewController.delegate = self;
+            feelingStripViewController.coreDataManager = self.coreDataManager;
+            feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
+            Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
+            [feelingStripViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
+            [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:nil];
+            self.galleryScreenshot = self.galleryScreenshotCurrent;
+            feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
+            
+            [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                self.feelingsTableView.alpha = 0.0;
+                self.feelingsTableView.userInteractionEnabled = NO;
+            } completion:^(BOOL finished){
+                [self.navigationController pushViewController:feelingStripViewController animated:NO];
+            }];            
+        }
         
     }
 }

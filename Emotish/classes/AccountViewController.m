@@ -47,6 +47,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 @property (unsafe_unretained, nonatomic) IBOutlet UILabel * emailAccountAssuranceLabel;
 // Gesture recognizers
 @property (strong) UISwipeGestureRecognizer * swipeDownGestureRecognizer;
+@property (strong) UISwipeGestureRecognizer * swipeRightGestureRecognizer;
 // Alert views
 @property (nonatomic, strong, readonly) UIAlertView * passwordIncorrectAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * emailInvalidAlertView;
@@ -62,7 +63,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 - (void) cancelButtonTouched:(id)sender;
 - (void) doneButtonTouched:(id)sender;
 - (IBAction) accountOptionButtonTouched:(id)accountOptionButton;
-- (void) swipedDown:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
+- (void) swipedToCancel:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
 - (void) userInputSubmissionAttemptRequested;
 - (void) accountConnectionAttemptRequested;
 - (void) accountCreationAttemptRequested;
@@ -93,7 +94,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 @synthesize accountConnectionPromptLabel = _accountConnectionPromptLabel, accountCreationPromptLabel=_accountCreationPromptLabel;
 @synthesize textFieldsContainer=_textFieldsContainer, usernameTextField=_usernameTextField, emailTextField=_emailTextField, passwordTextField=_passwordTextField, confirmPasswordTextField=_confirmPasswordTextField;
 @synthesize emailAccountAssuranceLabel;
-@synthesize swipeDownGestureRecognizer=_swipeDownGestureRecognizer;
+@synthesize swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightGestureRecognizer=_swipeRightGestureRecognizer, swipeDownToCancelEnabled=_swipeDownToCancelEnabled, swipeRightToCancelEnabled=_swipeRightToCancelEnabled;
 @synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, emailInvalidAlertView=_emailInvalidAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView, connectionErrorGeneralAlertView=_connectionErrorGeneralAlertView;
 @synthesize waitingForLikes=_waitingForLikes, waitingToSubscribeToNotificationsChannel=_waitingToSubscribeToNotificationsChannel;
 
@@ -108,6 +109,8 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
         confirmPasswordVisible = YES;
         self.waitingForLikes = NO;
         self.waitingToSubscribeToNotificationsChannel = NO;
+        self.swipeDownToCancelEnabled = NO;
+        self.swipeRightToCancelEnabled = NO;
     }
     return self;
 }
@@ -184,9 +187,14 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     [self.mainViewsContainer addSubview:self.inputContainer];
     self.inputContainer.frame = CGRectMake(self.mainViewsContainer.frame.size.width, 0, self.inputContainer.frame.size.width, self.inputContainer.frame.size.height);
     
-    self.swipeDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedDown:)];
+    self.swipeDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedToCancel:)];
     self.swipeDownGestureRecognizer.direction = UISwipeGestureRecognizerDirectionDown;
     [self.view addGestureRecognizer:self.swipeDownGestureRecognizer];
+    self.swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedToCancel:)];
+    self.swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.view addGestureRecognizer:self.swipeRightGestureRecognizer];
+    self.swipeDownGestureRecognizer.enabled = self.swipeDownToCancelEnabled;
+    self.swipeRightGestureRecognizer.enabled = self.swipeRightToCancelEnabled;
     
     // Register for Facebook events
 //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(facebookAccountActivity:) name:FBM_ACCOUNT_ACTIVITY_KEY object:nil];
@@ -963,11 +971,11 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     return _connectionErrorGeneralAlertView;
 }
 
-- (void)swipedDown:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
-    if (swipeGestureRecognizer == self.swipeDownGestureRecognizer) {
-        if (initialPromptScreenVisible) {
-            [self.delegate accountViewController:self didFinishWithConnection:NO];
-        }
+- (void)swipedToCancel:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
+    if (initialPromptScreenVisible &&
+        (swipeGestureRecognizer == self.swipeDownGestureRecognizer ||
+         swipeGestureRecognizer == self.swipeRightGestureRecognizer)) {
+        [self.delegate accountViewController:self didFinishWithConnection:NO];
     }
 }
 
@@ -996,6 +1004,16 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     [UIView animateWithDuration:keyboardAnimationDuration delay:0.0 options:keyboardAnimationCurve animations:^{
         self.inputContainer.contentInset = UIEdgeInsetsZero;
     } completion:NULL];
+}
+
+- (void)setSwipeDownToCancelEnabled:(BOOL)swipeDownToCancelEnabled {
+    _swipeDownToCancelEnabled = swipeDownToCancelEnabled;
+    self.swipeDownGestureRecognizer.enabled = self.swipeDownToCancelEnabled;
+}
+
+- (void)setSwipeRightToCancelEnabled:(BOOL)swipeRightToCancelEnabled {
+    _swipeRightToCancelEnabled = swipeRightToCancelEnabled;
+    self.swipeRightGestureRecognizer.enabled = self.swipeRightToCancelEnabled;
 }
 
 @end

@@ -24,6 +24,8 @@
 
 @property (nonatomic, unsafe_unretained) id<AccountViewControllerDelegate> delegate;
 @property (nonatomic, strong) CoreDataManager * coreDataManager;
+@property (nonatomic) BOOL swipeDownToCancelEnabled;
+@property (nonatomic) BOOL swipeRightToCancelEnabled;
 
 @end
 
