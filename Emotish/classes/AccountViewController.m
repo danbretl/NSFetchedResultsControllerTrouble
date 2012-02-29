@@ -547,6 +547,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
             [likesQuery whereKey:@"user" equalTo:user];
             [likesQuery includeKey:@"photo"];
             [likesQuery findObjectsInBackgroundWithBlock:^(NSArray * objects, NSError * error){
+                self.waitingForLikes = NO;
                 if (!error) {
                     if (objects != nil && objects.count > 0) {
                         NSLog(@"Logged in user has %d previous likes. Attempting to restore them locally.", objects.count);
@@ -556,7 +557,6 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                         }
                         [self.coreDataManager saveCoreData];
                     }
-                    self.waitingForLikes = NO;
                     [self attemptToProceedWithSuccessfulLogin];
                 } else {
                     [self.connectionErrorGeneralAlertView show];
@@ -565,15 +565,18 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
             }];
             NSLog(@"Subscribing to channel %@", user.objectId);
             [PFPush subscribeToChannelInBackground:user.objectId block:^(BOOL succeeded, NSError * error){
-                if (succeeded) {
-                    NSLog(  @"Successfully subscribed to channel %@", user.objectId);
-                    self.waitingToSubscribeToNotificationsChannel = NO;
-                    [self attemptToProceedWithSuccessfulLogin];
+                self.waitingToSubscribeToNotificationsChannel = NO;
+                if (!error) {
+                    if (succeeded) {
+                        NSLog(  @"Successfully subscribed to channel %@", user.objectId);                        
+                    }
                 } else {
                     NSLog(  @"Failed to subscribe to channel %@", user.objectId);
-                    [self.connectionErrorGeneralAlertView show];
-                    [PFUser logOut];
+                    NSLog(  @"%@ %@ %@ %@", error, error.userInfo, error.description, error.debugDescription);
+//                    [self.connectionErrorGeneralAlertView show];
+//                    [PFUser logOut];
                 }
+                [self attemptToProceedWithSuccessfulLogin];
             }];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
