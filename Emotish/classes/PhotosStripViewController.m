@@ -718,7 +718,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             }];
             
             // Client push notification
-            BOOL testingWithOnlyOneDeviceAvailable = YES;
+            BOOL testingWithOnlyOneDeviceAvailable = NO;
             if (![userCurrent.objectId isEqualToString:photoLiked.user.serverID] ||
                 testingWithOnlyOneDeviceAvailable) {
                 NSMutableDictionary * pushNotificationData = [NSMutableDictionary dictionary];
