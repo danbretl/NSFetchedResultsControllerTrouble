@@ -12,8 +12,9 @@
 	<array>
 		<string>Icon.png</string>
 		<string>Icon@2x.png</string>
-		<string>icon.png</string>
-		<string>icon@2x.png</string>
+		<string>Icon-Small.png</string>
+		<string>Icon-Small@2x.png</string>
+		<string>iTunesArtwork</string>
 	</array>
 	<key>CFBundleIcons</key>
 	<dict>
