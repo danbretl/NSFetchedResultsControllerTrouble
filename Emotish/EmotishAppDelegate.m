@@ -42,16 +42,16 @@
 //    [photo setObject:imageFile forKey:@"image"];
 //    [photo save];
     
-//    BOOL shouldLogOut = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeLogOutComplete"]);
-//    if (shouldLogOut) {
-//        NSLog(@"Forcibly logging current user out");
-//        PFUser * currentUser = [PFUser currentUser];
-//        if (currentUser != nil) {
-//            [PFPush unsubscribeFromChannelInBackground:currentUser.objectId];
-//        }
-//        [PFUser logOut];
-//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeLogOutComplete"];
-//    }
+    BOOL shouldLogOut = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeLogOutComplete2"]);
+    if (shouldLogOut) {
+        NSLog(@"Forcibly logging current user out");
+        PFUser * currentUser = [PFUser currentUser];
+        if (currentUser != nil) {
+            [PFPush unsubscribeFromChannelInBackground:currentUser.objectId];
+        }
+        [PFUser logOut];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeLogOutComplete2"];
+    }
     
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
 //    NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
