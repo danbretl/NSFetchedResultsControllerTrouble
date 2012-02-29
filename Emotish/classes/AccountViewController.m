@@ -13,6 +13,7 @@
 #import "NSString+EmailValidity.h"
 #import "UITextFieldWithInsetAndUnderline.h"
 #import "FlagStretchView.h"
+#import "PushConstants.h"
 
 double const AP_NAV_BUTTONS_ANIMATION_DURATION = 0.25;
 CGFloat const AVC_NO_ACCOUNT_ASSURANCE_LABEL_MARGIN_TOP = 15.0;
@@ -564,7 +565,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                 }
             }];
             NSLog(@"Subscribing to channel %@", user.objectId);
-            [PFPush subscribeToChannelInBackground:user.objectId block:^(BOOL succeeded, NSError * error){
+            [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, user.objectId] block:^(BOOL succeeded, NSError * error){
                 self.waitingToSubscribeToNotificationsChannel = NO;
                 if (!error) {
                     if (succeeded) {
@@ -681,7 +682,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                 PFUser * userSignedUp = [PFUser currentUser];
                 [self.coreDataManager addOrUpdateUserFromServer:userSignedUp];
                 NSLog(@"Subscribing to channel %@", userSignedUp.objectId);
-                [PFPush subscribeToChannelInBackground:userSignedUp.objectId block:^(BOOL succeeded, NSError * error){
+                [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userSignedUp.objectId] block:^(BOOL succeeded, NSError * error){
                     if (succeeded) {
                         NSLog(  @"Successfully subscribed to channel %@", userSignedUp.objectId);
                     } else {

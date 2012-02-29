@@ -373,6 +373,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    [self.coreDataManager saveCoreData];
     [self.getPhotosQuery cancel];
 }
 
