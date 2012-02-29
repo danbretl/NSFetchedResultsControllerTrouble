@@ -16,10 +16,10 @@
 #import "Like.h"
 #import "PushConstants.h"
 
-#ifdef production_push
-#define unlimited_likes_allowed NO
-#else
+#ifdef DEBUG
 #define unlimited_likes_allowed YES
+#else
+#define unlimited_likes_allowed NO
 #endif
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
