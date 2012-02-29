@@ -10,6 +10,7 @@
 #import "UIColor+Emotish.h"
 #import "SettingsItemTableViewCell.h"
 #import <objc/message.h>
+#import "PushConstants.h"
 
 @interface SettingsItem : NSObject
 @property (nonatomic, strong) NSString * titleNormal;
@@ -200,7 +201,7 @@
     NSLog(@"%@", NSStringFromSelector(_cmd));
     PFUser * currentUser = [PFUser currentUser];
     if (currentUser != nil) {
-        [PFPush unsubscribeFromChannelInBackground:currentUser.objectId];
+        [PFPush unsubscribeFromChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, currentUser.objectId]];
     }
     [PFUser logOut];
     self.userServer = nil;
