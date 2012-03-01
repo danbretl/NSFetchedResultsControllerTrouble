@@ -72,6 +72,10 @@ typedef enum {
 
 @property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate> delegate;
 
+- (void)getPhotosFromServerForFeeling:(Feeling *)feeling;
+- (void)getPhotosFromServerForUser:(User *)user;
+- (void)getUpdateFromServerForPhoto:(Photo *)photo;
+
 @end
 
 @protocol PhotosStripViewControllerDelegate <NSObject>

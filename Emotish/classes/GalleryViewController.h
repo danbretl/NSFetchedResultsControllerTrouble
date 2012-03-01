@@ -37,5 +37,6 @@
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * addPhotoButton;
 
 - (void) getFeelingsFromServer;
+- (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID;
 
 @end

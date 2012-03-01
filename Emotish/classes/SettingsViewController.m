@@ -204,6 +204,7 @@
     if (currentUser != nil) {
         [PFPush unsubscribeFromChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, currentUser.objectId]];
     }
+    [[UIApplication sharedApplication] cancelAllLocalNotifications];
     [PFUser logOut];
     self.userServer = nil;
     self.userLocal = nil;

@@ -196,14 +196,21 @@
 }
 
 - (void)attemptNavigateToPhotoWithServerID:(NSString *)photoServerID {
+    
     // Currently either...
     // - In Gallery
     // - In Feeling or User PhotosStrip
     // - In Camera View or Photo Submission Screen
     // - In Settings
-    [self.rootNavController popToRootViewControllerAnimated:NO];
-    UIAlertView * inDevelopmentAlertView = [[UIAlertView alloc] initWithTitle:@"In Development..." message:@"Sorry, we can't yet navigate you to the photo that was liked - we're working on this feature!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-    [inDevelopmentAlertView show];
+    
+    if (self.rootNavController.visibleViewController == self.galleryViewController) {
+        NSLog(@"Gallery is visible.");
+    } else {
+        NSLog(@"%@ is visible.", [self.rootNavController.visibleViewController class]);
+    }
+
+    [self.galleryViewController navToRootAndShowUserStripViewControllerForPhotoWithServerID:photoServerID];
+
 //    [self.rootNavController popToRootViewControllerAnimated:NO];
 //    [self.galleryViewController 
 //    if (self.rootNavController.visibleViewController == self.galleryViewController) {
@@ -211,10 +218,10 @@
 //    } else {
 //        
 //    }
+    
 }
 
-- (void)saveContext
-{
+- (void)saveContext {
     NSError *error = nil;
     NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
     if (managedObjectContext != nil)

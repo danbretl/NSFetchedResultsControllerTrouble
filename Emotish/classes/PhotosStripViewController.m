@@ -57,10 +57,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView;
 - (void)emotishLogoTouched:(UIButton *)button;
 - (IBAction)addPhotoButtonTouched:(id)sender;
-- (void)getPhotosFromServerForFeeling:(Feeling *)feeling;
-- (void)getPhotosFromServerForUser:(User *)user;
 - (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
 @property (strong, nonatomic) PFQuery * getPhotosQuery;
+@property (strong, nonatomic) NSMutableArray * photoUpdateQueries;
 - (void) profileButtonTouched:(UIButton *)button;
 - (void) settingsButtonTouched:(UIButton *)button;
 - (void) userCurrent:(PFUser *)userCurrent likedPhotoAttempt:(Photo *)photoLiked;
@@ -103,6 +102,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize finishing=_finishing;
 @synthesize getPhotosQuery=_getPhotosQuery;
 @synthesize signInAlertView=_signInAlertView;
+@synthesize photoUpdateQueries=_photoUpdateQueries;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -111,6 +111,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     if (self) {
         self.focus = NoFocus;
 //        self.photoViewInView = nil;
+        self.photoUpdateQueries = [NSMutableArray array];
     }
     return self;
 }
@@ -1071,13 +1072,28 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
         }
         [self.coreDataManager saveCoreData];
+        [self updateViewsForCurrentFocus]; // This has issues with contentOffset
     } else {
         NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
         UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [errorAlert show];
     }
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    [self updateViewsForCurrentFocus]; // This has issues with contentOffset
+}
+
+- (void)getUpdateFromServerForPhoto:(Photo *)photo {
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    PFQuery * photoUpdateQuery = [PFQuery queryWithClassName:@"Photo"];
+    [self.photoUpdateQueries addObject:photoUpdateQuery];
+    [photoUpdateQuery getObjectInBackgroundWithId:photo.serverID block:^(PFObject *object, NSError * error){
+        if (!error && object != nil) {
+            [self.coreDataManager addOrUpdatePhotoFromServer:object];
+            [self.coreDataManager saveCoreData];
+            [self updateViewsForCurrentFocus]; // This is crazy crazy heavyweight... Need to seriously get this stuff figured out.
+        }
+        [self.photoUpdateQueries removeObject:photoUpdateQuery];
+    }];
 }
 
 - (void)profileButtonTouched:(UIButton *)button {

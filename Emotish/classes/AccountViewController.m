@@ -569,6 +569,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
                     [self attemptToProceedWithSuccessfulLogin];
                 } else {
                     [self.connectionErrorGeneralAlertView show];
+                    [[UIApplication sharedApplication] cancelAllLocalNotifications];
                     [PFUser logOut];
                 }
             }];

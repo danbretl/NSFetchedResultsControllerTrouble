@@ -28,6 +28,8 @@
 - (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
 - (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
 //- (void) updateConfigureVisibleCells;
+- (void) showPhotosStripViewControllerFocusedOnUser:(User *)user photo:(Photo *)photo updatePhotoData:(BOOL)updatePhotoData animated:(BOOL)animated; // The parameter updatePhotoData is currently ignored. Need to come up with a better solution later.
+- (void) navToRoot;
 @end
 
 @implementation GalleryViewController
@@ -172,6 +174,7 @@
 - (void)viewDidAppear:(BOOL)animated {
 //    NSLog(@"GalleryViewController viewDidAppear");
     [super viewDidAppear:animated];
+    self.view.userInteractionEnabled = YES;
     self.galleryScreenshot = nil;
     for (GalleryFeelingCell * galleryFeelingCell in self.feelingsTableView.visibleCells) {
         for (GalleryFeelingImageCell * galleryFeelingImageCell in galleryFeelingCell.imagesTableView.visibleCells) {
@@ -387,11 +390,7 @@
 }
 
 - (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController {
-    self.floatingImageView.alpha = 0.0;
-    self.feelingsTableView.alpha = 1.0;
-    self.floatingImageView.userInteractionEnabled = NO;
-    self.feelingsTableView.userInteractionEnabled = YES;
-    [self.navigationController popToRootViewControllerAnimated:NO];
+    [self navToRoot];
 }
 
 - (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
@@ -529,31 +528,42 @@
         accountViewController.swipeDownToCancelEnabled = YES;
         [self presentModalViewController:accountViewController animated:YES];
     } else {
-        
         if (!currentUserLocal.photosVisibleExist.boolValue) {
             [self showSettingsViewControllerForUserLocal:currentUserLocal userServer:currentUser];
-            
         } else {
-            
-            PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-            feelingStripViewController.delegate = self;
-            feelingStripViewController.coreDataManager = self.coreDataManager;
-            feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-            Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
-            [feelingStripViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
-            [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:nil];
-            self.galleryScreenshot = self.galleryScreenshotCurrent;
-            feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
-            
-            [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                self.feelingsTableView.alpha = 0.0;
-                self.feelingsTableView.userInteractionEnabled = NO;
-            } completion:^(BOOL finished){
-                [self.navigationController pushViewController:feelingStripViewController animated:NO];
-            }];            
+            [self showPhotosStripViewControllerFocusedOnUser:currentUserLocal photo:nil updatePhotoData:NO animated:YES];
         }
-        
     }
+}
+
+- (void) showPhotosStripViewControllerFocusedOnUser:(User *)user photo:(Photo *)photo updatePhotoData:(BOOL)updatePhotoData animated:(BOOL)animated {
+    PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+    feelingStripViewController.delegate = self;
+    feelingStripViewController.coreDataManager = self.coreDataManager;
+    feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
+    Photo * photoFocus = photo != nil ? photo : (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", user] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
+    [feelingStripViewController setFocusToUser:user photo:photoFocus];
+    [feelingStripViewController setShouldAnimateIn:animated fromSource:Gallery withPersistentImage:nil];
+    self.galleryScreenshot = self.galleryScreenshotCurrent;
+    feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
+    
+    self.feelingsTableView.userInteractionEnabled = NO;
+    if (animated) {
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            self.feelingsTableView.alpha = 0.0;
+        } completion:^(BOOL finished){
+            [self.navigationController pushViewController:feelingStripViewController animated:NO];
+//            if (updatePhotoData) {
+//                [feelingStripViewController getUpdateFromServerForPhoto:photoFocus];
+//            }
+        }];
+    } else {
+        [self.navigationController pushViewController:feelingStripViewController animated:NO];
+//        if (updatePhotoData) {
+//            [feelingStripViewController getUpdateFromServerForPhoto:photoFocus];
+//        }
+    }
+
 }
 
 - (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
@@ -670,6 +680,63 @@
         UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [errorAlert show];
     }
+}
+
+- (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID {
+    
+    self.navigationController.visibleViewController.view.userInteractionEnabled = NO;
+    
+    Photo * photoLocal = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", photoServerID] usingSortDescriptors:nil];
+    if (photoLocal != nil &&
+        photoLocal.user != nil &&
+        photoLocal.feeling != nil) {
+        [self navToRoot];
+        [self showPhotosStripViewControllerFocusedOnUser:photoLocal.user photo:photoLocal updatePhotoData:YES animated:NO];
+        self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
+    } else {
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        PFQuery * photoQuery = [PFQuery queryWithClassName:@"Photo"];
+        [photoQuery includeKey:@"user"];
+        [photoQuery includeKey:@"feeling"];
+        [photoQuery getObjectInBackgroundWithId:photoServerID block:^(PFObject * object, NSError * error){
+            if (!error && object != nil) {
+                PFObject * userServer = [object objectForKey:@"user"];
+                PFObject * feelingServer = [object objectForKey:@"feeling"];
+                Photo * photoLocalFromRetrieved = (Photo *)[self.coreDataManager addOrUpdatePhotoFromServer:object feelingFromServer:feelingServer userFromServer:userServer];
+                [self.coreDataManager saveCoreData];
+                [self navToRoot];
+                [self showPhotosStripViewControllerFocusedOnUser:photoLocalFromRetrieved.user photo:photoLocalFromRetrieved updatePhotoData:YES animated:NO];
+            } else {
+                UIAlertView * photoTroubleAlertView = [[UIAlertView alloc] initWithTitle:@"Hmmm..." message:@"Something went wrong, and we can't seem to find that particular Photo right now. Sorry! We'll work on this." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [photoTroubleAlertView show];
+            }
+            self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
+        }];
+    }
+        
+}
+
+- (void) navToRoot {
+    
+    self.floatingImageView.alpha = 0.0;
+    self.feelingsTableView.alpha = 1.0;
+    self.floatingImageView.userInteractionEnabled = NO;
+    self.feelingsTableView.userInteractionEnabled = YES;
+    
+    if (self.modalViewController != nil) {
+        [self.modalViewController.navigationController popToRootViewControllerAnimated:NO];
+        [self dismissModalViewControllerAnimated:NO];
+    }
+    if (self.navigationController.visibleViewController != self) {
+        if (self.navigationController.visibleViewController.modalViewController != nil) {
+            [self.navigationController.visibleViewController.modalViewController.navigationController popToRootViewControllerAnimated:NO]; // THIS IS RIDICULOUS...
+            [self.navigationController.visibleViewController dismissModalViewControllerAnimated:NO];
+        }
+    }
+
+    [self.navigationController popToRootViewControllerAnimated:NO];
+    self.view.userInteractionEnabled = YES;
+    
 }
 
 @end
