@@ -1160,8 +1160,6 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     SettingsViewController * settingsViewController = [[SettingsViewController alloc] initWithNibName:@"SettingsViewController" bundle:[NSBundle mainBundle]];
     settingsViewController.delegate = self;
     settingsViewController.coreDataManager = self.coreDataManager;
-    settingsViewController.userServer = userServer;
-    settingsViewController.userLocal = userLocal;
     UINavigationController * settingsNavController = [[UINavigationController alloc] initWithRootViewController:settingsViewController];
     settingsNavController.navigationBarHidden = YES;
     [self presentModalViewController:settingsNavController animated:YES];

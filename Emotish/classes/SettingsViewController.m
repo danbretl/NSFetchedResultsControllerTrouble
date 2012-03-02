@@ -11,6 +11,8 @@
 #import "SettingsItemTableViewCell.h"
 #import <objc/message.h>
 #import "PushConstants.h"
+#import "EmotishAlertViews.h"
+#import "NotificationConstants.h"
 
 @interface SettingsItem : NSObject
 @property (nonatomic, strong) NSString * titleNormal;
@@ -98,12 +100,16 @@
 - (void) sendFeedbackTouched:(SettingsItem *)settingsItem;
 - (void) aboutEmotishTouched:(SettingsItem *)settingsItem;
 - (void) rateInAppStoreTouched:(SettingsItem *)settingsItem;
+- (void) updateDataForUserActivity;
 + (UIColor *) colorForSection:(NSUInteger)section;
 @property (nonatomic, strong, readonly) UIAlertView * tempUnfinishedAlertView;
+- (void) showAccountViewControllerAndAttemptConnectionVia:(AccountConnectMethod)connectMethod;
+- (void) showAccountViewController;
+- (void) applicationDidBecomeActive:(NSNotification *)notification;
 @end
 
 @implementation SettingsViewController
-@synthesize coreDataManager=_coreDataManager, userLocal=_userLocal, userServer=_userServer;
+@synthesize coreDataManager=_coreDataManager;//, userLocal=_userLocal, userServer=_userServer;
 @synthesize settingsItems=_settingsItems;
 @synthesize topBar = _topBar;
 @synthesize tableView = _tableView;
@@ -134,8 +140,7 @@
     [self.topBar.buttonLeftNormal addTarget:self action:@selector(backButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
 }
 
-- (void)viewDidUnload
-{
+- (void)viewDidUnload {
     [self setTopBar:nil];
     [self setTableView:nil];
     [super viewDidUnload];
@@ -143,23 +148,33 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    SettingsItem * userSettings = [self.settingsItems objectAtIndex:0];
-    NSNumber * userLoggedIn = [NSNumber numberWithBool:self.userServer != nil];
-    userSettings.activated = userLoggedIn;
-    userSettings.titleActivated = self.userServer.username;
-    for (SettingsItem * subItem in userSettings.subItems) {
-        subItem.activated = userLoggedIn;
-    }
+    [self updateDataForUserActivity];
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (void) viewDidAppear:(BOOL)animated {
+    NSLog(@"SettingsViewController viewDidAppear");
+    [super viewDidAppear:animated];
+    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:animated];
 }
 
 - (void) updateDataForUserActivity {
     SettingsItem * userSettings = [self.settingsItems objectAtIndex:0];
-    NSNumber * userLoggedIn = [NSNumber numberWithBool:self.userServer != nil];
+    PFUser * currentUser = [PFUser currentUser];
+    NSNumber * userLoggedIn = [NSNumber numberWithBool:currentUser != nil];
     userSettings.activated = userLoggedIn;
-    userSettings.titleActivated = self.userServer.username;
+    userSettings.titleActivated = currentUser.username;
     for (SettingsItem * subItem in userSettings.subItems) {
         subItem.activated = userLoggedIn;
+    }
+    if (!userLoggedIn.boolValue) {
+        SettingsItem * connectionsSettings = [self.settingsItems objectAtIndex:1];
+        for (SettingsItem * subItem in connectionsSettings.subItems) {
+            subItem.activated = [NSNumber numberWithBool:NO];
+        }
+    } else {
+        [self settingsItemForIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]].activated = [NSNumber numberWithBool:[PFFacebookUtils isLinkedWithUser:currentUser]];
+        [self settingsItemForIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]].activated = [NSNumber numberWithBool:[PFTwitterUtils isLinkedWithUser:currentUser]];
     }
 }
 
@@ -173,11 +188,7 @@
     NSLog(@"%@", NSStringFromSelector(_cmd));
     if (!settingsItem.activated.boolValue) {
         // Push a VC to sign in to / create an Emotish account
-        AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
-        accountViewController.delegate = self;
-        accountViewController.coreDataManager = self.coreDataManager;
-        accountViewController.swipeRightToCancelEnabled = YES;
-        [self.navigationController pushViewController:accountViewController animated:YES];
+        [self showAccountViewController];
     } else {
         // Push a VC to edit account
         [self.tempUnfinishedAlertView show];
@@ -185,11 +196,25 @@
     }
 }
 
-- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
-    if (finishedWithConnection) {
-        self.userServer = [PFUser currentUser];
-        self.userLocal = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", self.userServer.objectId] usingSortDescriptors:nil];
+- (void) showAccountViewController {
+    [self showAccountViewControllerAndAttemptConnectionVia:0];
+}
+         
+- (void) showAccountViewControllerAndAttemptConnectionVia:(AccountConnectMethod)connectMethod {
+    AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
+    accountViewController.delegate = self;
+    accountViewController.coreDataManager = self.coreDataManager;
+    accountViewController.swipeRightToCancelEnabled = YES;
+    if (connectMethod != 0) {
+        accountViewController.shouldImmediatelyAttemptFacebookConnect = connectMethod == FacebookAccountConnect;
+        accountViewController.shouldImmediatelyAttemptTwitterConnect = connectMethod == TwitterAccountConnect;
     }
+    [self.navigationController pushViewController:accountViewController animated:YES];
+}
+
+- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
+    [self updateDataForUserActivity];
+    [self.tableView reloadData]; // Heavyweight, but that's ok.
     [self.navigationController popViewControllerAnimated:YES];
     if (finishedWithConnection) {
         UIAlertView * loggedInAlertView = [[UIAlertView alloc] initWithTitle:@"Logged In" message:@"Have fun expressing yourself!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -206,36 +231,118 @@
     }
     [[UIApplication sharedApplication] cancelAllLocalNotifications];
     [PFUser logOut];
-    self.userServer = nil;
-    self.userLocal = nil;
     [self updateDataForUserActivity];
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationFade]; // This is not perfect, but it's OK for now.
 }
+// This method is ridiculously similar to twitterTouched:...
 - (void) facebookTouched:(SettingsItem *)settingsItem {
     // Connect or disconnect Facebook
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    [self.tempUnfinishedAlertView show];
-    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-    if (!settingsItem.activated.boolValue) {
-        
+    NSIndexPath * facebookIndexPath = [NSIndexPath indexPathForRow:0 inSection:1]; // HARD CODED
+    void(^facebookCellUpdate)(NSIndexPath *, NSNumber *) = ^(NSIndexPath * indexPathForFacebook, NSNumber * activated){
+        [self settingsItemForIndexPath:indexPathForFacebook].activated = activated;
+        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPathForFacebook] withRowAnimation:UITableViewRowAnimationFade];
+    };
+    if ([PFUser currentUser] != nil) {
+        self.tableView.userInteractionEnabled = NO;
+        if (!settingsItem.activated.boolValue) {
+            // Connect Facebook
+            if (![PFFacebookUtils isLinkedWithUser:[PFUser currentUser]]) { // Why do we make this check?
+                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+                [[PFFacebookUtils facebook].sessionDelegate fbDidNotLogin:YES];
+                [PFFacebookUtils linkUser:[PFUser currentUser] permissions:[NSArray arrayWithObjects:@"email", @"offline_access", nil] block:^(BOOL succeeded, NSError *error) {
+                    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                    if (!error) {
+                        if (succeeded) {
+                            NSLog(@"Woohoo, user logged in with Facebook!");
+                            facebookCellUpdate(facebookIndexPath, [NSNumber numberWithBool:YES]);
+                        } else {
+                            // User probably cancelled...
+                        }
+                    } else {
+                        [[EmotishAlertViews facebookConnectionErrorAlertView] show];
+                    }
+                    self.tableView.userInteractionEnabled = YES;
+                    [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+                }];
+            }
+        } else {
+            // Disconnect Facebook
+            [PFFacebookUtils unlinkUserInBackground:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
+                [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                if (!error && succeeded) {
+                    NSLog(@"The user is no longer associated with their Facebook account.");
+                    facebookCellUpdate(facebookIndexPath, [NSNumber numberWithBool:NO]);
+                } else {
+                    [[EmotishAlertViews facebookConnectionErrorAlertView] show];
+                }
+                self.tableView.userInteractionEnabled = YES;
+            }];
+        }
     } else {
-        
+        [self showAccountViewControllerAndAttemptConnectionVia:FacebookAccountConnect];
     }
 }
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+    NSLog(@"SettingsViewController applicationDidBecomeActive");
+    BOOL applicationOpenedURL = [[notification.userInfo objectForKey:NOTIFICATION_USER_INFO_KEY_APPLICATION_OPENED_URL] boolValue];
+    NSLog(@"applicationOpenedURL? %d", applicationOpenedURL);
+    if (!applicationOpenedURL) {
+        self.tableView.userInteractionEnabled = YES;
+        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+    }
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+}
+// This method is ridiculously similar to facebookTouched:...
 - (void) twitterTouched:(SettingsItem *)settingsItem {
     // Connect or disconnect Twitter
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    [self.tempUnfinishedAlertView show];
-    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-    if (!settingsItem.activated.boolValue) {
-        
+    NSIndexPath * twitterIndexPath = [NSIndexPath indexPathForRow:1 inSection:1]; // HARD CODED
+    void(^twitterCellUpdate)(NSIndexPath *, NSNumber *) = ^(NSIndexPath * indexPathForTwitter, NSNumber * activated){
+        [self settingsItemForIndexPath:indexPathForTwitter].activated = activated;
+        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPathForTwitter] withRowAnimation:UITableViewRowAnimationFade];
+    };
+    if ([PFUser currentUser] != nil) {
+        self.tableView.userInteractionEnabled = NO;
+        if (!settingsItem.activated.boolValue) {
+            NSLog(@"Should connect Twitter");
+            // Connect Twitter
+            if (![PFTwitterUtils isLinkedWithUser:[PFUser currentUser]]) { // Why do we make this check?
+                NSLog(@"Twitter is not hooked up already.");
+                [PFTwitterUtils linkUser:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
+                    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                    if (!error) {
+                        if (succeeded) {
+                            NSLog(@"Woohoo, user logged in with Twitter!");
+                            twitterCellUpdate(twitterIndexPath, [NSNumber numberWithBool:YES]);                        
+                        } else {
+                            // User probably cancelled
+                        }
+                    } else {
+                        [[EmotishAlertViews twitterConnectionErrorAlertView] show];
+                    }
+                    self.tableView.userInteractionEnabled = YES;
+                }];
+            }
+        } else {
+            // Disconnect Twitter
+            NSLog(@"Should disconnect Twitter");
+            [PFTwitterUtils unlinkUserInBackground:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
+                [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                if (!error && succeeded) {
+                    NSLog(@"The user is no longer associated with their Twitter account.");
+                    twitterCellUpdate(twitterIndexPath, [NSNumber numberWithBool:NO]);
+                } else {
+                    [[EmotishAlertViews twitterConnectionErrorAlertView] show];
+                }
+                self.tableView.userInteractionEnabled = YES;
+            }];
+        }
     } else {
-        
-    }    
+        [self showAccountViewControllerAndAttemptConnectionVia:TwitterAccountConnect];
+    }
 }
 - (void) inviteFriendsTouched:(SettingsItem *)settingsItem {
     // Push a VC to invite friends
-    NSLog(@"%@", NSStringFromSelector(_cmd));    
+    NSLog(@"%@", NSStringFromSelector(_cmd));
     [self.tempUnfinishedAlertView show];
     [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
 }
@@ -280,10 +387,10 @@
     cell.highlightedBackgroundColor = [[SettingsViewController colorForSection:indexPath.section] colorWithAlphaComponent:0.20];
     cell.arrowView.alpha = settingsItem.showArrowCurrent.boolValue ? 1.0 : 0.0;
     
-    // TEMPORARY... VISIBLY DISABLING FACEBOOK & TWITTER CONNECT UNTIL WE IMPLEMENT THOSE FEATURES
-    BOOL tempDisable = indexPath.section == 1 && indexPath.row < 2;
-    cell.userInteractionEnabled = !tempDisable;
-    cell.textLabel.alpha = tempDisable ? 0.5 : 1.0;
+//    // TEMPORARY... VISIBLY DISABLING FACEBOOK & TWITTER CONNECT UNTIL WE IMPLEMENT THOSE FEATURES
+//    BOOL tempDisable = indexPath.section == 1 && indexPath.row < 2;
+//    cell.userInteractionEnabled = !tempDisable;
+//    cell.textLabel.alpha = tempDisable ? 0.5 : 1.0;
     
     // Return the cell
     return cell;
@@ -358,7 +465,7 @@
         SettingsItem * connectionsSettings = [SettingsItem settingsItemWithTitleNormal:@"connections" titleActivated:@"connections" touchSelector:NULL visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj];
         {
             [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"connect facebook" titleActivated:@"disconnect facebook" touchSelector:@selector(facebookTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj]];
-            [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"connect twitter" titleActivated:@"disconnect twitter" touchSelector:@selector(facebookTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj]];
+            [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"connect twitter" titleActivated:@"disconnect twitter" touchSelector:@selector(twitterTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj]];
             [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"invite friends" titleActivated:@"invite friends" touchSelector:@selector(inviteFriendsTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:yesObj showArrowActivated:yesObj]];
         }
         SettingsItem * emotishSettings = [SettingsItem settingsItemWithTitleNormal:@"emotish" titleActivated:@"emotish" touchSelector:NULL visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj];

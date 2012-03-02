@@ -18,8 +18,8 @@
 @interface SettingsViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, AccountViewControllerDelegate>
 
 @property (nonatomic, strong) CoreDataManager * coreDataManager;
-@property (nonatomic, strong) User * userLocal;
-@property (nonatomic, strong) PFUser * userServer;
+//@property (nonatomic, strong) User * userLocal;
+//@property (nonatomic, strong) PFUser * userServer;
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UITableView * tableView;

@@ -14,10 +14,15 @@
 #import "UITextFieldWithInsetAndUnderline.h"
 #import "FlagStretchView.h"
 #import "PushConstants.h"
+#import "EmotishAlertViews.h"
+#import "SBJson.h"
+#import "NotificationConstants.h"
 
 double const AP_NAV_BUTTONS_ANIMATION_DURATION = 0.25;
 CGFloat const AVC_NO_ACCOUNT_ASSURANCE_LABEL_MARGIN_TOP = 15.0;
 CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
+BOOL const AVC_FACEBOOK_ENABLED = YES;
+BOOL const AVC_TWITTER_ENABLED = YES;
 
 @interface AccountViewController()
 // Data models
@@ -35,6 +40,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * usernameButton;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * facebookButton;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * twitterButton;
+@property (strong, nonatomic) UILabel * orLine;
 // Input container
 @property (unsafe_unretained, nonatomic) IBOutlet UIScrollView * inputContainer;
 @property (unsafe_unretained, nonatomic) IBOutlet UILabel *accountConnectionPromptLabel;
@@ -58,6 +64,10 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 // Utility BOOLs
 @property (nonatomic) BOOL waitingForLikes;
 @property (nonatomic) BOOL waitingToSubscribeToNotificationsChannel;
+// Facebook & Twitter
+@property (nonatomic, strong) PF_FBRequest * fbRequestMe;
+@property (nonatomic, unsafe_unretained) NSURLConnection * twConnectionBasicInfo;
+@property (nonatomic, strong) NSMutableData * twConnectionBasicInfoData;
 
 // Methods - General
 - (void) cancelButtonTouched:(id)sender;
@@ -66,21 +76,32 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 - (void) swipedToCancel:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
 - (void) userInputSubmissionAttemptRequested;
 - (void) accountConnectionAttemptRequested;
-- (void) accountCreationAttemptRequested;
+- (void) accountCreationInputSubmissionAttemptRequested;
 - (void) resignFirstResponderForAllTextFields;
 - (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated;
+- (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated blockToExecuteOnAnimationCompletion:(void(^)(void))blockToExecute;
 - (void) showAccountCreationInputViews:(BOOL)shouldShowCreationViews showPasswordConfirmation:(BOOL)shouldShowPasswordConfirmation activateAppropriateFirstResponder:(BOOL)shouldActivateFirstResponder animated:(BOOL)animated;
 - (void) setTextFieldToBeVisible:(UITextField *)textField animated:(BOOL)animated;
 // Methods - Keyboard responses
 - (void) keyboardWillHide:(NSNotification *)notification;
 - (void) keyboardWillShow:(NSNotification *)notification;
-// Methods - Facebook
-//- (void) facebookAccountActivity:(NSNotification *)notification;
-//- (void) facebookGetBasicInfoSuccess:(NSNotification *)notification;
-//- (void) facebookGetBasicInfoFailure:(NSNotification *)notification;
+// Methods - Social Networks
+- (void) connectViaFacebook;
+- (void) connectViaTwitter;
+- (void) logInWithSocialNetworkCallbackUser:(PFUser *)user error:(NSError **)error;
+- (void) applicationDidBecomeActive:(NSNotification *)notification;
 // Methods - Web
 - (void)logInWithUsernameCallback:(PFUser *)user error:(NSError **)error;
 - (void) attemptToProceedWithSuccessfulLogin;
+// Methods - User Interaction
+//- (void) disableAllUserInteraction;
+//- (void) enableNormalUserInteraction;
+- (void) disableMainViewsContainerInteractionAndFadeUIExceptForAccountOptionButton:(UIButton *)button;
+- (void) enableMainViewsContainerInteractionAndRestoreUI;
+- (void) cancelRequested;
+// Methods - User
+- (void) deleteAndLogOutCurrentUser;
+- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate;
 
 @end
 
@@ -89,7 +110,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 @synthesize usernameInputString=_usernameInputString, emailInputString=_emailInputString, passwordInputString=_passwordInputString, confirmPasswordInputString=_confirmPasswordInputString;
 @synthesize topBar=_topBar;
 @synthesize mainViewsContainer=_mainViewsContainer;
-@synthesize accountOptionsContainer=_accountOptionsContainer, blurbLabel=_blurbLabel, usernameButton=_usernameButton, facebookButton=_facebookButton, twitterButton=_twitterButton;
+@synthesize accountOptionsContainer=_accountOptionsContainer, blurbLabel=_blurbLabel, usernameButton=_usernameButton, facebookButton=_facebookButton, twitterButton=_twitterButton, orLine=_orLine;
 @synthesize inputContainer=_inputContainer;
 @synthesize accountConnectionPromptLabel = _accountConnectionPromptLabel, accountCreationPromptLabel=_accountCreationPromptLabel;
 @synthesize textFieldsContainer=_textFieldsContainer, usernameTextField=_usernameTextField, emailTextField=_emailTextField, passwordTextField=_passwordTextField, confirmPasswordTextField=_confirmPasswordTextField;
@@ -97,7 +118,10 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 @synthesize swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightGestureRecognizer=_swipeRightGestureRecognizer, swipeDownToCancelEnabled=_swipeDownToCancelEnabled, swipeRightToCancelEnabled=_swipeRightToCancelEnabled;
 @synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, emailInvalidAlertView=_emailInvalidAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView, connectionErrorGeneralAlertView=_connectionErrorGeneralAlertView;
 @synthesize waitingForLikes=_waitingForLikes, waitingToSubscribeToNotificationsChannel=_waitingToSubscribeToNotificationsChannel;
-
+@synthesize workingOnAccountFromFacebook=_workingOnAccountFromFacebook;
+@synthesize workingOnAccountFromTwitter=_workingOnAccountFromTwitter;
+@synthesize fbRequestMe=_fbRequestMe, twConnectionBasicInfo=_twConnectionBasicInfo, twConnectionBasicInfoData=_twConnectionBasicInfoData;
+@synthesize shouldImmediatelyAttemptFacebookConnect=_shouldImmediatelyAttemptFacebookConnect, shouldImmediatelyAttemptTwitterConnect=_shouldImmediatelyAttemptTwitterConnect;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize delegate=_delegate;
 
@@ -144,19 +168,19 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     self.passwordTextField.textColor = almostGreyColor;
     self.confirmPasswordTextField.textColor = almostGreyColor;
     
-    UILabel * orLine = [[UILabel alloc] initWithFrame:CGRectMake(self.usernameButton.frame.origin.x, CGRectGetMaxY(self.usernameButton.frame), self.usernameButton.frame.size.width, CGRectGetMinY(self.facebookButton.frame) - CGRectGetMaxY(self.usernameButton.frame))];
-    orLine.font = [UIFont italicSystemFontOfSize:12];
-    orLine.textColor = almostGreyColor;
-    orLine.autoresizingMask = self.usernameButton.autoresizingMask;
-    orLine.text = @"OR";
-    orLine.textAlignment = UITextAlignmentCenter;
-    CGSize orSize = [orLine.text sizeWithFont:orLine.font];
+    self.orLine = [[UILabel alloc] initWithFrame:CGRectMake(self.usernameButton.frame.origin.x, CGRectGetMaxY(self.usernameButton.frame), self.usernameButton.frame.size.width, CGRectGetMinY(self.facebookButton.frame) - CGRectGetMaxY(self.usernameButton.frame))];
+    self.orLine.font = [UIFont italicSystemFontOfSize:12];
+    self.orLine.textColor = almostGreyColor;
+    self.orLine.autoresizingMask = self.usernameButton.autoresizingMask;
+    self.orLine.text = @"OR";
+    self.orLine.textAlignment = UITextAlignmentCenter;
+    CGSize orSize = [self.orLine.text sizeWithFont:self.orLine.font];
     CGFloat orStartXPadding = 8;
     CGFloat orEndXPadding = 8;
-    CGFloat orStartX = (orLine.frame.size.width - orSize.width) / 2.0 - orStartXPadding;
+    CGFloat orStartX = (self.orLine.frame.size.width - orSize.width) / 2.0 - orStartXPadding;
     CGFloat orEndX = orStartX + + orStartXPadding + orSize.width + orEndXPadding;
     CAShapeLayer * maskLayer = [CAShapeLayer layer];
-    maskLayer.frame = orLine.bounds;
+    maskLayer.frame = self.orLine.bounds;
     maskLayer.fillColor = [UIColor blackColor].CGColor;
     CGMutablePathRef maskPath = CGPathCreateMutable();
     CGPathAddRect(maskPath, nil, CGRectMake(0, 0, orStartX, maskLayer.frame.size.height));
@@ -165,11 +189,11 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     CGPathRelease(maskPath);
     CALayer * dividerGrayLayer = [CALayer layer];
     CGFloat dividerGrayLayerHeight = 1;
-    dividerGrayLayer.frame = CGRectMake(0, floorf((orLine.frame.size.height - dividerGrayLayerHeight) / 2.0), orLine.frame.size.width, dividerGrayLayerHeight);
+    dividerGrayLayer.frame = CGRectMake(0, floorf((self.orLine.frame.size.height - dividerGrayLayerHeight) / 2.0), self.orLine.frame.size.width, dividerGrayLayerHeight);
     dividerGrayLayer.backgroundColor = [UIColor colorWithRed:221.0/255.0 green:224.0/255.0 blue:226.0/255.0 alpha:1.0].CGColor;
     dividerGrayLayer.mask = maskLayer;
-    [orLine.layer addSublayer:dividerGrayLayer];
-    [self.accountOptionsContainer addSubview:orLine];
+    [self.orLine.layer addSublayer:dividerGrayLayer];
+    [self.accountOptionsContainer addSubview:self.orLine];
     
     UIEdgeInsets textFieldInsets = UIEdgeInsetsMake(0, 0, 8.0, 0);
     self.usernameTextField.textFieldInsets = textFieldInsets;
@@ -189,12 +213,12 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     
     self.swipeDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedToCancel:)];
     self.swipeDownGestureRecognizer.direction = UISwipeGestureRecognizerDirectionDown;
+    self.swipeDownGestureRecognizer.delegate = self;
     [self.view addGestureRecognizer:self.swipeDownGestureRecognizer];
     self.swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedToCancel:)];
     self.swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+    self.swipeRightGestureRecognizer.delegate = self;
     [self.view addGestureRecognizer:self.swipeRightGestureRecognizer];
-    self.swipeDownGestureRecognizer.enabled = self.swipeDownToCancelEnabled;
-    self.swipeRightGestureRecognizer.enabled = self.swipeRightToCancelEnabled;
     
     // Register for Facebook events
 //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(facebookAccountActivity:) name:FBM_ACCOUNT_ACTIVITY_KEY object:nil];
@@ -235,120 +259,224 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    NSLog(@"viewWillAppear");
     [super viewWillAppear:animated];
-    self.facebookButton.enabled = NO;
-    self.facebookButton.alpha   = 0.5;    
-    self.twitterButton.enabled  = NO;
-    self.twitterButton.alpha    = 0.5;
+    if (!AVC_FACEBOOK_ENABLED) {
+        self.facebookButton.userInteractionEnabled = NO;
+        self.facebookButton.alpha = 0.5;
+    }
+    if (!AVC_TWITTER_ENABLED) {
+        self.twitterButton.userInteractionEnabled = NO;
+        self.twitterButton.alpha = 0.5;
+    }
+    // "Hackish" fix for the fact that there's a UI display responsiveness delay when "immediately" attempting a Twitter account connection on viewDidAppear:
+    if (self.shouldImmediatelyAttemptTwitterConnect) {
+        [self disableMainViewsContainerInteractionAndFadeUIExceptForAccountOptionButton:self.twitterButton];
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    NSLog(@"viewDidAppear");
+    [super viewDidAppear:animated];
+    if (self.shouldImmediatelyAttemptFacebookConnect) {
+        self.shouldImmediatelyAttemptFacebookConnect = NO;
+        [self connectViaFacebook];
+    } else if (self.shouldImmediatelyAttemptTwitterConnect) {
+        self.shouldImmediatelyAttemptTwitterConnect = NO;
+        [self connectViaTwitter];
+    }
 }
 
 - (IBAction)accountOptionButtonTouched:(id)accountOptionButton {
+    
     if (accountOptionButton == self.usernameButton) {
-        
+        NSLog(@"Username/Email button touched");
         [self showContainer:self.inputContainer animated:YES];
         [self.usernameTextField becomeFirstResponder];
-        
     } else if (accountOptionButton == self.facebookButton) {
         NSLog(@"Facebook button touched");
-        
-//        [self.facebookManager pullAuthenticationInfoFromDefaults];
-//        if (![self.facebookManager.fb isSessionValid]) {
-//            waitingForFacebookAuthentication = YES;
-//            [self.facebookManager login];
-//            
-//            // Wait for a notification about succeeding or failing to Facebook-authenticate.
-//            
-//        } else {
-//            
-//            // Get from Facebook, using the authenticated Facebook account:
-//            // - the account ID
-//            // - the email(s) associated with that account
-//            waitingForFacebookInfo = YES;
-//            [self.facebookManager getBasicInfoAndEmail];
-//            
-//            // Wait for a notification about succeeding or failing to get that info. Allow for a user cancel.
-//            
-//        }
-        
+        [self connectViaFacebook];
     } else if (accountOptionButton == self.twitterButton) {
         NSLog(@"Twitter button touched");
+        [self connectViaTwitter];
     } else {
         NSLog(@"ERROR in AccountPromptViewController - unrecognized accountOptionButton %@", accountOptionButton);
     }
+    
 }
 
-//- (void)facebookAccountActivity:(NSNotification *)notification {
-//    if (waitingForFacebookAuthentication) {
-//        waitingForFacebookAuthentication = NO;
-//        // Check the notification.
-//        NSString * action = [notification.userInfo objectForKey:FBM_ACCOUNT_ACTIVITY_ACTION_KEY];
-//        if ([action isEqualToString:FBM_ACCOUNT_ACTIVITY_ACTION_LOGIN]) {
-//            [self.facebookManager pullAuthenticationInfoFromDefaults];
-//            // Get from Facebook, using the authenticated Facebook account:
-//            // - the account ID
-//            // - the email(s) associated with that account
-//            waitingForFacebookInfo = YES;
-//            [self.facebookManager getBasicInfoAndEmail];
-//        } else {
-//            BOOL userCancelled = [[notification.userInfo objectForKey:FBM_ACCOUNT_ACTIVITY_ACTION_LOGOUT_IS_DUE_TO_CANCEL_KEY] boolValue];
-//            if (!userCancelled) {
-//                UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Facebook Connect" message:@"Could not connect to Facebook. Please try again, or try connecting to Kwiqet another way." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//                [alert show];
-//            }
-//        }
-//    }
-//}
-//
-//- (void)facebookGetBasicInfoSuccess:(NSNotification *)notification {
-//    if (waitingForFacebookInfo) {
-//        waitingForFacebookInfo = NO;
-//        // Call our server with the Facebook account ID and associated email, and wait for one of a few responses:
-//        // - Kwiqet account exists that is associated either with given Facebook account ID or email ; Will receive an API key, should log in the user.
-//        // - Associated Kwiqet account does not exist ; should send the user to the Kwiqet account creation screen (either with Facebook info we already grabbed, or start grabbing it then)
-//        NSString * fbID = [notification.userInfo objectForKey:FBM_BASIC_INFO_FACEBOOK_ID_KEY];
-//        NSString * fbEmail = [notification.userInfo objectForKey:FBM_BASIC_INFO_EMAIL_KEY];
-//        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Not Implemented" message:[NSString stringWithFormat:@"At this point, we should call our server, with the Facebook account ID %@ and associated email %@.", fbID, fbEmail] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//        [alert show];
-//    }
-//}
-//
-//- (void)facebookGetBasicInfoFailure:(NSNotification *)notification {
-//    if (waitingForFacebookInfo) {
-//        waitingForFacebookInfo = NO;
-//        // Report back to the user that we failed to authenticate via Facebook. Instruct to try again or choose another avenue.
-//        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Facebook Connect" message:@"Could not connect to Facebook. Please try again, or try connecting to Kwiqet another way." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//        [alert show];
-//    }    
-//}
+- (void) connectViaFacebook {
+    [[PFFacebookUtils facebook].sessionDelegate fbDidNotLogin:YES]; // If the user manually multitasked away from a previous Facebook app login without explicitly cancelling, and then later pushes "Connect with Facebook" again in Emotish, the app will crash... This avoids that issue. Kind of silly. Wrote to Parse about it March 1, 2012. /* Terminating app due to uncaught exception 'FacebookAuthenticationProvider can handle only one authentication request at a time.', reason: '' */
+    self.workingOnAccountFromFacebook = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+    [self disableMainViewsContainerInteractionAndFadeUIExceptForAccountOptionButton:self.facebookButton];
+    [PFFacebookUtils logInWithPermissions:[NSArray arrayWithObjects:@"email", @"offline_access", nil] target:self selector:@selector(logInWithSocialNetworkCallbackUser:error:)];
+}
 
-- (void)cancelButtonTouched:(id)sender {
-    if (initialPromptScreenVisible) {
-//        if (waitingForFacebookAuthentication || waitingForFacebookInfo) {
-//            waitingForFacebookAuthentication = NO;
-//            waitingForFacebookInfo = NO;
-//            [self.facebookManager.fb cancelPendingRequest];
-//        } else {
-            [self.delegate accountViewController:self didFinishWithConnection:NO];
-//        }
+- (void) connectViaTwitter {
+    self.workingOnAccountFromTwitter = YES;
+    [self disableMainViewsContainerInteractionAndFadeUIExceptForAccountOptionButton:self.twitterButton];
+    [PFTwitterUtils logInWithTarget:self selector:@selector(logInWithSocialNetworkCallbackUser:error:)];
+}
+
+- (void) disableMainViewsContainerInteractionAndFadeUIExceptForAccountOptionButton:(UIButton *)button {
+    self.mainViewsContainer.userInteractionEnabled = NO;
+    self.usernameButton.alpha = button == self.usernameButton ? 1.0 : 0.5;
+    self.facebookButton.alpha = button == self.facebookButton ? 1.0 : 0.5;
+    self.twitterButton.alpha  = button == self.twitterButton  ? 1.0 : 0.5;
+    self.blurbLabel.alpha = 0.5;
+    self.orLine.alpha = 0.5;
+}
+
+- (void) enableMainViewsContainerInteractionAndRestoreUI {
+    self.mainViewsContainer.userInteractionEnabled = YES;
+    self.usernameButton.alpha = 1.0;
+    self.facebookButton.alpha = AVC_FACEBOOK_ENABLED ? 1.0 : 0.5;
+    self.twitterButton.alpha = AVC_TWITTER_ENABLED ? 1.0 : 0.5;
+    self.blurbLabel.alpha = 1.0;
+    self.orLine.alpha = 1.0;
+}
+
+// Moved this to a block temporarily
+- (void)logInWithSocialNetworkCallbackUser:(PFUser *)user error:(NSError **)error {
+    
+    NSError * errorObject = (error != NULL) ? *error : nil;
+    NSString * socialNetworkName = self.workingOnAccountFromFacebook ? @"Facebook" : @"Twitter";
+    
+    if (!errorObject) {
+        
+        if (!user) {
+            
+            NSLog(@"Uh oh. The user cancelled the social network login."); // Note that if the user manually multitasks away from Facebook without explicitly cancelling, and then pushes "Connect with Facebook" again, the app will crash... Wrote to Parse about it March 1, 2012. /* Terminating app due to uncaught exception 'FacebookAuthenticationProvider can handle only one authentication request at a time.', reason: '' */
+            self.workingOnAccountFromFacebook = NO;
+            self.workingOnAccountFromTwitter = NO;
+            [self enableMainViewsContainerInteractionAndRestoreUI];
+            
+        } else if (user.isNew) {
+            
+            NSLog(@"User %@ signed up and logged in through %@", user, socialNetworkName);
+            if (self.workingOnAccountFromFacebook) {
+                self.fbRequestMe = [[PFFacebookUtils facebook] requestWithGraphPath:@"me" andDelegate:self];
+            } else if (self.workingOnAccountFromTwitter) {
+                NSURL * verify = [NSURL URLWithString:@"https://api.twitter.com/1/account/verify_credentials.json"];
+                NSMutableURLRequest * request = [NSMutableURLRequest requestWithURL:verify];
+                [[PFTwitterUtils twitter] signRequest:request];
+                self.twConnectionBasicInfoData = [NSMutableData data];
+                self.twConnectionBasicInfo = [NSURLConnection connectionWithRequest:request delegate:self];
+            }
+            
+        } else {
+            
+            NSLog(@"User logged in through %@!", socialNetworkName);
+            [self.delegate accountViewController:self didFinishWithConnection:YES];
+            
+        }
+        
     } else {
-        [self showContainer:self.accountOptionsContainer animated:YES];
+        
+        UIAlertView * socialNetworkErrorAlertView = self.workingOnAccountFromFacebook ? [EmotishAlertViews facebookConnectionErrorAlertView] : [EmotishAlertViews twitterConnectionErrorAlertView];
+        [socialNetworkErrorAlertView show];
+        
+        self.workingOnAccountFromFacebook = NO;
+        self.workingOnAccountFromTwitter = NO;
+        [self enableMainViewsContainerInteractionAndRestoreUI];
+        
+    }
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+    
+}
+
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+    NSLog(@"applicationDidBecomeActive");
+    if (self.workingOnAccountFromFacebook && ![[notification.userInfo objectForKey:NOTIFICATION_USER_INFO_KEY_APPLICATION_OPENED_URL] boolValue]) {
+        NSLog(@"self.workingOnAccountFromFacebook");
+        self.workingOnAccountFromFacebook = NO;
+        [self enableMainViewsContainerInteractionAndRestoreUI];
+    }
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+}
+
+- (void)request:(PF_FBRequest *)request didLoad:(id)result {
+    NSString * firstName = [result objectForKey:@"first_name"];
+    NSString * lastName = [result objectForKey:@"last_name"];
+    NSString * email = [result objectForKey:@"email"];
+    NSString * usernameSuggestion = [NSString stringWithFormat:@"%@%@", firstName.lowercaseString, lastName.lowercaseString];
+    [self showAccountCreationInputViews:YES showPasswordConfirmation:NO activateAppropriateFirstResponder:NO animated:NO];
+    [self showContainer:self.inputContainer animated:YES blockToExecuteOnAnimationCompletion:^{
+        [self enableMainViewsContainerInteractionAndRestoreUI];
+    }]; // This method gets called a good deal after the view actually appears, so better to animate this transition.
+    self.usernameInputString = usernameSuggestion;
+    self.usernameTextField.text = self.usernameInputString;
+    self.emailInputString = email;
+    self.emailTextField.text = self.emailInputString;
+    [self.passwordTextField becomeFirstResponder];
+}
+
+- (void)request:(PF_FBRequest *)request didFailWithError:(NSError *)error {
+    [self showAccountCreationInputViews:YES showPasswordConfirmation:NO activateAppropriateFirstResponder:YES animated:NO];
+    [self showContainer:self.inputContainer animated:YES blockToExecuteOnAnimationCompletion:^{
+        [self enableMainViewsContainerInteractionAndRestoreUI];
+    }]; // This method gets called a good deal after the view actually appears, so better to animate this transition.
+}
+
+- (void) connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    if (connection == self.twConnectionBasicInfo) {
+        [self.twConnectionBasicInfoData appendData:data];
     }
 }
 
-- (void)userInputSubmissionAttemptRequested {
-    if (accountCreationViewsVisible) {
-        [self accountCreationAttemptRequested];
+- (void) connectionDidFinishLoading:(NSURLConnection *)connection {
+    if (connection == self.twConnectionBasicInfo) {
+        NSString * responseString = [[NSString alloc] initWithData:self.twConnectionBasicInfoData encoding:NSUTF8StringEncoding];
+        NSDictionary * twitterResponseDictionary = [responseString JSONValue];
+        NSLog(@"Twitter response dictionary:\n%@", twitterResponseDictionary);
+        NSString * usernameSuggestion = [twitterResponseDictionary objectForKey:@"screen_name"];
+        [self showAccountCreationInputViews:YES showPasswordConfirmation:NO activateAppropriateFirstResponder:YES animated:NO];
+        [self showContainer:self.inputContainer animated:YES blockToExecuteOnAnimationCompletion:^{
+            [self enableMainViewsContainerInteractionAndRestoreUI];
+        }]; // This method gets called a good deal after the view actually appears, so better to animate this transition.
+        self.usernameInputString = usernameSuggestion;
+        self.usernameTextField.text = self.usernameInputString;
+        [self.emailTextField becomeFirstResponder];
+    }
+}
+
+- (void) connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    if (connection == self.twConnectionBasicInfo) {
+        [self showAccountCreationInputViews:YES showPasswordConfirmation:NO activateAppropriateFirstResponder:YES animated:NO];
+        [self showContainer:self.inputContainer animated:YES blockToExecuteOnAnimationCompletion:^{
+            [self enableMainViewsContainerInteractionAndRestoreUI];
+        }]; // This method gets called a good deal after the view actually appears, so better to animate this transition.
+    }
+}
+
+- (void)cancelButtonTouched:(id)sender {
+    if (initialPromptScreenVisible) {
+            [self cancelRequested];
     } else {
-        [self accountConnectionAttemptRequested];
-    }    
+        if (self.workingOnAccountFromSocialNetwork) {
+            [self deleteAndLogOutCurrentUser];
+            self.workingOnAccountFromFacebook = NO;
+            self.workingOnAccountFromTwitter = NO;
+        }
+        [self showContainer:self.accountOptionsContainer animated:YES];
+    }
 }
 
 - (void) doneButtonTouched:(id)sender {
     [self userInputSubmissionAttemptRequested];
 }
 
+- (void)userInputSubmissionAttemptRequested {
+    if (accountCreationViewsVisible) {
+        [self accountCreationInputSubmissionAttemptRequested];
+    } else {
+        [self accountConnectionAttemptRequested];
+    }    
+}
+
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-//    NSLog(@"textFieldDidBeginEditing:%@", textField);
     [self setTextFieldToBeVisible:textField animated:YES];
 }
 
@@ -377,34 +505,6 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     CGRect textFieldRectInInputContainer = [self.inputContainer convertRect:textField.frame fromView:textField.superview];
     [self.inputContainer scrollRectToVisible:CGRectInset(textFieldRectInInputContainer, 0, -AVC_INPUT_CONTAINER_PADDING_BOTTOM) animated:animated];
 }
-
-//- (void) setTextFieldToBeVisible:(UITextField *)textField animated:(BOOL)animated {
-//    
-//    void(^adjustmentsBlock)(void) = ^{
-//        BOOL shouldScroll = NO;
-//        CGFloat contentOffsetY = 0;
-//        if (CGRectGetMinY(containerView.frame) - 10 < self.inputContainer.contentOffset.y) {
-//            shouldScroll = YES;
-//            contentOffsetY = CGRectGetMinY(containerView.frame) - 10;
-//        } else {
-//            CGFloat visibleHeightOfScrollView = self.inputContainer.frame.size.height - (self.inputContainer.contentInset.top + self.inputContainer.contentInset.bottom);
-//            if (CGRectGetMaxY(containerView.frame) + 10 > self.inputContainer.contentOffset.y + visibleHeightOfScrollView) {
-//                shouldScroll = YES;
-//                contentOffsetY = MIN(CGRectGetMaxY(containerView.frame) - containerView.frame.size.height - 10, self.inputContainer.contentSize.height - visibleHeightOfScrollView);
-//            }
-//        }
-//        if (shouldScroll) {
-//            self.inputContainer.contentOffset = CGPointMake(0, contentOffsetY);
-//        }
-//    };
-//    
-//    if (animated) {
-//        [UIView animateWithDuration:0.25 animations:adjustmentsBlock];
-//    } else {
-//        adjustmentsBlock();
-//    }
-//    
-//}
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
     if (textField == self.passwordTextField) {
@@ -468,6 +568,11 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
             NSString * userIdentifierString = alertView == self.anotherAccountWithUsernameExistsAlertView ? self.usernameInputString : self.emailInputString;
             self.usernameTextField.text = userIdentifierString;
             self.passwordTextField.text = @"";
+            if (self.workingOnAccountFromSocialNetwork) {
+                [self deleteAndLogOutCurrentUser];
+                self.workingOnAccountFromFacebook = NO;
+                self.workingOnAccountFromTwitter = NO;
+            }
             [self showAccountCreationInputViews:NO showPasswordConfirmation:NO activateAppropriateFirstResponder:YES animated:YES];
         }
     }
@@ -611,7 +716,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     }
 }
 
-- (void)accountCreationAttemptRequested {
+- (void) accountCreationInputSubmissionAttemptRequested {
     
     self.usernameTextField.text = [self.usernameTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     self.emailTextField.text = [self.emailTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -677,45 +782,68 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     } else {
         
         [self resignFirstResponderForAllTextFields];
-        NSLog(@"CREATE ACCOUNT VIA USERNAME WEB CALL SHOULD BE HERE");
         
-        PFUser * userToSignUp = [PFUser user];
-        userToSignUp.username = self.usernameInputString;
-        userToSignUp.email = self.emailInputString;
-        userToSignUp.password = self.passwordInputString;
-        [userToSignUp setObject:self.usernameInputString.lowercaseString forKey:@"usernameLowercase"];
-        [userToSignUp setObject:self.emailInputString.lowercaseString forKey:@"emailLowercase"];
-        [userToSignUp signUpInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
-            if (!error) {
-                // Hooray! Let them use the app now.
-                PFUser * userSignedUp = [PFUser currentUser];
-                [self.coreDataManager addOrUpdateUserFromServer:userSignedUp];
-                NSLog(@"Subscribing to channel %@", userSignedUp.objectId);
-                [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userSignedUp.objectId] block:^(BOOL succeeded, NSError * error){
-                    if (succeeded) {
-                        NSLog(  @"Successfully subscribed to channel %@", userSignedUp.objectId);
-                    } else {
-                        NSLog(  @"Failed to subscribe to channel %@", userSignedUp.objectId);
-                    }
-                    [self.delegate accountViewController:self didFinishWithConnection:YES];
-                }];
+        PFUser * userToWorkWith = self.workingOnAccountFromSocialNetwork ? [PFUser currentUser] : [PFUser user];
+        userToWorkWith.username = self.usernameInputString;
+        userToWorkWith.email = self.emailInputString;
+        userToWorkWith.password = self.passwordInputString;
+        [userToWorkWith setObject:self.usernameInputString.lowercaseString forKey:@"usernameLowercase"];
+        [userToWorkWith setObject:self.emailInputString.lowercaseString forKey:@"emailLowercase"];
+        
+        void(^successfulUserActionBlock)(PFUser *) = ^(PFUser * user){
+            [self.coreDataManager addOrUpdateUserFromServer:user];
+            [self subscribeToPushChannelForUserServerID:user.objectId shouldTellDelegateFinishedWithConnectionAfterwards:YES];
+        };
+        
+        void(^respondToUserRelatedErrorBlock)(NSError *) = ^(NSError * userRelatedError){
+            NSLog(@"error: %@", userRelatedError);
+            if (userRelatedError.code == kPFErrorUsernameTakenError) {
+                [self.anotherAccountWithUsernameExistsAlertView show];
+            } else if (userRelatedError.code == kPFErrorUserEmailTakenError) {
+                [self.anotherAccountWithEmailExistsAlertView show];
+            } else if (userRelatedError.code == kPFErrorInvalidEmailAddress) {
+                [self.emailInvalidAlertView show];
             } else {
-                NSLog(@"error: %@", error);
-                if (error.code == kPFErrorUsernameTakenError) {
-                    [self.anotherAccountWithUsernameExistsAlertView show];
-                } else if (error.code == kPFErrorUserEmailTakenError) {
-                    [self.anotherAccountWithEmailExistsAlertView show];
-                } /*else if (error.code == kPFErrorInvalidEmailAddress) { // This is causing an Apple Mach-O Linker Error for some odd reason...
-                    [self.emailInvalidAlertView show];
-                } */else {
-                    [self.connectionErrorGeneralAlertView show];
-                }
+                [self.connectionErrorGeneralAlertView show];
             }
-        }];
-//        [self.webConnector accountCreateWithEmail:self.emailInputString password:self.passwordInputString username:self.usernameInputString];
+        };
+        
+        if (self.workingOnAccountFromSocialNetwork) {
+            [userToWorkWith saveInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
+                if (!error) {
+                    self.workingOnAccountFromFacebook = NO;
+                    self.workingOnAccountFromTwitter = NO;
+                    successfulUserActionBlock([PFUser currentUser]);
+                } else {
+                    respondToUserRelatedErrorBlock(error);
+                }
+            }];
+        } else {
+            [userToWorkWith signUpInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
+                if (!error) {
+                    successfulUserActionBlock([PFUser currentUser]);
+                } else {
+                    respondToUserRelatedErrorBlock(error);
+                }
+            }];
+        }
         
     }
     
+}
+
+- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate {
+    NSLog(@"Subscribing to channel %@", userServerID);
+    [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userServerID] block:^(BOOL succeeded, NSError * error){
+        if (succeeded) {
+            NSLog(  @"Successfully subscribed to channel %@", userServerID);
+        } else {
+            NSLog(  @"Failed to subscribe to channel %@", userServerID);
+        }
+        if (shouldTellDelegate) {
+            [self.delegate accountViewController:self didFinishWithConnection:YES];
+        }
+    }];
 }
 
 //- (void)webConnector:(WebConnector *)webConnector accountConnectSuccess:(ASIHTTPRequest *)request withEmail:(NSString *)emailString firstName:(NSString *)nameFirst lastName:(NSString *)nameLast apiKey:(NSString *)apiKey {
@@ -766,15 +894,15 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
 //    
 //}
 
-- (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated {
+- (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated blockToExecuteOnAnimationCompletion:(void(^)(void))blockToExecute {
     
     BOOL shouldShowInputViews = (viewsContainer == self.inputContainer);
     
-//    void(^blurbPromptsAlphaBlock)(BOOL) = ^(BOOL shouldShowOptionsBlurb){
-//        self.blurbLabel.alpha = shouldShowOptionsBlurb ? 1.0 : 0.0;
-//        self.accountConnectionPromptLabel.alpha = shouldShowOptionsBlurb ? 0.0 : 1.0;
-//        self.accountCreationPromptLabel.alpha = 0.0; // Sort of silly...
-//    };
+    //    void(^blurbPromptsAlphaBlock)(BOOL) = ^(BOOL shouldShowOptionsBlurb){
+    //        self.blurbLabel.alpha = shouldShowOptionsBlurb ? 1.0 : 0.0;
+    //        self.accountConnectionPromptLabel.alpha = shouldShowOptionsBlurb ? 0.0 : 1.0;
+    //        self.accountCreationPromptLabel.alpha = 0.0; // Sort of silly...
+    //    };
     
     void(^topBarBlock)(BOOL) = ^(BOOL shouldShowDone){
         self.topBar.buttonLeftNormal.alpha = 1.0;
@@ -801,26 +929,35 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
         self.passwordTextField.text = @"";
         self.confirmPasswordTextField.text = @"";
     };
-
+    
     initialPromptScreenVisible = !shouldShowInputViews;
-//    self.cancelButton.userInteractionEnabled = YES;
-//    self.doneButton.userInteractionEnabled = shouldShowInputViews;
-
+    //    self.cancelButton.userInteractionEnabled = YES;
+    //    self.doneButton.userInteractionEnabled = shouldShowInputViews;
+    
     [UIView animateWithDuration:animated ? AP_NAV_BUTTONS_ANIMATION_DURATION : 0.0 delay:0.0 options:0 animations:^{
         accountOptionsBlock(!shouldShowInputViews);
         emailOptionBlock(shouldShowInputViews);
         topBarBlock(shouldShowInputViews);
-//        blurbPromptsAlphaBlock(!shouldShowInputViews);
+        //        blurbPromptsAlphaBlock(!shouldShowInputViews);
     } completion:^(BOOL finished) {
         if (!shouldShowInputViews) {
             resetInputBlock();
             [self showAccountCreationInputViews:NO showPasswordConfirmation:NO activateAppropriateFirstResponder:NO animated:NO];
+        }
+        if (blockToExecute != NULL) {
+            blockToExecute();
         }
     }];
     if (!shouldShowInputViews) {
         [self resignFirstResponderForAllTextFields];
     }
     
+}
+
+- (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated {
+    
+    [self showContainer:viewsContainer animated:animated blockToExecuteOnAnimationCompletion:NULL];
+        
 }
 
 - (void) resignFirstResponderForAllTextFields {
@@ -867,7 +1004,7 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
             self.confirmPasswordTextField.alpha = shouldShowPasswordConfirmation ? 1.0 : 0.0;
             self.emailTextField.frame = CGRectOffset(self.usernameTextField.frame, 0, self.usernameTextField.frame.size.height);
             self.passwordTextField.frame = CGRectOffset(self.emailTextField.frame, 0, self.emailTextField.frame.size.height);
-            self.confirmPasswordTextField.frame = CGRectOffset(self.passwordTextField.frame, 0, self.passwordTextField.frame.size.height);
+            self.confirmPasswordTextField.frame = CGRectOffset(self.passwordTextField.frame, 0, shouldShowPasswordConfirmation ? self.passwordTextField.frame.size.height : 0);
             self.passwordTextField.returnKeyType = shouldShowPasswordConfirmation ? UIReturnKeyNext : UIReturnKeySend; // If passwordTextField is first responder when this call is made, the returnKeyType does not get updated until another text field becomes first responder, and then this one becomes it once again. It does not help to quickly switch to another and come back right here, either. Strange bug.
         } else {
             self.emailTextField.alpha = 0.0;
@@ -976,7 +1113,29 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     if (initialPromptScreenVisible &&
         (swipeGestureRecognizer == self.swipeDownGestureRecognizer ||
          swipeGestureRecognizer == self.swipeRightGestureRecognizer)) {
-        [self.delegate accountViewController:self didFinishWithConnection:NO];
+            [self cancelRequested];
+    }
+}
+
+- (void) cancelRequested {
+    NSLog(@"Cancel requested");
+    [[PFFacebookUtils facebook].sessionDelegate fbDidNotLogin:YES]; // This takes care of the crash we were experiencing. Basically, it is possible to cancel (by hitting the cancel button or swiping to cancel) before we get the PFFacebookUtils logIn response. So, if the user does cancel before then, we just need to cancel the logIn altogether. // Turns out this doesn't always work... The app is still crashing sometimes. The app is still crashing somewhat often, even!
+    // The following will probably never be true
+    if (self.fbRequestMe != nil) {
+        NSLog(@"Cancelling fbRequest");
+        [self.fbRequestMe.connection cancel];
+        self.fbRequestMe = nil;
+    }
+    [self deleteAndLogOutCurrentUser];
+    [self.delegate accountViewController:self didFinishWithConnection:NO];
+}
+
+- (void) deleteAndLogOutCurrentUser {
+    if ([PFUser currentUser] != nil) {
+        NSLog(@"Deleting [PFUser currentUser]");
+        [[PFUser currentUser] deleteInBackground]; // This may or may not work.
+        NSLog(@"Logging out [PFUser currentUser]");
+        [PFUser logOut];
     }
 }
 
@@ -1007,14 +1166,32 @@ CGFloat const AVC_INPUT_CONTAINER_PADDING_BOTTOM = 20.0;
     } completion:NULL];
 }
 
-- (void)setSwipeDownToCancelEnabled:(BOOL)swipeDownToCancelEnabled {
-    _swipeDownToCancelEnabled = swipeDownToCancelEnabled;
-    self.swipeDownGestureRecognizer.enabled = self.swipeDownToCancelEnabled;
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    BOOL shouldBegin = YES;
+    if (gestureRecognizer == self.swipeDownGestureRecognizer ||
+        gestureRecognizer == self.swipeRightGestureRecognizer) {
+        shouldBegin = (/*!self.workingOnAccountFromSocialNetwork && */// This does not work, no matter what I do with atomic/nonatomic, scalar vs object, etc. It must have something to do with threads, but I don't know how to fix it. The cancel button has the same problem. // Fixed this finally a different way in [self cancelRequested]. Don't need to disallow the gesture here anymore.
+                       ((gestureRecognizer == self.swipeDownGestureRecognizer &&
+                         self.swipeDownToCancelEnabled) ||
+                        (gestureRecognizer == self.swipeRightGestureRecognizer &&
+                         self.swipeRightToCancelEnabled)));
+    }
+    NSLog(@"gestureRecognizerShouldBegin: ? %d", shouldBegin);
+    return shouldBegin;
 }
 
-- (void)setSwipeRightToCancelEnabled:(BOOL)swipeRightToCancelEnabled {
-    _swipeRightToCancelEnabled = swipeRightToCancelEnabled;
-    self.swipeRightGestureRecognizer.enabled = self.swipeRightToCancelEnabled;
+//- (void)setSwipeDownToCancelEnabled:(BOOL)swipeDownToCancelEnabled {
+//    _swipeDownToCancelEnabled = swipeDownToCancelEnabled;
+//    self.swipeDownGestureRecognizer.enabled = self.swipeDownToCancelEnabled;
+//}
+//
+//- (void)setSwipeRightToCancelEnabled:(BOOL)swipeRightToCancelEnabled {
+//    _swipeRightToCancelEnabled = swipeRightToCancelEnabled;
+//    self.swipeRightGestureRecognizer.enabled = self.swipeRightToCancelEnabled;
+//}
+
+- (BOOL)workingOnAccountFromSocialNetwork {
+    return self.workingOnAccountFromFacebook || self.workingOnAccountFromTwitter;
 }
 
 @end

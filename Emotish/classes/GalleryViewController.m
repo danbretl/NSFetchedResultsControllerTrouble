@@ -72,7 +72,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         debugging = NO;
-        self.feelingsTableViewContentOffsetPreserved = CGPointMake(0, -(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL));
+        self.feelingsTableViewContentOffsetPreserved = CGPointMake(0, -VC_TOP_BAR_HEIGHT);
         self.activeFeelingCellIndexRow = -1;
         self.activeFeelingCellContentOffsetPreserved = CGPointZero;
     }
@@ -106,12 +106,11 @@
     self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL + VC_BOTTOM_BAR_HEIGHT, 0);
     self.feelingsTableView.scrollsToTop = YES;
 
-    CGFloat tableHeaderViewFlagVisibleHeight = 1.0;
-    UIView * tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, tableHeaderViewFlagVisibleHeight + GC_FEELING_IMAGE_MARGIN_VERTICAL)];
+    UIView * tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, GC_TABLE_HEADER_VIEW_FLAG_VISIBLE_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL)];
     
     self.feelingsTableView.tableHeaderView = tableHeaderView;
     
-    self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, tableHeaderViewFlagVisibleHeight - [UIScreen mainScreen].bounds.size.height, self.feelingsTableView.frame.size.width, [UIScreen mainScreen].bounds.size.height)];
+    self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, GC_TABLE_HEADER_VIEW_FLAG_VISIBLE_HEIGHT - [UIScreen mainScreen].bounds.size.height, self.feelingsTableView.frame.size.width, [UIScreen mainScreen].bounds.size.height)];
     self.flagStretchView.icon.opacity = 0.75;
     self.flagStretchView.iconDistanceFromBottom = floorf(self.feelingsTableView.rowHeight / 3.0);
     self.flagStretchView.activationDistanceEnd = 2 * self.flagStretchView.iconDistanceFromBottom + self.flagStretchView.icon.frame.size.height;
@@ -506,8 +505,6 @@
     SettingsViewController * settingsViewController = [[SettingsViewController alloc] initWithNibName:@"SettingsViewController" bundle:[NSBundle mainBundle]];
     settingsViewController.delegate = self;
     settingsViewController.coreDataManager = self.coreDataManager;
-    settingsViewController.userServer = userServer;
-    settingsViewController.userLocal = userLocal;
     UINavigationController * settingsNavController = [[UINavigationController alloc] initWithRootViewController:settingsViewController];
     settingsNavController.navigationBarHidden = YES;
     [self presentModalViewController:settingsNavController animated:YES];

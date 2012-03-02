@@ -9,6 +9,7 @@
 #import "EmotishAppDelegate.h"
 #import <Parse/Parse.h>
 #import "PushConstants.h"
+#import "NotificationConstants.h"
 
 #ifdef DEBUG
 #define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
@@ -17,6 +18,10 @@
 #define emotish_parse_app_id @"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC"
 #define emotish_parse_app_client_key @"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"
 #endif
+
+@interface EmotishAppDelegate()
+@property (nonatomic) BOOL appOpenedURLFlag;
+@end
 
 @implementation EmotishAppDelegate
 
@@ -27,9 +32,10 @@
 @synthesize managedObjectModel = __managedObjectModel;
 @synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
 @synthesize notificationAlertView=_notificationAlertView, notificationPhotoServerID=_notificationPhotoServerID;
+@synthesize appOpenedURLFlag=_appOpenedURLFlag;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
+
     NSLog(@"emotish_parse_app_id=%@", emotish_parse_app_id);
     NSLog(@"emotish_parse_app_client_key=%@", emotish_parse_app_client_key);
     [Parse setApplicationId:emotish_parse_app_id
@@ -40,7 +46,7 @@
     [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge|UIRemoteNotificationTypeAlert|UIRemoteNotificationTypeSound];
     
     if ([PFUser currentUser] == nil) {
-        [self.coreDataManager deleteAllLikes];
+        [self.coreDataManager deleteAllLikes]; // Why?
         [self.coreDataManager saveCoreData];
     }
 
@@ -107,38 +113,38 @@
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     [self saveContext];
-    /*
-     Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-     If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-     */
+    /* Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
+     If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits. */
+    self.appOpenedURLFlag = NO;
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    /*
-     Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-     */
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    NSLog(@"applicationWillEnterForeground");
+    /* Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background. */
+    
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{
-    /*
-     Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-     */
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    NSLog(@"applicationDidBecomeActive");
+    /* Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface. */
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:self userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:self.appOpenedURLFlag] forKey:NOTIFICATION_USER_INFO_KEY_APPLICATION_OPENED_URL]];
+    self.appOpenedURLFlag = NO;
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
-{
+- (void)applicationWillTerminate:(UIApplication *)application {
     // Saves changes in the application's managed object context before the application terminates.
     [self saveContext];
 }
 
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+    NSLog(@"application:handleOpenURL:");
+    self.appOpenedURLFlag = YES;
     return [PFFacebookUtils handleOpenURL:url];
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url
-  sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    self.appOpenedURLFlag = YES;
+    NSLog(@"application:openURL:sourceApplication:annotation:");
     return [PFFacebookUtils handleOpenURL:url];
 }
 
@@ -166,6 +172,7 @@
             }
         }];
     }
+    
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {

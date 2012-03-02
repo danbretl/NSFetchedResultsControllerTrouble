@@ -10,15 +10,19 @@
 #import <Parse/Parse.h>
 #import "CoreDataManager.h"
 
+typedef enum {
+    UsernameEmailAccountConnect = 1,
+    FacebookAccountConnect = 2,
+    TwitterAccountConnect = 3,
+} AccountConnectMethod;
+
 @protocol AccountViewControllerDelegate;
 
-@interface AccountViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate> {
+@interface AccountViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, PF_FBRequestDelegate, UIGestureRecognizerDelegate, NSURLConnectionDataDelegate> {
     
     BOOL initialPromptScreenVisible;
     BOOL accountCreationViewsVisible;
     BOOL confirmPasswordVisible;
-    BOOL waitingForFacebookAuthentication;
-    BOOL waitingForFacebookInfo;
     
 }
 
@@ -26,6 +30,11 @@
 @property (nonatomic, strong) CoreDataManager * coreDataManager;
 @property (nonatomic) BOOL swipeDownToCancelEnabled;
 @property (nonatomic) BOOL swipeRightToCancelEnabled;
+@property (nonatomic) BOOL workingOnAccountFromFacebook;
+@property (nonatomic) BOOL workingOnAccountFromTwitter;
+@property (nonatomic, readonly) BOOL workingOnAccountFromSocialNetwork;
+@property (nonatomic) BOOL shouldImmediatelyAttemptFacebookConnect;
+@property (nonatomic) BOOL shouldImmediatelyAttemptTwitterConnect;
 
 @end
 
