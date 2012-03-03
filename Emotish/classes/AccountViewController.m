@@ -82,6 +82,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 - (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated blockToExecuteOnAnimationCompletion:(void(^)(void))blockToExecute;
 - (void) showAccountCreationInputViews:(BOOL)shouldShowCreationViews showPasswordConfirmation:(BOOL)shouldShowPasswordConfirmation activateAppropriateFirstResponder:(BOOL)shouldActivateFirstResponder animated:(BOOL)animated;
 - (void) setTextFieldToBeVisible:(UITextField *)textField animated:(BOOL)animated;
+- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer includingNotificationSubscription:(BOOL)shouldSubscribeToNotifications pullLikes:(BOOL)shouldPullLikes;
 // Methods - Keyboard responses
 - (void) keyboardWillHide:(NSNotification *)notification;
 - (void) keyboardWillShow:(NSNotification *)notification;
@@ -368,7 +369,9 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         } else {
             
             NSLog(@"User logged in through %@!", socialNetworkName);
-            [self.delegate accountViewController:self didFinishWithConnection:YES];
+            [self.coreDataManager addOrUpdateUserFromServer:user];
+            [self.coreDataManager saveCoreData];
+            [self accountConnectLastStepsForUserServer:user includingNotificationSubscription:YES pullLikes:YES];
             
         }
         
@@ -649,50 +652,63 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     
 }
 
+- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer includingNotificationSubscription:(BOOL)shouldSubscribeToNotifications pullLikes:(BOOL)shouldPullLikes {
+    
+    if (shouldPullLikes) {
+        self.waitingForLikes = YES;
+        PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
+        [likesQuery whereKey:@"user" equalTo:userServer];
+        [likesQuery includeKey:@"photo"];
+        [likesQuery findObjectsInBackgroundWithBlock:^(NSArray * objects, NSError * error){
+            self.waitingForLikes = NO;
+            if (!error) {
+                if (objects != nil && objects.count > 0) {
+                    NSLog(@"Logged in user has %d previous likes. Attempting to restore them locally.", objects.count);
+                    for (PFObject * likeServer in objects) {
+                        PFObject * photoServer = [likeServer objectForKey:@"photo"];
+                        [self.coreDataManager addOrUpdateLikeFromServer:likeServer photoFromServer:photoServer userFromServer:userServer];
+                    }
+                    [self.coreDataManager saveCoreData];
+                }
+                [self attemptToProceedWithSuccessfulLogin];
+            } else {
+                [self.connectionErrorGeneralAlertView show];
+                [[UIApplication sharedApplication] cancelAllLocalNotifications];
+                [PFUser logOut];
+            }
+        }];
+    }
+    
+    if (shouldSubscribeToNotifications) {
+        NSLog(@"Subscribing to channel %@", userServer.objectId);
+        self.waitingToSubscribeToNotificationsChannel = YES;
+        [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userServer.objectId] block:^(BOOL succeeded, NSError * error){
+            self.waitingToSubscribeToNotificationsChannel = NO;
+            if (!error) {
+                if (succeeded) {
+                    NSLog(  @"Successfully subscribed to channel %@", userServer.objectId);                        
+                }
+            } else {
+                NSLog(  @"Failed to subscribe to channel %@", userServer.objectId);
+                NSLog(  @"%@ %@ %@ %@", error, error.userInfo, error.description, error.debugDescription);
+                //                    [self.connectionErrorGeneralAlertView show];
+                //                    [PFUser logOut];
+            }
+            [self attemptToProceedWithSuccessfulLogin];
+        }];
+    }
+    
+    [self attemptToProceedWithSuccessfulLogin];
+    
+}
+
 - (void)logInWithUsernameCallback:(PFUser *)user error:(NSError **)error {
     if (!error) {
         if (user != nil) {
             NSLog(@"Logged in with user %@", user);
             [self.coreDataManager addOrUpdateUserFromServer:user];
             [self.coreDataManager saveCoreData];
-            self.waitingForLikes = YES;
-            self.waitingToSubscribeToNotificationsChannel = YES;
-            PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
-            [likesQuery whereKey:@"user" equalTo:user];
-            [likesQuery includeKey:@"photo"];
-            [likesQuery findObjectsInBackgroundWithBlock:^(NSArray * objects, NSError * error){
-                self.waitingForLikes = NO;
-                if (!error) {
-                    if (objects != nil && objects.count > 0) {
-                        NSLog(@"Logged in user has %d previous likes. Attempting to restore them locally.", objects.count);
-                        for (PFObject * likeServer in objects) {
-                            PFObject * photoServer = [likeServer objectForKey:@"photo"];
-                            [self.coreDataManager addOrUpdateLikeFromServer:likeServer photoFromServer:photoServer userFromServer:user];
-                        }
-                        [self.coreDataManager saveCoreData];
-                    }
-                    [self attemptToProceedWithSuccessfulLogin];
-                } else {
-                    [self.connectionErrorGeneralAlertView show];
-                    [[UIApplication sharedApplication] cancelAllLocalNotifications];
-                    [PFUser logOut];
-                }
-            }];
-            NSLog(@"Subscribing to channel %@", user.objectId);
-            [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, user.objectId] block:^(BOOL succeeded, NSError * error){
-                self.waitingToSubscribeToNotificationsChannel = NO;
-                if (!error) {
-                    if (succeeded) {
-                        NSLog(  @"Successfully subscribed to channel %@", user.objectId);                        
-                    }
-                } else {
-                    NSLog(  @"Failed to subscribe to channel %@", user.objectId);
-                    NSLog(  @"%@ %@ %@ %@", error, error.userInfo, error.description, error.debugDescription);
-//                    [self.connectionErrorGeneralAlertView show];
-//                    [PFUser logOut];
-                }
-                [self attemptToProceedWithSuccessfulLogin];
-            }];
+            [self accountConnectLastStepsForUserServer:user includingNotificationSubscription:YES pullLikes:YES];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
             [self.passwordIncorrectAlertView show];
