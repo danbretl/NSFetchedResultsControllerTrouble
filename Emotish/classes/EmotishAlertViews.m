@@ -23,4 +23,16 @@
     return [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ Error", socialNetworkName] message:[NSString stringWithFormat:@"Sorry, we're having trouble talking to %@ right now. Please try again.", socialNetworkName] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
 }
 
++ (UIAlertView *)facebookAccountTakenByOtherUserAlertView {
+    return [self socialNetworkAccountTakenByOtherUserAlertView:@"Facebook"];
+}
+
++ (UIAlertView *)twitterAccountTakenByOtherUserAlertView {
+    return [self socialNetworkAccountTakenByOtherUserAlertView:@"Twitter"];
+}
+
++ (UIAlertView *)socialNetworkAccountTakenByOtherUserAlertView:(NSString *)socialNetworkName {
+    return [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ Error", socialNetworkName] message:[NSString stringWithFormat:@"There is already another Emotish account associated with this %@ account.", socialNetworkName] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
 @end

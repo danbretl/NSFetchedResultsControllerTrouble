@@ -14,4 +14,8 @@
 + (UIAlertView *) twitterConnectionErrorAlertView;
 + (UIAlertView *) socialNetworkConnectionErrorAlertView:(NSString *)socialNetworkName;
 
++ (UIAlertView *) facebookAccountTakenByOtherUserAlertView;
++ (UIAlertView *) twitterAccountTakenByOtherUserAlertView;
++ (UIAlertView *) socialNetworkAccountTakenByOtherUserAlertView:(NSString *)socialNetworkName;
+
 @end

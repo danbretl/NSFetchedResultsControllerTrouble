@@ -944,7 +944,7 @@
 				3299A14A14D097560017FAEF /* Shared */,
 				32E2F20A14D092B800191C6F /* GalleryViewController */,
 				323B2FCF14D759E50035BF74 /* PhotosStripViewController */,
-				32EB6C0314E40F33003D7105 /* AddPhoto */,
+				32EB6C0314E40F33003D7105 /* SubmitPhotoViewController */,
 				324061FD14F41A1C001F0A89 /* Account */,
 				32F1F44F14F7E9A0005A4803 /* Settings */,
 				32E2F20714D092B100191C6F /* Data Models */,
@@ -1000,18 +1000,18 @@
 			name = GalleryViewController;
 			sourceTree = "<group>";
 		};
-		32EB6C0314E40F33003D7105 /* AddPhoto */ = {
+		32EB6C0314E40F33003D7105 /* SubmitPhotoViewController */ = {
 			isa = PBXGroup;
 			children = (
-				32EB6C0514E42B43003D7105 /* CameraOverlayView.h */,
-				32EB6C0614E42B43003D7105 /* CameraOverlayView.m */,
-				32EB6C0A14E43C0A003D7105 /* CameraOverlayViewHandler.h */,
-				32EB6C0B14E43C0A003D7105 /* CameraOverlayViewHandler.m */,
 				32D240C214E4D56700AB368C /* SubmitPhotoViewController.h */,
 				32D240C314E4D56700AB368C /* SubmitPhotoViewController.m */,
 				32D240C414E4D56700AB368C /* SubmitPhotoViewController.xib */,
+				32EB6C0A14E43C0A003D7105 /* CameraOverlayViewHandler.h */,
+				32EB6C0B14E43C0A003D7105 /* CameraOverlayViewHandler.m */,
+				32EB6C0514E42B43003D7105 /* CameraOverlayView.h */,
+				32EB6C0614E42B43003D7105 /* CameraOverlayView.m */,
 			);
-			name = AddPhoto;
+			name = SubmitPhotoViewController;
 			sourceTree = "<group>";
 		};
 		32F1F44F14F7E9A0005A4803 /* Settings */ = {

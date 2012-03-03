@@ -249,7 +249,7 @@
             if (![PFFacebookUtils isLinkedWithUser:[PFUser currentUser]]) { // Why do we make this check?
                 [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
                 [[PFFacebookUtils facebook].sessionDelegate fbDidNotLogin:YES];
-                [PFFacebookUtils linkUser:[PFUser currentUser] permissions:[NSArray arrayWithObjects:@"email", @"offline_access", nil] block:^(BOOL succeeded, NSError *error) {
+                [PFFacebookUtils linkUser:[PFUser currentUser] permissions:[NSArray arrayWithObjects:@"email", @"offline_access", @"publish_stream", nil] block:^(BOOL succeeded, NSError *error) {
                     [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
                     if (!error) {
                         if (succeeded) {
@@ -259,7 +259,11 @@
                             // User probably cancelled...
                         }
                     } else {
-                        [[EmotishAlertViews facebookConnectionErrorAlertView] show];
+                        if (error.code == kPFErrorAccountAlreadyLinked) {
+                            [[EmotishAlertViews facebookAccountTakenByOtherUserAlertView] show];
+                        } else {
+                            [[EmotishAlertViews facebookConnectionErrorAlertView] show];
+                        }
                     }
                     self.tableView.userInteractionEnabled = YES;
                     [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
@@ -306,7 +310,6 @@
             NSLog(@"Should connect Twitter");
             // Connect Twitter
             if (![PFTwitterUtils isLinkedWithUser:[PFUser currentUser]]) { // Why do we make this check?
-                NSLog(@"Twitter is not hooked up already.");
                 [PFTwitterUtils linkUser:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
                     [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
                     if (!error) {
@@ -317,7 +320,11 @@
                             // User probably cancelled
                         }
                     } else {
-                        [[EmotishAlertViews twitterConnectionErrorAlertView] show];
+                        if (error.code == kPFErrorAccountAlreadyLinked) {
+                            [[EmotishAlertViews twitterAccountTakenByOtherUserAlertView] show];
+                        } else {
+                            [[EmotishAlertViews twitterConnectionErrorAlertView] show];
+                        }
                     }
                     self.tableView.userInteractionEnabled = YES;
                 }];

@@ -11,9 +11,13 @@
 #import <MobileCoreServices/UTCoreTypes.h>
 #import "UIImage+Crop.h"
 #import "UIColor+Emotish.h"
+#import "NotificationConstants.h"
+#import "EmotishAlertViews.h"
 
 static NSString * SPVC_FEELING_PLACEHOLDER_TEXT = @"something";
 static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
+const CGFloat SPVC_SHARE_CONTAINER_MARGIN_TOP = 0.0;
+const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
 
 @interface SubmitPhotoViewController()
 - (void) updateViewsWithCurrentData;
@@ -24,19 +28,38 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 @property (strong, nonatomic, readonly) UIAlertView * logOutConfirmAlertView;
 @property (strong, nonatomic, readonly) UIAlertView * noFeelingAlertView;
 @property (strong, nonatomic, readonly) UIAlertView * noUserAlertView;
-- (void) presentAccountViewController;
+- (void) showAccountViewController;
+- (void) showAccountViewControllerAndAttemptConnectionVia:(AccountConnectMethod)connectMethod;
+- (IBAction)shareButtonTouchedDown:(UIButton *)shareButton;
+- (IBAction)shareButtonTouched:(UIButton *)shareButton;
+@property (nonatomic) BOOL facebookShareEnabled;
+@property (nonatomic) BOOL twitterShareEnabled;
+
+@property (nonatomic) BOOL waitingForFacebookPost;
+@property (nonatomic) BOOL waitingForTwitterPost;
+- (void) attemptSubmissionCompletion;
+@property (nonatomic, strong) Photo * submittedPhoto;
+@property (nonatomic, strong) UIImage * submittedImage;
+
 @end
 
 @implementation SubmitPhotoViewController
+@synthesize shareContainer = _shareContainer;
+@synthesize shareLabel = _shareLabel;
+@synthesize twitterButton = _twitterButton;
+@synthesize facebookButton = _facebookButton;
 @synthesize scrollView = _scrollView;
 
 @synthesize topBar=_topBar, feelingTextField=_feelingTextField, photoView=_photoView, bottomBar=_bottomBar;
-@synthesize /*feelingImageOriginal=_feelingImageOriginal,*/ feelingImageSquare=_feelingImageSquare, feelingWord=_feelingWord, userName=_userName;
+@synthesize /*feelingImageOriginal=_feelingImageOriginal,*/ feelingImageSquare=_feelingImageSquare, feelingWord=_feelingWord;
 @synthesize coreDataManager=_coreDataManager;
 
 @synthesize shouldPushImagePicker=_shouldPushImagePicker;
 @synthesize imagePickerControllerCamera=_imagePickerControllerCamera, imagePickerControllerLibrary=_imagePickerControllerLibrary, cameraOverlayViewHandler=_cameraOverlayViewHandler;
 @synthesize logOutConfirmAlertView=_logOutConfirmAlertView, noFeelingAlertView=_noFeelingAlertView, noUserAlertView=_noUserAlertView;
+@synthesize facebookShareEnabled=_facebookShareEnabled, twitterShareEnabled=_twitterShareEnabled;
+@synthesize facebookPostPhotoRequest=_facebookPostPhotoRequest;
+@synthesize waitingForFacebookPost=_waitingForFacebookPost, waitingForTwitterPost=_waitingForTwitterPost, submittedPhoto=_submittedPhoto, submittedImage=_submittedImage;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -45,8 +68,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 //        self.feelingImageOriginal = nil;
         self.feelingImageSquare = nil;
         self.feelingWord = SPVC_FEELING_PLACEHOLDER_TEXT;
-        PFUser * currentUser = [PFUser currentUser];
-        self.userName = currentUser == nil ? SPVC_USER_PLACEHOLDER_TEXT : currentUser.username;
     }
     return self;
 }
@@ -83,10 +104,13 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     self.feelingTextField.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photoView.frame));
     self.feelingTextField.textFieldInsets = UIEdgeInsetsMake(0, self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_MARGIN_TOP, 320 - (CGRectGetMaxX(self.photoView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
     
-    self.scrollView.contentSize = self.view.bounds.size;
+    self.shareContainer.frame = CGRectMake(self.feelingTextField.textFieldInsets.left, CGRectGetMaxY(self.photoView.frame) + SPVC_SHARE_CONTAINER_MARGIN_TOP, self.feelingTextField.frame.size.width - (self.feelingTextField.textFieldInsets.left + self.feelingTextField.textFieldInsets.right), SPVC_SHARE_CONTAINER_HEIGHT);
+    self.shareContainer.backgroundColor = [UIColor whiteColor];
+    self.shareLabel.textColor = [UIColor colorWithRed:140.0/255.0 green:142.0/255.0 blue:143.0/255.0 alpha:1.0];
+    [self.facebookButton setImage:[UIImage imageNamed:@"btn_share_facebook_touch.png"] forState:UIControlStateHighlighted|UIControlStateSelected];
+    [self.twitterButton setImage:[UIImage imageNamed:@"btn_share_twitter_touch.png"] forState:UIControlStateHighlighted|UIControlStateSelected];
     
-    self.feelingTextField.text = self.feelingWord;
-    self.photoView.photoCaptionTextField.text = self.userName;
+    self.scrollView.contentSize = self.view.bounds.size;
     
     // Register for keyboard events
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
@@ -100,6 +124,10 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     [self setBottomBar:nil];
     [self setPhotoView:nil];
     [self setScrollView:nil];
+    [self setShareContainer:nil];
+    [self setShareLabel:nil];
+    [self setTwitterButton:nil];
+    [self setFacebookButton:nil];
     [super viewDidUnload];
 }
 
@@ -112,10 +140,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     if (self.feelingImageSquare != nil) {
         [self.topBar showButtonType:BackButton inPosition:LeftNormal animated:NO];
         [self.topBar addTarget:self selector:@selector(backButtonTouched:) forButtonPosition:LeftNormal];
-    } else {
-        // Shouldn't ever get here...
-//        [self.topBar showButtonType:CancelButton inPosition:LeftNormal animated:NO];
-        NSLog(@"LOGIC ERROR in SubmitPhotoViewController - viewWillAppear");
     }
     [self updateViewsWithCurrentData];
 }
@@ -259,7 +283,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 
         self.feelingImageSquare = image;
         self.feelingWord = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
-//        self.userName = self.photoView.photoCaptionTextField.text;
         
         [self updateViewsWithCurrentData];
         [self dismissModalViewControllerAnimated:NO];
@@ -286,7 +309,6 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     
     self.feelingWord = feelingText;
     self.feelingImageSquare = image;
-//    self.userName = self.photoView.photoCaptionTextField.text;
     [self updateViewsWithCurrentData];
     
     [self dismissModalViewControllerAnimated:NO];
@@ -296,9 +318,15 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 }
 
 - (void)updateViewsWithCurrentData {
+    
     self.feelingTextField.text = self.feelingWord && self.feelingWord.length > 0 ? self.feelingWord : SPVC_FEELING_PLACEHOLDER_TEXT;
+    
     self.photoView.photoImageView.image = self.feelingImageSquare;
-    self.photoView.photoCaptionTextField.text = self.userName && self.userName.length > 0 ? self.userName : SPVC_USER_PLACEHOLDER_TEXT;
+    self.photoView.photoCaptionTextField.text = [PFUser currentUser] != nil ? ((PFUser *)[PFUser currentUser]).username : SPVC_USER_PLACEHOLDER_TEXT;
+    
+    self.facebookButton.selected = self.facebookShareEnabled;
+    self.twitterButton.selected = self.twitterShareEnabled;
+    
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
@@ -338,17 +366,83 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
     self.feelingTextField.text = [self.feelingTextField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     self.photoView.photoCaptionTextField.text = [self.photoView.photoCaptionTextField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     self.feelingWord = self.feelingTextField.text;
-    self.userName = self.photoView.photoCaptionTextField.text;
     
 }
 
 - (void)photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
-    PFUser * currentUser = [PFUser currentUser];
-    if (currentUser) {
+    if ([PFUser currentUser]) {
         [self.logOutConfirmAlertView show];
     } else {
-        [self presentAccountViewController];
+        [self showAccountViewController];
     }
+}
+
+- (IBAction)shareButtonTouchedDown:(UIButton *)shareButton {
+    shareButton.selected = YES;
+}
+
+- (IBAction)shareButtonTouched:(UIButton *)shareButton {
+    if ([PFUser currentUser] != nil) {
+        if (shareButton == self.facebookButton) {
+            if ([PFFacebookUtils isLinkedWithUser:[PFUser currentUser]]) {
+                self.facebookShareEnabled = !self.facebookShareEnabled;
+                self.facebookButton.selected = self.facebookShareEnabled;
+            } else {
+                self.view.userInteractionEnabled = NO;
+                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+                [[PFFacebookUtils facebook].sessionDelegate fbDidNotLogin:YES];
+                [PFFacebookUtils linkUser:[PFUser currentUser] permissions:[NSArray arrayWithObjects:@"email", @"offline_access", @"publish_stream", nil] block:^(BOOL succeeded, NSError *error) {
+                    if (!error) {
+                        if (succeeded) {
+                            NSLog(@"Woohoo, user logged in with Facebook!");
+                            self.facebookShareEnabled = YES;
+                        }
+                    } else {
+                        if (error.code == kPFErrorAccountAlreadyLinked) {
+                            [[EmotishAlertViews facebookAccountTakenByOtherUserAlertView] show];
+                        } else {
+                            [[EmotishAlertViews facebookConnectionErrorAlertView] show];
+                        }
+                    }
+                    self.facebookButton.selected = self.facebookShareEnabled;                    
+                    self.view.userInteractionEnabled = YES;
+                    [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
+                }];
+            }
+        } else {
+            if ([PFTwitterUtils isLinkedWithUser:[PFUser currentUser]]) {
+                self.twitterShareEnabled = !self.twitterShareEnabled;
+                self.twitterButton.selected = self.twitterShareEnabled;
+            } else {
+                self.view.userInteractionEnabled = NO;
+                [PFTwitterUtils linkUser:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
+                    if (!error) {
+                        if (succeeded) {
+                            NSLog(@"Woohoo, user logged in with Twitter!");
+                            self.twitterShareEnabled = YES;
+                        }
+                    } else {
+                        if (error.code == kPFErrorAccountAlreadyLinked) {
+                            [[EmotishAlertViews twitterAccountTakenByOtherUserAlertView] show];
+                        } else {
+                            [[EmotishAlertViews twitterConnectionErrorAlertView] show];
+                        }
+                    }
+                    self.twitterButton.selected = self.twitterShareEnabled;                    
+                    self.view.userInteractionEnabled = YES;
+                }];
+            }
+        }
+    } else {
+        [self showAccountViewControllerAndAttemptConnectionVia:(shareButton == self.facebookButton) ? FacebookAccountConnect : TwitterAccountConnect];
+    }
+}
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+    if (![[notification.userInfo objectForKey:NOTIFICATION_USER_INFO_KEY_APPLICATION_OPENED_URL] boolValue]) {
+        self.view.userInteractionEnabled = YES;
+        self.facebookButton.selected = self.facebookShareEnabled;
+    }
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
 }
 
 - (void) backButtonTouched:(UIButton *)button {
@@ -376,17 +470,20 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
         
         NSLog(@"setting up filename");
         NSString * nowString = [NSString stringWithFormat:@"%d", abs([[NSDate date] timeIntervalSince1970])];
-        NSString * filename = [NSString stringWithFormat:@"%@-%@-%@.jpg", [self.feelingWord.lowercaseString  stringByReplacingOccurrencesOfString:@" " withString:@""], self.userName, nowString];
+        NSString * filename = [NSString stringWithFormat:@"%@-%@-%@.jpg", [self.feelingWord.lowercaseString  stringByReplacingOccurrencesOfString:@" " withString:@""], ((PFUser *)[PFUser currentUser]).username, nowString];
         NSLog(@"  filename set to %@", filename);
         
         NSLog(@"setting up imageFile");
-        NSData * imageData = UIImageJPEGRepresentation([self.feelingImageSquare imageScaledDownToEmotishFull], 1.0);
-        PFFile * imageFile = [PFFile fileWithName:filename data:imageData];    
+        self.submittedImage = [self.feelingImageSquare imageScaledDownToEmotishFull];
+        NSData * imageDataForEmotish = UIImageJPEGRepresentation(self.submittedImage, 1.0);
+        NSData * imageDataForFacebook = UIImageJPEGRepresentation(self.submittedImage, 0.8);
+        PFFile * imageFile = [PFFile fileWithName:filename data:imageDataForEmotish];    
         NSLog(@"  imageFile = %@", imageFile);
         
         NSLog(@"saving imageFile");
         BOOL savingSuccess = [imageFile save];
         NSLog(@"  saving imageFile success? %d", savingSuccess);
+        NSLog(@"  imageFile URL ? %@", imageFile.url);
         
         NSLog(@"setting up feeling");
         Feeling * feelingLocal = (Feeling *)[self.coreDataManager getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", self.feelingWord.lowercaseString] usingSortDescriptors:nil];
@@ -421,15 +518,53 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
         savingSuccess = [photoServer save];
         NSLog(@"  saving photoServer success? %d", savingSuccess);
         
-        Photo * photo = [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:currentUser];
+        self.submittedPhoto = [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:currentUser];
         [self.coreDataManager saveCoreData];
         
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        // Facebook?
+        if (self.facebookShareEnabled) {
+            self.waitingForFacebookPost = YES;
+            NSMutableDictionary * parameters = [NSMutableDictionary dictionary];
+            [parameters setObject:[NSString stringWithFormat:@"feeling %@", self.feelingWord.lowercaseString] forKey:@"message"];
+            [parameters setObject:imageDataForFacebook forKey:@"source"];
+            self.facebookPostPhotoRequest = [[PFFacebookUtils facebook] requestWithGraphPath:@"me/photos" andParams:parameters andHttpMethod:@"POST" andDelegate:self];
+        }
         
-        [self.delegate submitPhotoViewController:self didSubmitPhoto:photo withImage:self.feelingImageSquare];
+        // Twitter?
+        if (self.twitterShareEnabled) {
+            self.waitingForTwitterPost = YES;
+            // ...
+            // ...
+            // ...
+            self.waitingForTwitterPost = NO;
+        }
+        
+        [self attemptSubmissionCompletion];
         
     }
     
+}
+
+- (void)request:(PF_FBRequest *)request didLoad:(id)result {
+    NSLog(@"Successfully posted to Facebook");
+    self.waitingForFacebookPost = NO;
+    [self attemptSubmissionCompletion];
+}
+
+- (void)request:(PF_FBRequest *)request didFailWithError:(NSError *)error {
+    NSLog(@"Failed to post to Facebook");
+    self.waitingForFacebookPost = NO;
+    [self attemptSubmissionCompletion];
+}
+
+- (void)attemptSubmissionCompletion {
+    if (!(self.waitingForFacebookPost ||
+          self.waitingForTwitterPost ||
+          self.submittedImage == nil ||
+          self.submittedPhoto == nil)) {
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        [self.delegate submitPhotoViewController:self didSubmitPhoto:self.submittedPhoto withImage:self.submittedImage];
+    }
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification {
@@ -485,30 +620,40 @@ static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (alertView == self.logOutConfirmAlertView) {
         if (buttonIndex != self.logOutConfirmAlertView.cancelButtonIndex) {
-            [self presentAccountViewController];
+            [self showAccountViewController];
         }
     } else if (alertView == self.noFeelingAlertView) {
         [self.feelingTextField becomeFirstResponder];
     } else if (alertView == self.noUserAlertView) {
-        [self presentAccountViewController];
+        [self showAccountViewController];
     }
 }
 
-- (void) presentAccountViewController {
+- (void) showAccountViewController {
+    [self showAccountViewControllerAndAttemptConnectionVia:0];
+}
+
+- (void) showAccountViewControllerAndAttemptConnectionVia:(AccountConnectMethod)connectMethod {
     AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
     accountViewController.delegate = self;
     accountViewController.coreDataManager = self.coreDataManager;
     accountViewController.swipeDownToCancelEnabled = YES;
+    if (connectMethod != 0) {
+        accountViewController.shouldImmediatelyAttemptFacebookConnect = connectMethod == FacebookAccountConnect;
+        accountViewController.shouldImmediatelyAttemptTwitterConnect = connectMethod == TwitterAccountConnect;
+    }
     [self presentModalViewController:accountViewController animated:YES];
 }
 
 - (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
+    if (finishedWithConnection) {
+        self.facebookShareEnabled = NO;
+        self.twitterShareEnabled = NO;
+    }
     PFUser * currentUser = [PFUser currentUser];
     if (currentUser) {
-        self.userName = currentUser.username;
-        self.photoView.photoCaptionTextField.text = self.userName;
+        self.photoView.photoCaptionTextField.text = currentUser.username;
     } else {
-        self.userName = nil;
         self.photoView.photoCaptionTextField.text = SPVC_USER_PLACEHOLDER_TEXT;
     }
     [self dismissModalViewControllerAnimated:YES];

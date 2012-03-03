@@ -310,7 +310,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     self.workingOnAccountFromFacebook = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
     [self disableMainViewsContainerInteractionAndFadeUIExceptForAccountOptionButton:self.facebookButton];
-    [PFFacebookUtils logInWithPermissions:[NSArray arrayWithObjects:@"email", @"offline_access", nil] target:self selector:@selector(logInWithSocialNetworkCallbackUser:error:)];
+    [PFFacebookUtils logInWithPermissions:[NSArray arrayWithObjects:@"email", @"offline_access", @"publish_stream", nil] target:self selector:@selector(logInWithSocialNetworkCallbackUser:error:)];
 }
 
 - (void) connectViaTwitter {
@@ -401,7 +401,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     NSString * firstName = [result objectForKey:@"first_name"];
     NSString * lastName = [result objectForKey:@"last_name"];
     NSString * email = [result objectForKey:@"email"];
-    NSString * usernameSuggestion = [NSString stringWithFormat:@"%@%@", firstName.lowercaseString, lastName.lowercaseString];
+    NSString * usernameSuggestion = [[NSString stringWithFormat:@"%@%@", firstName.lowercaseString, lastName.lowercaseString] stringByReplacingOccurrencesOfString:@" " withString:@""];
     [self showAccountCreationInputViews:YES showPasswordConfirmation:NO activateAppropriateFirstResponder:NO animated:NO];
     [self showContainer:self.inputContainer animated:YES blockToExecuteOnAnimationCompletion:^{
         [self enableMainViewsContainerInteractionAndRestoreUI];
@@ -453,7 +453,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 
 - (void)cancelButtonTouched:(id)sender {
     if (initialPromptScreenVisible) {
-            [self cancelRequested];
+        [self cancelRequested];
     } else {
         if (self.workingOnAccountFromSocialNetwork) {
             [self deleteAndLogOutCurrentUser];
@@ -1126,7 +1126,14 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         [self.fbRequestMe.connection cancel];
         self.fbRequestMe = nil;
     }
-    [self deleteAndLogOutCurrentUser];
+    if (self.twConnectionBasicInfo != nil) {
+        NSLog(@"Cancelling twConnection");
+        [self.twConnectionBasicInfo cancel];
+        self.twConnectionBasicInfo = nil;
+    }
+    if (self.workingOnAccountFromSocialNetwork) {
+        [self deleteAndLogOutCurrentUser];
+    }
     [self.delegate accountViewController:self didFinishWithConnection:NO];
 }
 

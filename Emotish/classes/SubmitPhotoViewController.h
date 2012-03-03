@@ -17,18 +17,21 @@
 
 @protocol SubmitPhotoViewControllerDelegate;
 
-@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, PhotoViewDelegate>
+@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, PhotoViewDelegate, PF_FBRequestDelegate>
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIScrollView * scrollView;
 @property (unsafe_unretained, nonatomic) IBOutlet UITextFieldWithInset * feelingTextField;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView * photoView;
+@property (unsafe_unretained, nonatomic) IBOutlet UIView * shareContainer;
+@property (unsafe_unretained, nonatomic) IBOutlet UILabel * shareLabel;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton * twitterButton;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton * facebookButton;
 
 //@property (strong, nonatomic) UIImage * feelingImageOriginal;
 @property (strong, nonatomic) UIImage * feelingImageSquare;
 @property (strong, nonatomic) NSString * feelingWord;
-@property (strong, nonatomic) NSString * userName;
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 
 @property (nonatomic) BOOL shouldPushImagePicker;
@@ -37,6 +40,9 @@
 @property (strong, nonatomic) CameraOverlayViewHandler * cameraOverlayViewHandler;
 - (void) pushImagePicker;
 @property (unsafe_unretained, nonatomic) id<SubmitPhotoViewControllerDelegate> delegate;
+
+// Social networks
+@property (strong, nonatomic) PF_FBRequest * facebookPostPhotoRequest;
 
 @end
 
