@@ -62,6 +62,18 @@
     }
 }
 
+- (void) deleteAllLikesNotAssociatedWithUserLocal:(User *)user {
+    NSArray * allOtherLikes = [self getAllObjectsForEntityName:@"Like" predicate:[NSPredicate predicateWithFormat:@"user != %@", user] sortDescriptors:nil];
+    for (Like * like in allOtherLikes) {
+        [self.managedObjectContext deleteObject:like];
+    }
+}
+
+- (void) deleteAllLikesNotAssociatedWithUserServer:(PFUser *)userServer {
+    User * userLocal = (User *)[self getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", userServer.objectId] usingSortDescriptors:nil];
+    [self deleteAllLikesNotAssociatedWithUserLocal:userLocal];
+}
+
 //- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors {
 //    NSArray * matchingObjects = [self getAllObjectsForEntityName:entityName predicate:predicate sortDescriptors:sortDescriptors];
 //    NSManagedObject * matchingObject = matchingObjects.count > 0 ? [matchingObjects objectAtIndex:0] : nil;

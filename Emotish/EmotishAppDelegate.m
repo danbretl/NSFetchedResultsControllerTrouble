@@ -43,50 +43,19 @@
     [PFFacebookUtils initializeWithApplicationId:@"247509625333388"];
     [PFTwitterUtils initializeWithConsumerKey:@"mWfvpMuJ480juFn64Ejc1Q" consumerSecret:@"qPdtbIQCcMQdCjte4CVEfzFhjPC7tSEGuOsF8WbYo"];
 
+    self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
+    
     [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge|UIRemoteNotificationTypeAlert|UIRemoteNotificationTypeSound];
     
+    // Cleanup...
+    // Should delete all likes not associated with currentUser (if there is one), and we should unsubscribe from all push notification channels except for the general one, and the one associated with currentUser (if there is one). The latter is handled in didRegisterForRemoteNotification...
+    // Likes
     if ([PFUser currentUser] == nil) {
-        [self.coreDataManager deleteAllLikes]; // Why?
-        [self.coreDataManager saveCoreData];
+        [self.coreDataManager deleteAllLikes];
+    } else {
+        [self.coreDataManager deleteAllLikesNotAssociatedWithUserServer:[PFUser currentUser]];
     }
-
-    // For server database QA...
-//    PFQuery * specialQuery = [PFQuery queryWithClassName:@"Photo"];
-//    PFObject * photo = [specialQuery getObjectWithId:@"t4Y2eS153G"];
-//    NSData * imageData = UIImageJPEGRepresentation([UIImage imageNamed:@"happy-bob-1329529876.jpeg"], 1.0);
-//    PFFile * imageFile = [PFFile fileWithName:@"happy-bob-1329529876.jpeg" data:imageData];
-//    [imageFile save];
-//    [photo setObject:imageFile forKey:@"image"];
-//    [photo save];
-    
-//    BOOL shouldLogOut = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeLogOutComplete2"]);
-//    if (shouldLogOut) {
-//        NSLog(@"Forcibly logging current user out");
-//        PFUser * currentUser = [PFUser currentUser];
-//        if (currentUser != nil) {
-//            [PFPush unsubscribeFromChannelInBackground:currentUser.objectId];
-//        }
-//        [PFUser logOut];
-//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeLogOutComplete2"];
-//    }
-    
-    self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
-//    NSArray * allFeelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
-//    BOOL shouldFlush = !([[NSUserDefaults standardUserDefaults] boolForKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"]);
-//    if (shouldFlush && allFeelings != nil && allFeelings.count > 0) {
-//        NSLog(@"Flushing database");
-//        for (Feeling * feeling in [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
-//            [self.coreDataManager.managedObjectContext deleteObject:feeling];
-//        }
-////        for (User * user in [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil]) {
-////            [self.coreDataManager.managedObjectContext deleteObject:user];
-////        }
-//        for (Photo * photo in [self.coreDataManager getAllObjectsForEntityName:@"Photo" predicate:nil sortDescriptors:nil]) {
-//            [self.coreDataManager.managedObjectContext deleteObject:photo];
-//        }
-//        [self.coreDataManager saveCoreData];
-//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"OneTimeDatabaseFlushComplete-CleaningUpPulledInData3"];
-//    }
+    [self.coreDataManager saveCoreData];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
@@ -152,26 +121,8 @@
     NSLog(@"application:didRegisterForRemoteNotificationsWithDeviceToken:");
     // Tell Parse about the device token.
     [PFPush storeDeviceToken:newDeviceToken];
-    // Subscribe to the global broadcast channel.
-    NSLog(@"Subscribing to channel \"\"");
-    [PFPush subscribeToChannelInBackground:@"" block:^(BOOL succeeded, NSError * error){
-        if (succeeded) {
-            NSLog(  @"Successfully subscribed to channel \"\"");
-        } else {
-            NSLog(  @"Failed to subscribe to channel \"\"");
-        }
-    }];
-    PFUser * currentUser = [PFUser currentUser];
-    if (currentUser != nil) {
-        NSLog(@"Subscribing to channel %@", currentUser.objectId);
-        [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, currentUser.objectId] block:^(BOOL succeeded, NSError * error){
-            if (succeeded) {
-                NSLog(  @"Successfully subscribed to channel %@", currentUser.objectId);
-            } else {
-                NSLog(  @"Failed to subscribe to channel %@", currentUser.objectId);
-            }
-        }];
-    }
+    // Update push notification subscription channels
+    [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:((PFUser *)[PFUser currentUser]).objectId];
     
 }
 

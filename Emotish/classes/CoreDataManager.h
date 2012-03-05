@@ -25,6 +25,8 @@
 - (NSManagedObject *) getFirstObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors shouldMakeObjectIfNoMatch:(BOOL)shouldMakeObjectIfNoMatch newObjectMadeIndicator:(BOOL *)newObjectMadeIndicator;
 - (NSManagedObject *) getFirstObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors;
 - (void) deleteAllLikes;
+- (void) deleteAllLikesNotAssociatedWithUserLocal:(User *)user;
+- (void) deleteAllLikesNotAssociatedWithUserServer:(PFUser *)userServer;
 
 //- (NSArray *) getFeelings;
 //- (Feeling *) getFeelingAlphabeticallyBeforeFeeling:(Feeling *)feeling;

@@ -225,12 +225,9 @@
 - (void) logoutTouched:(SettingsItem *)settingsItem {
     // Log the user out
     NSLog(@"%@", NSStringFromSelector(_cmd));
-    PFUser * currentUser = [PFUser currentUser];
-    if (currentUser != nil) {
-        [PFPush unsubscribeFromChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, currentUser.objectId]];
-    }
     [[UIApplication sharedApplication] cancelAllLocalNotifications];
     [PFUser logOut];
+    [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
     [self updateDataForUserActivity];
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationFade]; // This is not perfect, but it's OK for now.
 }

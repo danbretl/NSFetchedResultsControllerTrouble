@@ -82,7 +82,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 - (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated blockToExecuteOnAnimationCompletion:(void(^)(void))blockToExecute;
 - (void) showAccountCreationInputViews:(BOOL)shouldShowCreationViews showPasswordConfirmation:(BOOL)shouldShowPasswordConfirmation activateAppropriateFirstResponder:(BOOL)shouldActivateFirstResponder animated:(BOOL)animated;
 - (void) setTextFieldToBeVisible:(UITextField *)textField animated:(BOOL)animated;
-- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer includingNotificationSubscription:(BOOL)shouldSubscribeToNotifications pullLikes:(BOOL)shouldPullLikes;
+- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer pullLikes:(BOOL)shouldPullLikes;
 // Methods - Keyboard responses
 - (void) keyboardWillHide:(NSNotification *)notification;
 - (void) keyboardWillShow:(NSNotification *)notification;
@@ -102,7 +102,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 - (void) cancelRequested;
 // Methods - User
 - (void) deleteAndLogOutCurrentUser;
-- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate;
+//- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate;
 
 @end
 
@@ -371,7 +371,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             NSLog(@"User logged in through %@!", socialNetworkName);
             [self.coreDataManager addOrUpdateUserFromServer:user];
             [self.coreDataManager saveCoreData];
-            [self accountConnectLastStepsForUserServer:user includingNotificationSubscription:YES pullLikes:YES];
+            [self accountConnectLastStepsForUserServer:user pullLikes:YES];
             
         }
         
@@ -652,7 +652,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     
 }
 
-- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer includingNotificationSubscription:(BOOL)shouldSubscribeToNotifications pullLikes:(BOOL)shouldPullLikes {
+- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer pullLikes:(BOOL)shouldPullLikes {
     
     if (shouldPullLikes) {
         self.waitingForLikes = YES;
@@ -670,35 +670,19 @@ BOOL const AVC_TWITTER_ENABLED = YES;
                     }
                     [self.coreDataManager saveCoreData];
                 }
-                [self attemptToProceedWithSuccessfulLogin];
+                [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:userServer.objectId];
             } else {
                 [self.connectionErrorGeneralAlertView show];
-                [[UIApplication sharedApplication] cancelAllLocalNotifications];
                 [PFUser logOut];
-            }
-        }];
-    }
-    
-    if (shouldSubscribeToNotifications) {
-        NSLog(@"Subscribing to channel %@", userServer.objectId);
-        self.waitingToSubscribeToNotificationsChannel = YES;
-        [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userServer.objectId] block:^(BOOL succeeded, NSError * error){
-            self.waitingToSubscribeToNotificationsChannel = NO;
-            if (!error) {
-                if (succeeded) {
-                    NSLog(  @"Successfully subscribed to channel %@", userServer.objectId);                        
-                }
-            } else {
-                NSLog(  @"Failed to subscribe to channel %@", userServer.objectId);
-                NSLog(  @"%@ %@ %@ %@", error, error.userInfo, error.description, error.debugDescription);
-                //                    [self.connectionErrorGeneralAlertView show];
-                //                    [PFUser logOut];
+                [[UIApplication sharedApplication] cancelAllLocalNotifications];
+                [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
             }
             [self attemptToProceedWithSuccessfulLogin];
         }];
+    } else {
+        [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:userServer.objectId];
+        [self attemptToProceedWithSuccessfulLogin];
     }
-    
-    [self attemptToProceedWithSuccessfulLogin];
     
 }
 
@@ -708,7 +692,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             NSLog(@"Logged in with user %@", user);
             [self.coreDataManager addOrUpdateUserFromServer:user];
             [self.coreDataManager saveCoreData];
-            [self accountConnectLastStepsForUserServer:user includingNotificationSubscription:YES pullLikes:YES];
+            [self accountConnectLastStepsForUserServer:user pullLikes:YES];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
             [self.passwordIncorrectAlertView show];
@@ -808,7 +792,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         
         void(^successfulUserActionBlock)(PFUser *) = ^(PFUser * user){
             [self.coreDataManager addOrUpdateUserFromServer:user];
-            [self subscribeToPushChannelForUserServerID:user.objectId shouldTellDelegateFinishedWithConnectionAfterwards:YES];
+            [self accountConnectLastStepsForUserServer:user pullLikes:NO];
         };
         
         void(^respondToUserRelatedErrorBlock)(NSError *) = ^(NSError * userRelatedError){
@@ -848,19 +832,19 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     
 }
 
-- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate {
-    NSLog(@"Subscribing to channel %@", userServerID);
-    [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userServerID] block:^(BOOL succeeded, NSError * error){
-        if (succeeded) {
-            NSLog(  @"Successfully subscribed to channel %@", userServerID);
-        } else {
-            NSLog(  @"Failed to subscribe to channel %@", userServerID);
-        }
-        if (shouldTellDelegate) {
-            [self.delegate accountViewController:self didFinishWithConnection:YES];
-        }
-    }];
-}
+//- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate {
+//    NSLog(@"Subscribing to channel %@", userServerID);
+//    [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userServerID] block:^(BOOL succeeded, NSError * error){
+//        if (succeeded) {
+//            NSLog(  @"Successfully subscribed to channel %@", userServerID);
+//        } else {
+//            NSLog(  @"Failed to subscribe to channel %@", userServerID);
+//        }
+//        if (shouldTellDelegate) {
+//            [self.delegate accountViewController:self didFinishWithConnection:YES];
+//        }
+//    }];
+//}
 
 //- (void)webConnector:(WebConnector *)webConnector accountConnectSuccess:(ASIHTTPRequest *)request withEmail:(NSString *)emailString firstName:(NSString *)nameFirst lastName:(NSString *)nameLast apiKey:(NSString *)apiKey {
 //        
@@ -1159,6 +1143,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         [[PFUser currentUser] deleteInBackground]; // This may or may not work.
         NSLog(@"Logging out [PFUser currentUser]");
         [PFUser logOut];
+        [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
     }
 }
 
