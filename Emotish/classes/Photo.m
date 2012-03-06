@@ -23,6 +23,7 @@
 @dynamic likesCount;
 @dynamic likes;
 @dynamic hidden;
+@dynamic thumbURL;
 
 - (BOOL)likeExistsForUserServerID:(NSString *)userServerID {
     BOOL likeExists = NO;
@@ -31,6 +32,10 @@
         likeExists = likesMatchingUser != nil && likesMatchingUser.count > 0;
     }
     return likeExists;
+}
+
+- (NSString *)smallestImageAvailableURL {
+    return self.thumbURL != nil ? self.thumbURL : self.imageURL;
 }
 
 @end

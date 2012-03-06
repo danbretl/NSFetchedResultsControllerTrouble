@@ -105,6 +105,8 @@
     photo.serverID = photoServer.objectId;
     PFFile * imageFile = [photoServer objectForKey:@"image"];
     photo.imageURL = imageFile.url;
+    PFFile * thumbFile = [photoServer objectForKey:@"thumb"];
+    photo.thumbURL = thumbFile.url;
     photo.datetime = photoServer.createdAt;
     photo.likesCount = [photoServer objectForKey:@"likesCount"];
     photo.hidden = [NSNumber numberWithBool:[[photoServer objectForKey:@"deleted"] boolValue] || [[photoServer objectForKey:@"flagged"] boolValue]];

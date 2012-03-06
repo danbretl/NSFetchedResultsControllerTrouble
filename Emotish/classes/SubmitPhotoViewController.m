@@ -243,7 +243,7 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
         }
         NSLog(@"  image size (cropped)  = %@", NSStringFromCGSize(image.size));
         
-        self.feelingImageSquare = image;
+        self.feelingImageSquare = image.imageScaledDownToEmotishFull;
         [self.cameraOverlayViewHandler showImageReview:self.feelingImageSquare];
         
     } else {
@@ -281,7 +281,7 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
 //        image = [image imageWithCrop:imageCropRect];
 //        NSLog(@"  image.size (cropped)     = %@", NSStringFromCGSize(image.size));
 
-        self.feelingImageSquare = image;
+        self.feelingImageSquare = image.imageScaledDownToEmotishFull;
         self.feelingWord = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.text;
         
         [self updateViewsWithCurrentData];
@@ -308,7 +308,7 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     NSLog(@"captured camera media, should move on");
     
     self.feelingWord = feelingText;
-    self.feelingImageSquare = image;
+    self.feelingImageSquare = image.imageScaledDownToEmotishFull;
     [self updateViewsWithCurrentData];
     
     [self dismissModalViewControllerAnimated:NO];
@@ -471,19 +471,31 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
         NSLog(@"setting up filename");
         NSString * nowString = [NSString stringWithFormat:@"%d", abs([[NSDate date] timeIntervalSince1970])];
         NSString * filename = [NSString stringWithFormat:@"%@-%@-%@.jpg", [self.feelingWord.lowercaseString  stringByReplacingOccurrencesOfString:@" " withString:@""], ((PFUser *)[PFUser currentUser]).username, nowString];
+        NSString * filenameThumb = [filename stringByReplacingOccurrencesOfString:@".jpg" withString:@"-thumb.jpg"];
         NSLog(@"  filename set to %@", filename);
+        NSLog(@"  filename thumb set to %@", filename);
         
         NSLog(@"setting up imageFile");
-        self.submittedImage = [self.feelingImageSquare imageScaledDownToEmotishFull];
-        NSData * imageDataForEmotish = UIImageJPEGRepresentation(self.submittedImage, 1.0);
-        NSData * imageDataForFacebook = UIImageJPEGRepresentation(self.submittedImage, 0.8);
-        PFFile * imageFile = [PFFile fileWithName:filename data:imageDataForEmotish];    
+        self.submittedImage = self.feelingImageSquare;
+        NSData * imageData = UIImageJPEGRepresentation(self.submittedImage, 0.8);
+        PFFile * imageFile = [PFFile fileWithName:filename data:imageData];    
         NSLog(@"  imageFile = %@", imageFile);
+        
+        NSLog(@"setting up imageFileThumb");
+        UIImage * submittedImageThumb = self.submittedImage.imageScaledDownToEmotishThumb;
+        NSData * imageThumbData = UIImageJPEGRepresentation(submittedImageThumb, 0.6);
+        PFFile * imageThumbFile = [PFFile fileWithName:filenameThumb data:imageThumbData];
+        NSLog(@"  imageThumbFile = %@", imageThumbFile);
         
         NSLog(@"saving imageFile");
         BOOL savingSuccess = [imageFile save];
         NSLog(@"  saving imageFile success? %d", savingSuccess);
         NSLog(@"  imageFile URL ? %@", imageFile.url);
+        
+        NSLog(@"saving imageFile");
+        savingSuccess = [imageThumbFile save];
+        NSLog(@"  saving imageThumbFile success? %d", savingSuccess);
+        NSLog(@"  imageFile URL ? %@", imageThumbFile.url);
         
         NSLog(@"setting up feeling");
         Feeling * feelingLocal = (Feeling *)[self.coreDataManager getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", self.feelingWord.lowercaseString] usingSortDescriptors:nil];
@@ -512,6 +524,7 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
         [photoServer setObject:feelingServer forKey:@"feeling"];
         [photoServer setObject:currentUser forKey:@"user"];
         [photoServer setObject:imageFile forKey:@"image"];
+        [photoServer setObject:imageThumbFile forKey:@"thumb"];
         NSLog(@"  photoServer = %@", photoServer);
         
         NSLog(@"saving photoServer");
@@ -526,7 +539,7 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
             self.waitingForFacebookPost = YES;
             NSMutableDictionary * parameters = [NSMutableDictionary dictionary];
             [parameters setObject:[NSString stringWithFormat:@"feeling %@", self.feelingWord.lowercaseString] forKey:@"message"];
-            [parameters setObject:imageDataForFacebook forKey:@"source"];
+            [parameters setObject:imageData forKey:@"source"];
             self.facebookPostPhotoRequest = [[PFFacebookUtils facebook] requestWithGraphPath:@"me/photos" andParams:parameters andHttpMethod:@"POST" andDelegate:self];
         }
         

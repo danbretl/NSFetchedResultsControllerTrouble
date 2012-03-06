@@ -377,6 +377,7 @@
 		3241E5EC14D3340B00D46F63 /* ViewConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ViewConstants.h; path = classes/ViewConstants.h; sourceTree = "<group>"; };
 		3244017E14D9A47D0056DC81 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		3244018014D9A4810056DC81 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		3246C2001505659B0077CAA9 /* Emotish 007.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 007.xcdatamodel"; sourceTree = "<group>"; };
 		3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 005.xcdatamodel"; sourceTree = "<group>"; };
 		3248245114FC1B6500BF5E65 /* icon_like_touch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_like_touch.png; sourceTree = "<group>"; };
 		3248245214FC1B6500BF5E65 /* icon_like_touch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_like_touch@2x.png"; sourceTree = "<group>"; };
@@ -1489,6 +1490,7 @@
 		32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				3246C2001505659B0077CAA9 /* Emotish 007.xcdatamodel */,
 				32F7221514FD6D930092278F /* Emotish 006.xcdatamodel */,
 				3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */,
 				322177A914EC601A00D48F99 /* Emotish 003.xcdatamodel */,
@@ -1497,7 +1499,7 @@
 				323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */,
 				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
 			);
-			currentVersion = 32F7221514FD6D930092278F /* Emotish 006.xcdatamodel */;
+			currentVersion = 3246C2001505659B0077CAA9 /* Emotish 007.xcdatamodel */;
 			path = Emotish.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

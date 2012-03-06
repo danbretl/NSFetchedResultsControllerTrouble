@@ -20,6 +20,7 @@
         <attribute name="likesCount" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="serverID" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="shouldHighlight" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="thumbURL" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="feeling" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Feeling" inverseName="photos" inverseEntity="Feeling" syncable="YES"/>
         <relationship name="likes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Like" inverseName="photo" inverseEntity="Like" syncable="YES"/>
         <relationship name="user" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="photos" inverseEntity="User" syncable="YES"/>
@@ -33,7 +34,7 @@
     <elements>
         <element name="Feeling" positionX="-234" positionY="108" width="108" height="90"/>
         <element name="Like" positionX="151" positionY="6" width="128" height="120"/>
-        <element name="Photo" positionX="-29" positionY="93" width="128" height="195"/>
+        <element name="Photo" positionX="-29" positionY="93" width="128" height="210"/>
         <element name="User" positionX="340" positionY="99" width="128" height="105"/>
     </elements>
 </model>

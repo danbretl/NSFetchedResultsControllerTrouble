@@ -21,8 +21,9 @@
 @property (nonatomic, retain) NSString * imageURL;
 @property (nonatomic, retain) NSNumber * shouldHighlight;
 @property (nonatomic, retain) NSNumber * likesCount;
-@property (nonatomic, retain) NSSet *likes;
+@property (nonatomic, retain) NSSet * likes;
 @property (nonatomic, retain) NSNumber * hidden;
+@property (nonatomic, retain) NSString * thumbURL;
 
 @end
 
@@ -35,4 +36,5 @@
 
 @interface Photo (Convenience)
 - (BOOL) likeExistsForUserServerID:(NSString *)userServerID;
+- (NSString *) smallestImageAvailableURL;
 @end

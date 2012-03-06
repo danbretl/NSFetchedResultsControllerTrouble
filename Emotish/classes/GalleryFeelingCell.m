@@ -218,7 +218,7 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
     
     // Configure the cell
     Photo * photo = [self.photos objectAtIndex:indexPath.row];
-    [cell.button setImageWithURL:[NSURL URLWithString:photo.imageURL] placeholderImage:[UIImage imageNamed:@"photo_image_placeholder.png"]];
+    [cell.button setImageWithURL:[NSURL URLWithString:photo.smallestImageAvailableURL] placeholderImage:[UIImage imageNamed:@"photo_image_placeholder.png"]];
     cell.feelingIndex = self.feelingIndex;
     cell.imageIndex = indexPath.row;
     cell.feelingCell = self;
