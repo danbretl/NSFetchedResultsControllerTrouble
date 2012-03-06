@@ -212,7 +212,7 @@
     [self.navigationController pushViewController:accountViewController animated:YES];
 }
 
-- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
+- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection viaConnectMethod:(AccountConnectMethod)connectMethod {
     [self updateDataForUserActivity];
     [self.tableView reloadData]; // Heavyweight, but that's ok.
     [self.navigationController popViewControllerAnimated:YES];

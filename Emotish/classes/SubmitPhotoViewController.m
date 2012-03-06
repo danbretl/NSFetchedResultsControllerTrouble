@@ -658,10 +658,10 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     [self presentModalViewController:accountViewController animated:YES];
 }
 
-- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection {
+- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection viaConnectMethod:(AccountConnectMethod)connectMethod {
     if (finishedWithConnection) {
-        self.facebookShareEnabled = NO;
-        self.twitterShareEnabled = NO;
+        self.facebookShareEnabled = connectMethod == FacebookAccountConnect;
+        self.twitterShareEnabled = connectMethod == TwitterAccountConnect;
     }
     PFUser * currentUser = [PFUser currentUser];
     if (currentUser) {

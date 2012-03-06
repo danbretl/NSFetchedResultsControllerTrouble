@@ -710,7 +710,13 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 
 - (void) attemptToProceedWithSuccessfulLogin {
     if (!(self.waitingForLikes || self.waitingToSubscribeToNotificationsChannel)) {
-        [self.delegate accountViewController:self didFinishWithConnection:YES];
+        AccountConnectMethod method = UsernameEmailAccountConnect;
+        if (self.workingOnAccountFromFacebook) {
+            method = FacebookAccountConnect;
+        } else if (self.workingOnAccountFromTwitter) {
+            method = TwitterAccountConnect;
+        }
+        [self.delegate accountViewController:self didFinishWithConnection:YES viaConnectMethod:method];
     } else {
         NSLog(@"waiting to proceed with successful login, self.waitingForLikes=%d, self.waitingToSubscribeToNotificationsChannel=%d", self.waitingForLikes, self.waitingToSubscribeToNotificationsChannel);
     }
@@ -811,8 +817,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         if (self.workingOnAccountFromSocialNetwork) {
             [userToWorkWith saveInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
                 if (!error) {
-                    self.workingOnAccountFromFacebook = NO;
-                    self.workingOnAccountFromTwitter = NO;
                     successfulUserActionBlock([PFUser currentUser]);
                 } else {
                     respondToUserRelatedErrorBlock(error);
@@ -831,68 +835,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     }
     
 }
-
-//- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate {
-//    NSLog(@"Subscribing to channel %@", userServerID);
-//    [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, userServerID] block:^(BOOL succeeded, NSError * error){
-//        if (succeeded) {
-//            NSLog(  @"Successfully subscribed to channel %@", userServerID);
-//        } else {
-//            NSLog(  @"Failed to subscribe to channel %@", userServerID);
-//        }
-//        if (shouldTellDelegate) {
-//            [self.delegate accountViewController:self didFinishWithConnection:YES];
-//        }
-//    }];
-//}
-
-//- (void)webConnector:(WebConnector *)webConnector accountConnectSuccess:(ASIHTTPRequest *)request withEmail:(NSString *)emailString firstName:(NSString *)nameFirst lastName:(NSString *)nameLast apiKey:(NSString *)apiKey {
-//        
-//    NSLog(@"AccountPromptViewController accountConnectSuccess email=%@ first=%@ last=%@ apiKey=%@", emailString, nameFirst, nameLast, apiKey);
-//    
-//    [DefaultsModel saveAPIKey:apiKey];
-//    NSString * identifierString = (nameFirst && nameFirst.length > 0) || (nameLast && nameLast.length > 0) ? [NSString stringWithFormat:@"%@%@%@", nameFirst, nameFirst != nil ? @" " : @"", nameLast] : emailString;
-//    [DefaultsModel saveKwiqetUserIdentifierToUserDefaults:identifierString];
-//
-//    NSDictionary * infoDictionary = [NSDictionary dictionaryWithObjectsAndKeys:@"login", @"action", nil];
-//    [[NSNotificationCenter defaultCenter] postNotificationName:@"loginActivity" object:self userInfo:infoDictionary];
-//    
-//    [self.delegate accountPromptViewController:self didFinishWithConnection:YES];
-//    
-//}
-//
-//- (void) webConnector:(WebConnector *)webConnector accountConnectFailure:(ASIHTTPRequest *)request failureCode:(WebConnectorFailure)failureCode withEmail:(NSString *)emailString {
-//    
-//    if (failureCode == AccountConnectPasswordIncorrect) {
-//        [self.passwordIncorrectAlertView show];
-//    } else if (failureCode == AccountConnectAccountDoesNotExist) {
-//        [self showAccountCreationInputViews:YES showPasswordConfirmation:YES activateAppropriateFirstResponder:YES animated:YES];
-//    } else {
-//        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Connection Error" message:@"Sorry - there was a problem connecting with Kwiqet. Please check your connection and try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//        [alert show];
-//    }
-//    
-//}
-//
-//- (void)webConnector:(WebConnector *)webConnector accountCreateFailure:(ASIHTTPRequest *)request failureCode:(WebConnectorFailure)failureCode withEmail:(NSString *)emailString {
-//        
-//    if (failureCode == AccountCreateEmailAssociatedWithAnotherAccount) {
-//        
-//        [self.anotherAccountWithUsernameExistsAlertView show];
-//        
-//    } else if (failureCode == AccountCreateEmailNotValid) {
-//        
-//        [self.emailInvalidAlertView show];
-//        [self.emailTextField becomeFirstResponder];
-//        
-//    } else {
-//        
-//        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Connection Error" message:@"Sorry - there was a problem connecting with Kwiqet. Please check your connection and try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//        [alert show];
-//        
-//    }
-//    
-//}
 
 - (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated blockToExecuteOnAnimationCompletion:(void(^)(void))blockToExecute {
     
@@ -1134,7 +1076,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     if (self.workingOnAccountFromSocialNetwork) {
         [self deleteAndLogOutCurrentUser];
     }
-    [self.delegate accountViewController:self didFinishWithConnection:NO];
+    [self.delegate accountViewController:self didFinishWithConnection:NO viaConnectMethod:FailureToConnect];
 }
 
 - (void) deleteAndLogOutCurrentUser {

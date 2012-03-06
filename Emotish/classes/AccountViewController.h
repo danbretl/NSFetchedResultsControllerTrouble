@@ -11,6 +11,7 @@
 #import "CoreDataManager.h"
 
 typedef enum {
+    FailureToConnect = 0,
     UsernameEmailAccountConnect = 1,
     FacebookAccountConnect = 2,
     TwitterAccountConnect = 3,
@@ -40,6 +41,6 @@ typedef enum {
 
 @protocol AccountViewControllerDelegate <NSObject>
 
-- (void) accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection;
+- (void) accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection viaConnectMethod:(AccountConnectMethod)connectMethod;
 
 @end
