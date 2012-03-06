@@ -15,6 +15,7 @@
 #import <Parse/Parse.h>
 #import "Like.h"
 #import "PushConstants.h"
+#import "SDImageCache.h"
 
 #ifdef DEBUG
 #define unlimited_likes_allowed YES
@@ -498,7 +499,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     if (photo == nil) {
         photoView.photoImageView.image = nil;
     } else {
-        [photoView.photoImageView setImageWithURL:[NSURL URLWithString:photo.imageURL] placeholderImage:[UIImage imageNamed:@"photo_image_placeholder.png"]];
+        UIImage * cachedThumb = [[SDImageCache sharedImageCache] imageFromKey:photo.thumbURL];
+        NSLog(@"%@", cachedThumb);
+        [photoView.photoImageView setImageWithURL:[NSURL URLWithString:photo.imageURL] placeholderImage:cachedThumb != nil ? cachedThumb : [UIImage imageNamed:@"photo_image_placeholder.png"]];
     }
     PFUser * currentUser = [PFUser currentUser];
     [photoView updateLikesCount:photo.likesCount likedPersonally:[photo likeExistsForUserServerID:currentUser.objectId]];
