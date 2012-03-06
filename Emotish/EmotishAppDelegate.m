@@ -10,6 +10,7 @@
 #import <Parse/Parse.h>
 #import "PushConstants.h"
 #import "NotificationConstants.h"
+#import "SDImageCache.h"
 
 #ifdef DEBUG
 #define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
@@ -63,6 +64,14 @@
     
     self.galleryViewController = [[GalleryViewController alloc] initWithNibName:@"GalleryViewController" bundle:[NSBundle mainBundle]];
     self.galleryViewController.coreDataManager = self.coreDataManager;
+    
+    BOOL oneTimeImagesRefreshComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeImagesRefreshComplete"];
+    if (!oneTimeImagesRefreshComplete) {
+        [[SDImageCache sharedImageCache] clearMemory];
+        [[SDImageCache sharedImageCache] clearDisk];
+        [self.galleryViewController getFeelingsFromServer];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeImagesRefreshComplete"];
+    }
     
     self.rootNavController = [[UINavigationController alloc] initWithRootViewController:self.galleryViewController];
     self.rootNavController.navigationBarHidden = YES;
