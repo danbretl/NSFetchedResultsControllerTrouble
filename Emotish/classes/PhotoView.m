@@ -168,7 +168,8 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
         // Below is TEMPORARY, while features are being developed...
         // Below is TEMPORARY, while features are being developed...
         BOOL enabled = YES;
-        if (actionButtonInfo.code != LikePhoto) {
+        if (actionButtonInfo.code != LikePhoto &&
+            actionButtonInfo.code != Delete) {
             enabled = NO;
         }
         actionButton.alpha = enabled ? 1.0 : 0.5;
@@ -203,6 +204,7 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
         self.photoCaptionButton.backgroundColor = [UIColor redColor];
     } else {
         self.backgroundColor = [UIColor clearColor];
+        self.photoImageView.backgroundColor = [UIColor clearColor];
     }
     
 }
@@ -274,6 +276,24 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
         [self showLikes:shouldShowLikes animated:NO];
     }
     
+}
+
+- (void) setActionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode enabled:(BOOL)enabled faded:(BOOL)faded {
+    UIButton * actionButton = [self actionButtonWithCode:actionButtonCode];
+    actionButton.userInteractionEnabled = enabled;
+    actionButton.alpha = faded ? 0.5 : 1.0;
+}
+
+- (UIButton *)actionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode {
+    UIButton * actionButtonMatched = nil;
+    for (UIButton * actionButton in self.actionButtons) {
+        if (![actionButton isEqual:[NSNull null]] && 
+            actionButton.tag == actionButtonCode) {
+            actionButtonMatched = actionButton;
+            break;
+        }
+    }
+    return actionButtonMatched;
 }
 
 - (void)showActionButtons:(BOOL)shouldShowActionButtons animated:(BOOL)animated {

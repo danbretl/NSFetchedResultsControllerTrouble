@@ -10,6 +10,8 @@
 
 @interface EmotishAlertViews : NSObject
 
++ (UIAlertView *) generalConnectionErrorAlertView;
+
 + (UIAlertView *) facebookConnectionErrorAlertView;
 + (UIAlertView *) twitterConnectionErrorAlertView;
 + (UIAlertView *) socialNetworkConnectionErrorAlertView:(NSString *)socialNetworkName;

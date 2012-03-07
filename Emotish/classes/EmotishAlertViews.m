@@ -10,6 +10,10 @@
 
 @implementation EmotishAlertViews
 
++ (UIAlertView *)generalConnectionErrorAlertView {
+    return [[UIAlertView alloc] initWithTitle:@"Connection Error" message:@"Sorry - there was a problem connecting with Emotish. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
 + (UIAlertView *)facebookConnectionErrorAlertView {
     return [self socialNetworkConnectionErrorAlertView:@"Facebook"];
 
