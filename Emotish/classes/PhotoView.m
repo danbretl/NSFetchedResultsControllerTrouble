@@ -339,7 +339,10 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
     [self.delegate photoView:self actionButtonTouched:actionButton withActionButtonCode:actionButtonCode];
 }
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {    
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if (gestureRecognizer == self.tapSingleGestureRecognizer) {
+        NSLog(@"gestureRecognizerShouldReceiveTouch - gestureRecognizer (%@) for %d touches", [[gestureRecognizer class] description], gestureRecognizer.numberOfTouches);
+    }
     BOOL shouldReceiveTouch = YES;
 //    if ([touch.view isDescendantOfView:self.actionButtonsContainer]) {
 //        shouldReceiveTouch = NO;
@@ -351,6 +354,13 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
         shouldReceiveTouch = NO;
     }
     return shouldReceiveTouch;
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer == self.tapSingleGestureRecognizer) {
+        [self.delegate photoView:self tapSingleGestureDidBegin:(UITapGestureRecognizer *)gestureRecognizer];
+    }
+    return YES;
 }
 
 - (void)tapSingle:(UITapGestureRecognizer *)gestureRecognizer {

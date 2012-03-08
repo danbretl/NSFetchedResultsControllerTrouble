@@ -46,6 +46,7 @@ typedef enum {
 @optional
 - (void) photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton;
 - (void) photoView:(PhotoView *)photoView actionButtonTouched:(UIButton *)actionButton withActionButtonCode:(PhotoViewActionButtonCode)actionButtonCode;
+- (void) photoView:(PhotoView *)photoView tapSingleGestureDidBegin:(UITapGestureRecognizer *)gestureRecognizer;
 - (void) photoView:(PhotoView *)photoView tapSingleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer;
 - (void) photoView:(PhotoView *)photoView tapDoubleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer;
 - (void) photoView:(PhotoView *)photoView tapHoldGestureRecognized:(UILongPressGestureRecognizer *)gestureRecognizer;

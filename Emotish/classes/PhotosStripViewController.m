@@ -86,6 +86,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @property (nonatomic) BOOL refreshAllInProgress;
 @property (nonatomic) int refreshAllNetChangeBeforePreviousPhotoCenterIndex;
 @property (nonatomic) BOOL controllerChangingContent;
+@property BOOL blockViewControllerFinishing;
 @end
 
 @implementation PhotosStripViewController
@@ -117,6 +118,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize photoCenterIndex=_photoCenterIndex;
 @synthesize photoViewsPhotoServerIDs=_photoViewsPhotoServerIDs, photoWebImageManagersForPhotoServerIDs=_photoWebImageManagersForPhotoServerIDs;
 @synthesize refreshAllRequested=_refreshAllRequested, refreshAllInProgress=_refreshAllInProgress, refreshAllNetChangeBeforePreviousPhotoCenterIndex=_refreshAllNetChangeBeforePreviousPhotoCenterIndex, controllerChangingContent=_controllerChangingContent;
+@synthesize blockViewControllerFinishing=_blockViewControllerFinishing;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -500,9 +502,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     for (int n=0; n<self.photoViews.count; n++) {
         int bump = ((n + 1) / 2) * bumpDirection;
         int i = self.photoViewCenterIndex + bump;
-        NSLog(@"n    = %d", n);
-        NSLog(@"bump = %d", bump);
-        NSLog(@"i    = %d", i);
+//        NSLog(@"n    = %d", n);
+//        NSLog(@"bump = %d", bump);
+//        NSLog(@"i    = %d", i);
         PhotoView * photoView = [self.photoViews objectAtIndex:i];
         [self updatePhotoView:photoView atPhotoViewIndex:i withPhotoAtIndex:photoCenterIndex - self.photoViewCenterIndex + i];
         bumpDirection *= -1;
@@ -808,28 +810,6 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.controllerChangingContent = NO;
 }
 
-- (void)photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
-    if (photoView == self.photoViewCenter) {
-        [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
-    }
-}
-
-- (void)photoView:(PhotoView *)photoView tapSingleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
-    if (photoView == self.photoViewCenter) {
-        if (self.photoViewCenter.actionButtonsVisible) {
-            [self.photoViewCenter showActionButtons:NO animated:YES];
-        } else {
-            [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
-        }
-    }
-}
-
-- (void)photoView:(PhotoView *)photoView tapDoubleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
-    if (photoView == self.photoViewCenter) {
-        [self userCurrent:[PFUser currentUser] likedPhotoAttempt:self.photoCenter];
-    }
-}
-
 - (void) userCurrent:(PFUser *)userCurrent likedPhotoAttempt:(Photo *)photoLiked {
     if (userCurrent == nil) {
         [self.signInAlertView show];
@@ -917,6 +897,36 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     
 }
 
+- (void)photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
+    if (photoView == self.photoViewCenter) {
+        [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
+    }
+}
+
+- (void)photoView:(PhotoView *)photoView tapSingleGestureDidBegin:(UITapGestureRecognizer *)gestureRecognizer {
+    if (photoView == self.photoViewCenter && !self.photoViewCenter.actionButtonsVisible) {
+        self.blockViewControllerFinishing = YES;
+    }
+}
+
+- (void)photoView:(PhotoView *)photoView tapSingleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
+    if (photoView == self.photoViewCenter) {
+        if (self.photoViewCenter.actionButtonsVisible) {
+            [self.photoViewCenter showActionButtons:NO animated:YES];
+        } else {
+            [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
+        }
+        self.blockViewControllerFinishing = NO;
+    }
+}
+
+- (void)photoView:(PhotoView *)photoView tapDoubleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
+    if (photoView == self.photoViewCenter) {
+        [self userCurrent:[PFUser currentUser] likedPhotoAttempt:self.photoCenter];
+        self.blockViewControllerFinishing = NO;
+    }
+}
+
 - (void)photoView:(PhotoView *)photoView tapHoldGestureRecognized:(UILongPressGestureRecognizer *)gestureRecognizer {
     if (photoView == self.photoViewCenter) {
         if ([PFUser currentUser] == nil) {
@@ -924,6 +934,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         } else {
             [self.photoViewCenter showActionButtons:!self.photoViewCenter.actionButtonsVisible animated:YES];
         }
+        self.blockViewControllerFinishing = NO;
     }    
 }
 
@@ -978,44 +989,50 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)photoViewSelected:(PhotoView *)photoView withPhoto:(Photo *)photo {
-    
-    PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-    oppositeFocusStripViewController.delegate = self.delegate;
-    oppositeFocusStripViewController.modalTransitionStyle = self.modalTransitionStyle;
-    oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
-    oppositeFocusStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
-    if (self.focus == FeelingFocus) {
-        [oppositeFocusStripViewController setFocusToUser:photo.user photo:photo];
-    } else {
-        [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
-    }
-    [oppositeFocusStripViewController setShouldAnimateIn:YES fromSource:PhotosStripOpposite withPersistentImage:photoView.photoImageView.image];
-//    oppositeFocusStripViewController.galleryScreenshot = self.galleryScreenshot;
-    
-    self.view.userInteractionEnabled = NO;
-    
-    // Animate the transition
-    //    CGRect headerFrame = self.headerButton.frame;
-    //    CGRect captionFrame = photoView.photoCaptionTextField.frame;
-    [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
-        [photoView showActionButtons:NO animated:NO];
-        CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
-        CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
-        //        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
-        self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
-        photoView.photoCaptionTextField.frame = CGRectOffset(photoView.photoCaptionTextField.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
-        for (PhotoView * photoViewToAdjust in self.photoViews) {
-            if (photoViewToAdjust != photoView) {
-                photoViewToAdjust.alpha = 0.0;
-            }
+    // There is a weird crash caused by your selecting a photo view and then immediately tapping the header label to return to the gallery. The header label tap is recognized before the photo view selection, yet both try to execute. This is due to the photo view selection coming from a single tap gesture recognizer, which requires (and waits for) a doulbe tap gesture recognizer to fail.
+    // For now, I'm going to mask this bug by just checking if the view controller is already in the process of finishing, and if so, ignore the photo view selection. // That didn't work. I've added a delegate callback method to PhotoView that should help take care of the problem.
+    if (!self.finishing) {
+        
+        NSLog(@"photoViewSelected:withPhoto:");
+        NSLog(@"self.finishing = %d", self.finishing);
+        
+        self.view.userInteractionEnabled = NO;
+        
+        PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+        oppositeFocusStripViewController.delegate = self.delegate;
+        oppositeFocusStripViewController.modalTransitionStyle = self.modalTransitionStyle;
+        oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
+        oppositeFocusStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
+        if (self.focus == FeelingFocus) {
+            [oppositeFocusStripViewController setFocusToUser:photo.user photo:photo];
+        } else {
+            [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
         }
-        self.addPhotoLabel.alpha = 0.0;
-        [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
-    } completion:^(BOOL finished){
-        // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
-        [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
-    }];
-    
+        [oppositeFocusStripViewController setShouldAnimateIn:YES fromSource:PhotosStripOpposite withPersistentImage:photoView.photoImageView.image];
+        //    oppositeFocusStripViewController.galleryScreenshot = self.galleryScreenshot;
+        
+        // Animate the transition
+        //    CGRect headerFrame = self.headerButton.frame;
+        //    CGRect captionFrame = photoView.photoCaptionTextField.frame;
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
+            [photoView showActionButtons:NO animated:NO];
+            CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
+            CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
+            //        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
+            self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
+            photoView.photoCaptionTextField.frame = CGRectOffset(photoView.photoCaptionTextField.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
+            for (PhotoView * photoViewToAdjust in self.photoViews) {
+                if (photoViewToAdjust != photoView) {
+                    photoViewToAdjust.alpha = 0.0;
+                }
+            }
+            self.addPhotoLabel.alpha = 0.0;
+            [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
+        } completion:^(BOOL finished){
+            // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
+            [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
+        }];
+    }
 }
 
 - (void)setShouldAnimateIn:(BOOL)shouldAnimateIn fromSource:(PhotosStripAnimationInSource)source withPersistentImage:(UIImage *)image {
@@ -1025,6 +1042,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)headerButtonTouched:(UIButton *)button {
+    NSLog(@"headerButtonTouched");
     [self viewControllerFinishedWithNoMorePhotos:NO];
 }
 
@@ -1036,7 +1054,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)viewControllerFinishedWithNoMorePhotos:(BOOL)noMorePhotos {
     
-    if (!self.finishing) {
+    if (!self.finishing && !self.blockViewControllerFinishing) {
+        
+        NSLog(@"viewControllerFinishedWithNoMorePhotos:%d", noMorePhotos);
         
         self.finishing = YES;
         [self.photosScrollView stopScroll];
