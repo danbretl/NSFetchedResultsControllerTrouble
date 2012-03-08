@@ -35,7 +35,7 @@ typedef enum {
 @property (nonatomic) BOOL actionButtonsEnabled;
 @property (nonatomic, readonly) BOOL actionButtonsVisible;
 - (void) showActionButtons:(BOOL)shouldShowActionButtons animated:(BOOL)animated;
-- (void) setActionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode enabled:(BOOL)enabled faded:(BOOL)faded;
+- (void) setActionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode enabled:(BOOL)enabled visible:(BOOL)visible;
 - (UIButton *)actionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode;
 
 @property (unsafe_unretained, nonatomic) id<PhotoViewDelegate> delegate;

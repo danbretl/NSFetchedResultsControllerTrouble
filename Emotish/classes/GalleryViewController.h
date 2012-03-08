@@ -31,6 +31,7 @@
 @property (nonatomic) NSInteger activeFeelingCellIndexRow;
 @property (nonatomic) CGPoint activeFeelingCellContentOffsetPreserved;
 @property (strong, nonatomic) FlagStretchView * flagStretchView;
+@property (strong, nonatomic) FlagStretchView * flagStretchViewTransitions;
 @property (strong, nonatomic) UIImageView * floatingImageView;
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;

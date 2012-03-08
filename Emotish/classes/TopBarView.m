@@ -8,6 +8,7 @@
 
 #import "TopBarView.h"
 #import <QuartzCore/QuartzCore.h>
+#import "ViewConstants.h"
 
 @interface TBV_DividerLayer : CALayer
 @end
@@ -88,7 +89,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     self.buttonBranding.adjustsImageWhenHighlighted = NO;
     self.buttonBranding.adjustsImageWhenDisabled = NO;
     CGFloat buttonBrandingWidth = brandingImage.size.width + 2 * TBV_BUTTON_BRANDING_PADDING_HORIZONTAL;
-    self.buttonBranding.frame = CGRectMake(self.bounds.size.width - buttonBrandingWidth, 0, buttonBrandingWidth, self.bounds.size.height);
+    self.buttonBranding.frame = CGRectMake(self.bounds.size.width - buttonBrandingWidth, 0, buttonBrandingWidth, VC_TOP_BAR_HEIGHT);
     self.buttonBranding.autoresizingMask = UIViewAutoresizingFlexibleHeight;
 //    self.buttonBranding.imageView.backgroundColor = [UIColor redColor];
     self.buttonBranding.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;

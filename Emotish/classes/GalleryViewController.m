@@ -21,8 +21,8 @@
 - (void) profileButtonTouched:(UIButton *)button;
 - (IBAction)addPhotoButtonTouched:(id)sender;
 - (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
-@property (strong, nonatomic) UIImage * galleryScreenshot;
-@property (strong, nonatomic, readonly) UIImage * galleryScreenshotCurrent;
+//@property (strong, nonatomic) UIImage * galleryScreenshot;
+//@property (strong, nonatomic, readonly) UIImage * galleryScreenshotCurrent;
 - (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
 - (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
 - (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
@@ -41,12 +41,12 @@
 @synthesize activeFeelingCell=_activeFeelingCell;
 @synthesize activeFeelingCellIndexRow=_activeFeelingCellIndexRow;
 @synthesize activeFeelingCellContentOffsetPreserved=_activeFeelingCellContentOffsetPreserved;
-@synthesize flagStretchView = _flagStretchView;
+@synthesize flagStretchView = _flagStretchView, flagStretchViewTransitions=_flagStretchViewTransitions;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize topBar=_topBar;
 @synthesize bottomBar = _bottomBar;
 @synthesize addPhotoButton = _addPhotoButton;
-@synthesize galleryScreenshot=_galleryScreenshot;
+//@synthesize galleryScreenshot=_galleryScreenshot;
 
 //- (void) changeColor:(NSTimer *)timer {
 //    if ([self.topBar.backgroundView.backgroundColor isEqual:[UIColor whiteColor]]) {
@@ -119,6 +119,12 @@
     self.flagStretchView.activationAffectsAlpha = NO;
     [tableHeaderView addSubview:self.flagStretchView];
     
+    self.flagStretchViewTransitions = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, VC_TOP_BAR_HEIGHT + GC_TABLE_HEADER_VIEW_FLAG_VISIBLE_HEIGHT)];
+    self.flagStretchViewTransitions.userInteractionEnabled = NO;
+    self.flagStretchViewTransitions.angledShapes = NO;
+    self.flagStretchViewTransitions.alpha = 0.0;
+    [self.view insertSubview:self.flagStretchViewTransitions belowSubview:self.topBar];
+    
     self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
     [self.view insertSubview:self.floatingImageView belowSubview:self.topBar];
@@ -174,12 +180,22 @@
 //    NSLog(@"GalleryViewController viewDidAppear");
     [super viewDidAppear:animated];
     self.view.userInteractionEnabled = YES;
-    self.galleryScreenshot = nil;
+//    self.galleryScreenshot = nil;
     for (GalleryFeelingCell * galleryFeelingCell in self.feelingsTableView.visibleCells) {
         for (GalleryFeelingImageCell * galleryFeelingImageCell in galleryFeelingCell.imagesTableView.visibleCells) {
             [galleryFeelingImageCell setHighlightTabVisible:((Photo *)[galleryFeelingCell.photos objectAtIndex:galleryFeelingImageCell.imageIndex]).shouldHighlight.boolValue animated:YES];
         }
     }
+}
+
+- (void) viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    self.floatingImageView.alpha = 0.0;
+    self.feelingsTableView.alpha = 1.0;
+    self.flagStretchViewTransitions.alpha = 0.0;
+    self.floatingImageView.userInteractionEnabled = NO;
+    self.feelingsTableView.userInteractionEnabled = YES;
+    self.view.userInteractionEnabled = YES;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -257,35 +273,36 @@
         NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", feelingCell.feelingLabel.text, imageCell != nil ? [NSString stringWithFormat:@"the image that was located at index %d)",  imageCell.imageIndex] : @"the first image");
             
         // Old behavior, arguably 'slicker' - if a feeling cell is pulled out (and is thus the active feeling cell), but the user then taps the label or image from a different (not pulled out) feeling cell, while that new tapped feeling cell is being pushed to a view controller etc, the old active cell is deactivated (and starts to scroll towards the origin), and the new tapped cell is offically the new active one.
-//        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-//        GalleryFeelingCell * newActiveFeelingCell = feelingCell;
-//        if (oldActiveFeelingCell != newActiveFeelingCell) {
-//            self.activeFeelingCell = nil;
-//            if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-//                [oldActiveFeelingCell scrollToOriginAnimated:YES];
-//            } else {
-//                [oldActiveFeelingCell highlightLabel:NO];
-//            }
-//            self.activeFeelingCell = newActiveFeelingCell;
-//            self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
-//            [self.activeFeelingCell highlightLabel:YES];
-//        }
-        // New behavior, works with my galleryScreenshot technique - in the situation described above, the new tapped feeling cell does not become the new official active cell. In all other situations, it does. (The problem was that the screenshot would be taken before the potentially old active feeling cell was finished scrolling back to its origin, and thus the transition back to the Gallery, whenever that might happen, would not look right.)
         GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
         GalleryFeelingCell * newActiveFeelingCell = feelingCell;
         if (oldActiveFeelingCell != newActiveFeelingCell) {
-            if (oldActiveFeelingCell.imagesTableView.isDecelerating) {
-                NSLog(@"oldActiveFeelingCell.imagesTableView.isDecelerating");
-                [oldActiveFeelingCell.imagesTableView scrollRectToVisible:CGRectMake(0, oldActiveFeelingCell.imagesTableView.contentOffset.y-1, 1, 1) animated:NO];
-            }
-            if (oldActiveFeelingCell.imagesTableView.contentOffset.y <= 0) {
-                self.activeFeelingCell = nil;
+            self.activeFeelingCell = nil;
+            if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
+                [oldActiveFeelingCell scrollToOriginAnimated:YES];
+            } else {
                 [oldActiveFeelingCell highlightLabel:NO];
-                self.activeFeelingCell = newActiveFeelingCell;
-                self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
-                [self.activeFeelingCell highlightLabel:YES];
             }
+            self.activeFeelingCell = newActiveFeelingCell;
+            self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
+            [self.activeFeelingCell highlightLabel:YES];
         }
+        
+        // New behavior, works with my galleryScreenshot technique - in the situation described above, the new tapped feeling cell does not become the new official active cell. In all other situations, it does. (The problem was that the screenshot would be taken before the potentially old active feeling cell was finished scrolling back to its origin, and thus the transition back to the Gallery, whenever that might happen, would not look right.) // GOING BACK to the old 'slicker' behavior, because we are no longer using the ridiculous Gallery Screenshots.
+//        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
+//        GalleryFeelingCell * newActiveFeelingCell = feelingCell;
+//        if (oldActiveFeelingCell != newActiveFeelingCell) {
+//            if (oldActiveFeelingCell.imagesTableView.isDecelerating) {
+//                NSLog(@"oldActiveFeelingCell.imagesTableView.isDecelerating");
+//                [oldActiveFeelingCell.imagesTableView scrollRectToVisible:CGRectMake(0, oldActiveFeelingCell.imagesTableView.contentOffset.y-1, 1, 1) animated:NO];
+//            }
+//            if (oldActiveFeelingCell.imagesTableView.contentOffset.y <= 0) {
+//                self.activeFeelingCell = nil;
+//                [oldActiveFeelingCell highlightLabel:NO];
+//                self.activeFeelingCell = newActiveFeelingCell;
+//                self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
+//                [self.activeFeelingCell highlightLabel:YES];
+//            }
+//        }
     
         if (imageCell == nil) {   
             imageCell = [feelingCell.imagesTableView.visibleCells objectAtIndex:0];
@@ -293,14 +310,15 @@
         
         PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
         feelingStripViewController.delegate = self;
+        feelingStripViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
         feelingStripViewController.coreDataManager = self.coreDataManager;
         feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
         Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[self.feelingsTableView indexPathForCell:feelingCell]];
         [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
         [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:imageCell.button.imageView.image];
         
-        self.galleryScreenshot = self.galleryScreenshotCurrent;
-        feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
+//        self.galleryScreenshot = self.galleryScreenshotCurrent;
+//        feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
                 
         self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
         self.floatingImageView.image = imageCell.button.imageView.image;
@@ -308,7 +326,11 @@
         self.floatingImageView.clipsToBounds = YES;
         imageCell.alpha = 0.0;
         
+        if (self.feelingsTableView.contentOffset.y == -self.feelingsTableView.contentInset.top) {
+            self.flagStretchViewTransitions.alpha = 1.0;
+        }
         [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            self.flagStretchViewTransitions.alpha = 1.0;
             self.floatingImageView.frame = /*[self.floatingImageView.superview convertRect:*/CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)/* fromView:nil]*/;
 //            NSLog(@"self.floatingImageView.frame = %@", NSStringFromCGRect(self.floatingImageView.frame));
 //            NSLog(@"galleryViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
@@ -339,6 +361,8 @@
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
+    
+    NSLog(@"GalleryViewController controller:didChangeObject:");
     
     switch(type) {
             
@@ -388,8 +412,44 @@
     [self.feelingsTableView endUpdates];
 }
 
-- (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController {
-    [self navToRoot];
+- (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController withNoMorePhotos:(BOOL)noMorePhotos {
+    if (noMorePhotos && photosStripViewController.focus == FeelingFocus) {
+        photosStripViewController.feelingFocus.word = photosStripViewController.feelingFocus.word; // Touch the Feeling object so that the Gallery's fetched results controller is notified of the Photo delete and the potential resulting disappearance of the Feeling (if it was the last visible Photo for the Feeling)
+    }
+    
+    self.floatingImageView.alpha = 1.0;
+    self.floatingImageView.image = photosStripViewController.floatingImageView.image;
+    self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
+    
+    photosStripViewController.floatingImageView.alpha = 0.0;
+    
+    CABasicAnimation * floatingSizeAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
+    floatingSizeAnimation.duration = 0.25;
+    floatingSizeAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    CGRect oldBounds = self.floatingImageView.layer.bounds;
+    CGRect newBounds = CGRectInset(oldBounds, 0.1 * oldBounds.size.width, 0.1 * oldBounds.size.height);
+    floatingSizeAnimation.fromValue = [NSValue valueWithCGRect:oldBounds];
+    floatingSizeAnimation.toValue = [NSValue valueWithCGRect:newBounds];
+    [self.floatingImageView.layer addAnimation:floatingSizeAnimation forKey:@"bounds"];
+    self.floatingImageView.layer.bounds = newBounds;
+    
+    CABasicAnimation * floatingAlphaAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    floatingAlphaAnimation.duration = 0.25;
+    floatingAlphaAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    floatingAlphaAnimation.fromValue = [NSNumber numberWithFloat:1.0];
+    floatingAlphaAnimation.toValue = [NSNumber numberWithFloat:0.0];
+    [self.floatingImageView.layer addAnimation:floatingAlphaAnimation forKey:@"opacity"];
+    self.floatingImageView.layer.opacity = 0.0;
+    
+    CATransition * viewTransition = [CATransition animation];
+    viewTransition.duration = 0.25;
+    viewTransition.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    viewTransition.type = kCATransitionFade; //kCATransitionMoveIn; //, kCATransitionPush, kCATransitionReveal, kCATransitionFade
+    //transition.subtype = kCATransitionFromTop; //kCATransitionFromLeft, kCATransitionFromRight, kCATransitionFromTop, kCATransitionFromBottom
+    [self.navigationController.view.layer addAnimation:viewTransition forKey:nil];
+    [self.navigationController popViewControllerAnimated:NO];
+    
+//    [self dismissModalViewControllerAnimated:YES];
 }
 
 - (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
@@ -536,18 +596,24 @@
 - (void) showPhotosStripViewControllerFocusedOnUser:(User *)user photo:(Photo *)photo updatePhotoData:(BOOL)updatePhotoData animated:(BOOL)animated {
     PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
     feelingStripViewController.delegate = self;
+    feelingStripViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     feelingStripViewController.coreDataManager = self.coreDataManager;
     feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
     Photo * photoFocus = photo != nil ? photo : (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", user] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
     [feelingStripViewController setFocusToUser:user photo:photoFocus];
     [feelingStripViewController setShouldAnimateIn:animated fromSource:Gallery withPersistentImage:nil];
-    self.galleryScreenshot = self.galleryScreenshotCurrent;
-    feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
+//    self.galleryScreenshot = self.galleryScreenshotCurrent;
+//    feelingStripViewController.galleryScreenshot = self.galleryScreenshot;
     
     self.feelingsTableView.userInteractionEnabled = NO;
+    
+    if (self.feelingsTableView.contentOffset.y == -self.feelingsTableView.contentInset.top) {
+        self.flagStretchViewTransitions.alpha = 1.0;
+    }
     if (animated) {
         [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
             self.feelingsTableView.alpha = 0.0;
+            self.flagStretchViewTransitions.alpha = 1.0;
         } completion:^(BOOL finished){
             [self.navigationController pushViewController:feelingStripViewController animated:NO];
 //            if (updatePhotoData) {
@@ -572,10 +638,11 @@
 }
 
 - (IBAction)addPhotoButtonTouched:(id)sender {
-    self.galleryScreenshot = self.galleryScreenshotCurrent;
+//    self.galleryScreenshot = self.galleryScreenshotCurrent;
     SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
     submitPhotoViewController.shouldPushImagePicker = YES;
     submitPhotoViewController.delegate = self;
+    submitPhotoViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     submitPhotoViewController.coreDataManager = self.coreDataManager;
     [self presentModalViewController:submitPhotoViewController animated:NO];
 }
@@ -591,31 +658,31 @@
 
     PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
     feelingStripViewController.delegate = self;
+    feelingStripViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     feelingStripViewController.coreDataManager = self.coreDataManager;
     feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
     [feelingStripViewController setFocusToFeeling:photo.feeling photo:photo];
     [feelingStripViewController setShouldAnimateIn:YES fromSource:SubmitPhoto withPersistentImage:image];
-    feelingStripViewController.galleryScreenshot = self.galleryScreenshot; // This might not work... It's an old screenshot.
+//    feelingStripViewController.galleryScreenshot = self.galleryScreenshot; // This might not work... It's an old screenshot.
     
-    [self dismissModalViewControllerAnimated:NO];
-    [self.navigationController popToRootViewControllerAnimated:NO];
+    [self navToRoot];
     [self.navigationController pushViewController:feelingStripViewController animated:NO];
-    self.galleryScreenshot = feelingStripViewController.galleryScreenshot;
+//    self.galleryScreenshot = feelingStripViewController.galleryScreenshot;
     
 }
 
-- (UIImage *) galleryScreenshotCurrent {
-    // Render the view layer of this view controller, for fading back to it from other views
-    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
-        UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, NO, [UIScreen mainScreen].scale);
-    } else {
-        UIGraphicsBeginImageContext(self.view.bounds.size);
-    }
-    [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
-}
+//- (UIImage *) galleryScreenshotCurrent {
+//    // Render the view layer of this view controller, for fading back to it from other views
+//    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
+//        UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, NO, [UIScreen mainScreen].scale);
+//    } else {
+//        UIGraphicsBeginImageContext(self.view.bounds.size);
+//    }
+//    [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+//    UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+//    return image;
+//}
 
 
 

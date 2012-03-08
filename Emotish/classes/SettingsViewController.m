@@ -227,6 +227,7 @@
     NSLog(@"%@", NSStringFromSelector(_cmd));
     [[UIApplication sharedApplication] cancelAllLocalNotifications];
     [PFUser logOut];
+    [self.coreDataManager deleteAllLikes];
     [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
     [self updateDataForUserActivity];
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationFade]; // This is not perfect, but it's OK for now.

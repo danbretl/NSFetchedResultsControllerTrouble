@@ -16,6 +16,7 @@
 #import "SubmitPhotoViewController.h"
 #import "FlagStretchView.h"
 #import "SettingsViewController.h"
+#import "PhotoWebImageManager.h"
 
 typedef enum {
     NoFocus = 0,
@@ -33,16 +34,16 @@ typedef enum {
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate, PhotoViewDelegate, SettingsViewControllerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate, PhotoViewDelegate, SettingsViewControllerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, PhotoWebImageManagerDelegate>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;
 
 - (void) setShouldAnimateIn:(BOOL)shouldAnimateIn fromSource:(PhotosStripAnimationInSource)source withPersistentImage:(UIImage *)image;
 
-@property (strong, nonatomic) UIImage * galleryScreenshot;
-@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *galleryImageView;
-@property (unsafe_unretained, nonatomic) IBOutlet UIView *backgroundView;
+//@property (strong, nonatomic) UIImage * galleryScreenshot;
+//@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *galleryImageView;
+//@property (unsafe_unretained, nonatomic) IBOutlet UIView *backgroundView;
 
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
@@ -72,13 +73,17 @@ typedef enum {
 
 @property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate> delegate;
 
+@property (strong, nonatomic, readonly) Feeling * feelingFocus;
+@property (strong, nonatomic, readonly) User * userFocus;
+@property (nonatomic, readonly) PhotosStripFocus focus;
+
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling;
 - (void)getPhotosFromServerForUser:(User *)user;
-- (void)getUpdateFromServerForPhoto:(Photo *)photo;
+//- (void)getUpdateFromServerForPhoto:(Photo *)photo;
 
 @end
 
 @protocol PhotosStripViewControllerDelegate <NSObject>
-- (void) photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController;
+- (void) photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController withNoMorePhotos:(BOOL)noMorePhotos;
 - (void) photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController;
 @end

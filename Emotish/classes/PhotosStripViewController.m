@@ -17,6 +17,7 @@
 #import "PushConstants.h"
 #import "SDImageCache.h"
 #import "EmotishAlertViews.h"
+#import "UIScrollView+StopScroll.h"
 
 #ifdef DEBUG
 #define unlimited_likes_allowed YES
@@ -35,22 +36,20 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @property (nonatomic) PhotosStripFocus focus;
 @property (strong, nonatomic) Feeling * feelingFocus;
 @property (strong, nonatomic) User * userFocus;
-@property (strong, nonatomic) Photo * photoInView;
-//@property (unsafe_unretained, nonatomic) PhotoView * photoViewInView;
-@property (strong, nonatomic, readonly) PhotoView * photoViewInView;
+@property (strong, nonatomic) Photo * photoCenter;
+@property (nonatomic) NSUInteger photoCenterIndex;
+- (void) setPhotoCenterIndex:(NSUInteger)photoCenterIndex forcePhotoViewsUpdate:(BOOL)forcePhotoViewsUpdate;
+@property (nonatomic, readonly) NSUInteger photoViewCenterIndex; // The index of self.photoViewCenter in self.photoViews. self.photoViewCenter is guaranteed, by definition, to be in the middle of self.photoViews, with an even number of PhotoView objects to either side.
 @property (strong, nonatomic, readonly) NSFetchedResultsController * fetchedResultsControllerForCurrentFocus;
 - (NSFetchedResultsController *)fetchedResultsControllerForFocus:(PhotosStripFocus)focus;
 - (void) performFetchForCurrentFocus;
 - (void) updateViewsForCurrentFocus;
-- (void) reloadPhotoViewsFocusedOnPhoto:(Photo *)photo;
-- (void) reloadPhotoView:(PhotoView *)photoView givenFocusOnIndexPath:(NSIndexPath *)centerIndexPath;
 - (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus;
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
 - (void) swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
-//- (void) tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer;
 - (void) swipedRightOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
-- (void) photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView;
-- (void) viewControllerFinished;
+- (void) photoViewSelected:(PhotoView *)photoView withPhoto:(Photo *)photo;
+- (void) viewControllerFinishedWithNoMorePhotos:(BOOL)noMorePhotos;
 - (IBAction)headerButtonTouched:(UIButton *)button;
 @property (nonatomic) BOOL shouldAnimateIn;
 @property (nonatomic) PhotosStripAnimationInSource animationInSource;
@@ -74,15 +73,29 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
 - (BOOL) deleteAllowedForCurrentUser:(PFUser *)currentUser withPhoto:(Photo *)photo;
 @property (strong, nonatomic) Photo * photoToDelete;
+- (int) indexForContentOffsetX:(CGFloat)contentOffsetX;
+- (int) indexForScrollViewCenterWithContentOffsetX:(CGFloat)contentOffsetX;
+- (void) updatePhotoViewsPositionsForPhotoCenterIndex:(int)photoCenterIndex;
+- (void) updatePhotoViewsPhotosForPhotoCenterIndex:(int)photoCenterIndex;
+- (void) updatePhotoViewsForPhotoCenterIndex:(int)photoCenterIndex;
+- (void) updatePhotoView:(PhotoView *)photoView atPhotoViewIndex:(int)photoViewIndex withPhotoAtIndex:(int)photoIndex;
+@property (strong, nonatomic) NSArray * photoViews;
+@property (strong, nonatomic) NSMutableArray * photoViewsPhotoServerIDs;
+@property (strong, nonatomic) NSMutableDictionary * photoWebImageManagersForPhotoServerIDs;
+@property (nonatomic) BOOL refreshAllRequested;
+@property (nonatomic) BOOL refreshAllInProgress;
+@property (nonatomic) int refreshAllNetChangeBeforePreviousPhotoCenterIndex;
+@property (nonatomic) BOOL controllerChangingContent;
 @end
 
 @implementation PhotosStripViewController
 @synthesize focus=_focus;
-@synthesize feelingFocus=_feelingFocus, userFocus=_userFocus, photoInView=_photoInView;
+@synthesize feelingFocus=_feelingFocus, userFocus=_userFocus;
+@synthesize photoCenter=_photoCenter;
 @synthesize shouldAnimateIn=_shouldAnimateIn, animationInSource=_animationInSource, animationInPersistentImage=_animationInPersistentImage;
-@synthesize galleryScreenshot=_galleryScreenshot;
-@synthesize galleryImageView = _galleryImageView;
-@synthesize backgroundView = _backgroundView;
+//@synthesize galleryScreenshot=_galleryScreenshot;
+//@synthesize galleryImageView = _galleryImageView;
+//@synthesize backgroundView = _backgroundView;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize fetchedResultsControllerFeeling=_fetchedResultsControllerFeeling;
 @synthesize fetchedResultsControllerUser=_fetchedResultsControllerUser;
@@ -92,34 +105,29 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize topBar=_topBar;
 @synthesize contentView = _contentView;
 @synthesize headerButton=_headerButton;
-@synthesize photosClipView = _photosClipView;
-@synthesize photosScrollView=_photosScrollView;
-@synthesize flagStretchView=_flagStretchView;
-@synthesize photosContainer = _photosContainer;
-@synthesize photoViewLeftmost = _photoViewLeftmost;
-@synthesize photoViewLeftCenter = _photoViewLeftCenter;
-@synthesize photoViewCenter = _photoViewCenter;
-@synthesize photoViewRightCenter = _photoViewRightCenter;
-@synthesize photoViewRightmost = _photoViewRightmost;
-@synthesize photoViewInView = _photoViewInView;
+@synthesize photosClipView=_photosClipView, photosScrollView=_photosScrollView, flagStretchView=_flagStretchView, photosContainer=_photosContainer, photoViews=_photoViews, photoViewLeftmost=_photoViewLeftmost, photoViewLeftCenter=_photoViewLeftCenter, photoViewCenter=_photoViewCenter, photoViewRightCenter=_photoViewRightCenter, photoViewRightmost=_photoViewRightmost;
 @synthesize floatingImageView=_floatingImageView;
-@synthesize addPhotoButton = _addPhotoButton;
-@synthesize addPhotoLabel = _addPhotoLabel;
+@synthesize addPhotoButton = _addPhotoButton, addPhotoLabel = _addPhotoLabel;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
 @synthesize getPhotosQuery=_getPhotosQuery;
 @synthesize signInAlertView=_signInAlertView, confirmDeleteAlertView=_confirmDeleteAlertView;
 @synthesize photoToDelete=_photoToDelete;
 @synthesize photoUpdateQueries=_photoUpdateQueries;
+@synthesize photoCenterIndex=_photoCenterIndex;
+@synthesize photoViewsPhotoServerIDs=_photoViewsPhotoServerIDs, photoWebImageManagersForPhotoServerIDs=_photoWebImageManagersForPhotoServerIDs;
+@synthesize refreshAllRequested=_refreshAllRequested, refreshAllInProgress=_refreshAllInProgress, refreshAllNetChangeBeforePreviousPhotoCenterIndex=_refreshAllNetChangeBeforePreviousPhotoCenterIndex, controllerChangingContent=_controllerChangingContent;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
+        _photoCenterIndex = NSNotFound;
         self.focus = NoFocus;
-        //        self.photoViewInView = nil;
         self.photoUpdateQueries = [NSMutableArray array];
+        self.photoViewsPhotoServerIDs = [NSMutableArray array];
+        self.photoWebImageManagersForPhotoServerIDs = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -136,6 +144,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    NSLog(@"%@ PhotosStripViewController viewDidLoad", self.focus == FeelingFocus ? @"Feeling" : @"User");
     
     CGSize addPhotoButtonSize = CGSizeMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE + VC_ADD_PHOTO_BUTTON_WIDTH + VC_ADD_PHOTO_BUTTON_PADDING_RIGHT, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE + VC_ADD_PHOTO_BUTTON_HEIGHT + VC_ADD_PHOTO_BUTTON_PADDING_TOP);
     self.addPhotoButton.frame = CGRectMake(0, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - addPhotoButtonSize.height, addPhotoButtonSize.width, addPhotoButtonSize.height);
@@ -160,16 +169,12 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.photosContainer.frame = CGRectMake(0, 0, PSVC_PHOTO_VIEWS_COUNT * photoViewWidth, self.photosContainer.frame.size.height);
     self.photosScrollView.contentSize = self.photosContainer.frame.size;
     self.photosClipView.backgroundColor = [UIColor clearColor];
-    self.photoViewLeftmost.delegate = self;
-    self.photoViewLeftCenter.delegate = self;
-    self.photoViewCenter.delegate = self;
-    self.photoViewRightCenter.delegate = self;
-    self.photoViewRightmost.delegate = self;
-    [self.photoViewLeftmost showLikes:NO animated:NO];
-    [self.photoViewLeftCenter showLikes:NO animated:NO];
-    [self.photoViewCenter showLikes:NO animated:NO];
-    [self.photoViewRightCenter showLikes:NO animated:NO];
-    [self.photoViewRightmost showLikes:NO animated:NO];
+    self.photoViews = [NSArray arrayWithObjects:self.photoViewLeftmost, self.photoViewLeftCenter, self.photoViewCenter, self.photoViewRightCenter, self.photoViewRightmost, nil];
+    for (PhotoView * photoView in self.photoViews) {
+        photoView.delegate = self;
+        [photoView showLikes:NO animated:NO];
+        [self.photoViewsPhotoServerIDs addObject:[NSNull null]];
+    }
     
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
     //    CGFloat flagStretchViewHeight = floorf(self.photoViewCenter.photoImageView.bounds.size.height / 2.0);
@@ -208,13 +213,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.floatingImageView.userInteractionEnabled = NO;
     self.floatingImageView.backgroundColor = [UIColor clearColor];
     self.floatingImageView.clipsToBounds = YES;
-    //    UITapGestureRecognizer * floatingImageViewTempTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(floatingImageViewTouched:)];
-    //    [self.floatingImageView addGestureRecognizer:floatingImageViewTempTapGestureRecognizer];
-    
-    [self updateViewsForCurrentFocus];
-    //    self.photoViewInView = self.photoViewCenter;
-    [self.photoViewInView showLikes:self.photoInView.likesCount.intValue > 0 animated:NO];
-    
+
     self.swipeRightHeaderGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedRightOnHeader:)];
     self.swipeRightHeaderGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
     [self.headerButton addGestureRecognizer:self.swipeRightHeaderGestureRecognizer];
@@ -229,11 +228,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.swipeDownGestureRecognizer.direction = UISwipeGestureRecognizerDirectionDown;
     [self.view addGestureRecognizer:self.swipeDownGestureRecognizer];
     
-    BOOL debugging = NO;
-    if (debugging) {
-        self.photosScrollView.backgroundColor = [UIColor redColor];
-    }
-    
+    [self updateViewsForCurrentFocus];
+        
 }
 
 - (void)viewDidUnload {
@@ -252,8 +248,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [self setPhotoViewRightCenter:nil];
     [self setPhotoViewRightmost:nil];
     [self setPhotosClipView:nil];
-    [self setGalleryImageView:nil];
-    [self setBackgroundView:nil];
+//    [self setGalleryImageView:nil];
+//    [self setBackgroundView:nil];
     [self setZoomOutGestureRecognizer:nil];
     [self setSwipeUpGestureRecognizer:nil];
     [self setSwipeDownGestureRecognizer:nil];
@@ -261,6 +257,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [self setContentView:nil];
     [self setAddPhotoButton:nil];
     [self setBottomBar:nil];
+    [self setPhotoViews:nil];
     [super viewDidUnload];
 }
 
@@ -329,9 +326,14 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         [self.topBar.buttonLeftSpecial removeTarget:self action:@selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
         [self.topBar.buttonLeftSpecial addTarget:self action:leftSpecialButtonType == ProfileButton ? @selector(profileButtonTouched:) : @selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
         
-        [self.photoViewInView updateLikesCount:self.photoInView.likesCount likedPersonally:[self.photoInView likeExistsForUserServerID:currentUser.objectId]];
+        [self.photoViewCenter updateLikesCount:self.photoCenter.likesCount likedPersonally:[self.photoCenter likeExistsForUserServerID:currentUser.objectId]];
         
     }
+    
+    BOOL deleteAllowed = [self deleteAllowedForCurrentUser:[PFUser currentUser] withPhoto:self.photoCenter];
+    [self.photoViewCenter setActionButtonWithCode:Delete enabled:deleteAllowed visible:deleteAllowed];
+    [self.photoViewCenter showActionButtons:(self.photoViewCenter.actionButtonsVisible && [PFUser currentUser] != nil) animated:NO];
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -386,45 +388,60 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     }
     NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
     
-    BOOL deleteAllowed = [self deleteAllowedForCurrentUser:[PFUser currentUser] withPhoto:self.photoInView];
-    [self.photoViewInView setActionButtonWithCode:Delete enabled:deleteAllowed faded:!deleteAllowed];
-    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [self.coreDataManager saveCoreData];
     [self.getPhotosQuery cancel];
+    for (NSString * photoServerID in self.photoWebImageManagersForPhotoServerIDs) {
+        PhotoWebImageManager * manager = [self.photoWebImageManagersForPhotoServerIDs objectForKey:photoServerID];
+        [[SDWebImageManager sharedManager] cancelForDelegate:manager];
+    }
 }
 
+- (void) setPhotoCenterIndex:(NSUInteger)photoCenterIndex {
+    [self setPhotoCenterIndex:photoCenterIndex forcePhotoViewsUpdate:NO];
+}
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    // Return YES for supported orientations
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
+- (void) setPhotoCenterIndex:(NSUInteger)photoCenterIndex forcePhotoViewsUpdate:(BOOL)forcePhotoViewsUpdate {
+    if (_photoCenterIndex != photoCenterIndex) {
+        NSLog(@"Change in photoCenterIndex (%d -> %d)", _photoCenterIndex, photoCenterIndex);
+        _photoCenterIndex = photoCenterIndex;
+        forcePhotoViewsUpdate = YES;
+    }
+    if (forcePhotoViewsUpdate) {
+        self.photoCenter = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:self.photoCenterIndex inSection:0]];
+        [self updatePhotoViewsForPhotoCenterIndex:self.photoCenterIndex];
+    }
+}
+
+- (void)setPhotoCenter:(Photo *)photoCenter {
+    if (_photoCenter != photoCenter) {
+        NSLog(@"Change in photoCenter (%@, %@'s %@ -> %@, %@'s %@)", _photoCenter.serverID, _photoCenter.user.name, _photoCenter.feeling.word, photoCenter.serverID, photoCenter.user.name, photoCenter.feeling.word);
+        _photoCenter = photoCenter;
+        if (self.photoCenter.shouldHighlight.boolValue) {
+            self.photoCenter.shouldHighlight = [NSNumber numberWithBool:NO];
+        }
+    }
 }
 
 - (void)setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo {
     self.focus = FeelingFocus;
     self.feelingFocus = feeling;
-    self.photoInView = photo;
-    self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
+    self.photoCenter = photo;
     if (self.view.window) {
         [self updateViewsForCurrentFocus];
-        //        self.photoViewInView = self.photoViewCenter;
     }
-    //    NSLog(@"Should scroll to photo %@", photo);
 }
 
 - (void)setFocusToUser:(User *)user photo:(Photo *)photo {
     self.focus = UserFocus;
     self.userFocus = user;
-    self.photoInView = photo;
-    self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
+    self.photoCenter = photo;
     if (self.view.window) {
         [self updateViewsForCurrentFocus];
-        //        self.photoViewInView = self.photoViewCenter;
     }
-    //    NSLog(@"Should scroll to photo %@", photo);
 }
 
 - (void) setHeaderLabelText:(NSString *)headerString color:(UIColor *)headerColor {
@@ -457,69 +474,77 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     NSPredicate * fetchPredicate = self.focus == FeelingFocus ? [NSPredicate predicateWithFormat:@"feeling == %@ && hidden == NO", self.feelingFocus] : [NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", self.userFocus];
     self.fetchedResultsControllerForCurrentFocus.fetchRequest.predicate = fetchPredicate;
     [self performFetchForCurrentFocus];
+    
     self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
     
-    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
-    self.photosScrollView.contentOffset = CGPointMake(self.photosScrollView.frame.size.width * [self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoInView].row, 0);
-    //    [self.photosTableView reloadData];
-    //    [self.photosTableView scrollToRowAtIndexPath:[self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoInView] atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
+    [self setPhotoCenterIndex:[self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoCenter].row forcePhotoViewsUpdate:YES];
+    [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
+    [self.photosScrollView setContentOffset:CGPointMake(self.photoCenterIndex * self.photosScrollView.frame.size.width, 0) animated:NO];
+    
 }
 
-- (void) reloadPhotoViewsFocusedOnPhoto:(Photo *)photo {
-    
-    NSIndexPath * photoCenterIndexPath = [self.fetchedResultsControllerForCurrentFocus indexPathForObject:photo];
-    
-    [self reloadPhotoView:self.photoViewCenter givenFocusOnIndexPath:photoCenterIndexPath];
-    [self reloadPhotoView:self.photoViewLeftCenter givenFocusOnIndexPath:photoCenterIndexPath];
-    [self reloadPhotoView:self.photoViewLeftmost givenFocusOnIndexPath:photoCenterIndexPath];
-    [self reloadPhotoView:self.photoViewRightCenter givenFocusOnIndexPath:photoCenterIndexPath];
-    [self reloadPhotoView:self.photoViewRightmost givenFocusOnIndexPath:photoCenterIndexPath];
-    
-    CGFloat contentOffsetX = self.photosScrollView.frame.size.width * photoCenterIndexPath.row;
+- (void) updatePhotoViewsForPhotoCenterIndex:(int)photoCenterIndex {
+    [self updatePhotoViewsPositionsForPhotoCenterIndex:photoCenterIndex];
+    [self updatePhotoViewsPhotosForPhotoCenterIndex:photoCenterIndex];
+}
+
+- (void) updatePhotoViewsPositionsForPhotoCenterIndex:(int)photoCenterIndex {
+    CGFloat photoViewCenterOriginX = self.photosScrollView.frame.size.width * photoCenterIndex;
     CGRect photosContainerFrame = self.photosContainer.frame;
-    photosContainerFrame.origin.x = contentOffsetX - self.photoViewCenter.frame.origin.x;
+    photosContainerFrame.origin.x = photoViewCenterOriginX - self.photoViewCenter.frame.origin.x; // Take the originX value for the point at which we want the photoViewCenter to be (in relation to the scrollView contentSize), and subtract from that the photoViewCenter's position within its superview. That is the point at which we want to place the photosContrainer
     self.photosContainer.frame = photosContainerFrame;
-    //    self.photosScrollView.contentOffset = CGPointMake(contentOffsetX, 0);
-    
 }
 
-- (void) reloadPhotoView:(PhotoView *)photoView givenFocusOnIndexPath:(NSIndexPath *)centerIndexPath {
-    
-    NSUInteger fetchedPhotosCount = self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count;
-    
-    NSIndexPath * validIndexPathForPhotoView = nil;
-    if (photoView == self.photoViewCenter) {
-        validIndexPathForPhotoView = centerIndexPath;
-    } else {
-        int rowBump = 0;
-        if (photoView == self.photoViewLeftCenter ||
-            photoView == self.photoViewLeftmost) {
-            rowBump = -1;
-            if (photoView == self.photoViewLeftmost) { rowBump *= 2; }
-        } else {
-            rowBump = 1;
-            if (photoView == self.photoViewRightmost) { rowBump *= 2; }
-        }
-        if (!(centerIndexPath.row + rowBump < 0 || 
-              centerIndexPath.row + rowBump >= fetchedPhotosCount)) {
-            validIndexPathForPhotoView = [NSIndexPath indexPathForRow:centerIndexPath.row + rowBump inSection:0];
-        }
+- (void) updatePhotoViewsPhotosForPhotoCenterIndex:(int)photoCenterIndex {
+    for (int i=0; i<self.photoViews.count; i++) {
+        PhotoView * photoView = [self.photoViews objectAtIndex:i];
+        [self updatePhotoView:photoView atPhotoViewIndex:i withPhotoAtIndex:photoCenterIndex - self.photoViewCenterIndex + i];
     }
+}
+
+- (void) updatePhotoView:(PhotoView *)photoView atPhotoViewIndex:(int)photoViewIndex withPhotoAtIndex:(int)photoIndex {
     
-    Photo * photo = validIndexPathForPhotoView == nil ? nil : [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:validIndexPathForPhotoView];
+    Photo * photo = [self photoAtIndex:photoIndex];
     if (photo == nil) {
+        [self.photoViewsPhotoServerIDs replaceObjectAtIndex:photoViewIndex withObject:[NSNull null]];
         photoView.photoImageView.image = nil;
     } else {
-        UIImage * cachedThumb = [[SDImageCache sharedImageCache] imageFromKey:photo.thumbURL];
-        NSLog(@"%@", cachedThumb);
-        [photoView.photoImageView setImageWithURL:[NSURL URLWithString:photo.imageURL] placeholderImage:cachedThumb != nil ? cachedThumb : [UIImage imageNamed:@"photo_image_placeholder.png"]];
+        [self.photoViewsPhotoServerIDs replaceObjectAtIndex:photoViewIndex withObject:photo.serverID];
+        UIImage * cachedImageFull = [[SDImageCache sharedImageCache] imageFromKey:photo.imageURL];
+        if (cachedImageFull != nil) {
+            photoView.photoImageView.image = cachedImageFull;
+        } else {
+            UIImage * cachedImageThumb = [[SDImageCache sharedImageCache] imageFromKey:photo.thumbURL];
+            if (cachedImageThumb != nil) {
+                photoView.photoImageView.image = cachedImageThumb;
+            } else {
+                photoView.photoImageView.image = [UIImage imageNamed:@"photo_image_placeholder.png"];
+            }
+            if ([self.photoWebImageManagersForPhotoServerIDs objectForKey:photo.serverID] == nil) {
+                NSLog(@"Download image with server id %@ and url %@", photo.serverID, photo.imageURL);
+                PhotoWebImageManager * photoWebImageManager = [PhotoWebImageManager photoWebImageManagerForPhotoServerID:photo.serverID withDelegate:self];
+                [self.photoWebImageManagersForPhotoServerIDs setObject:photoWebImageManager forKey:photo.serverID];
+                [[SDWebImageManager sharedManager] downloadWithURL:[NSURL URLWithString:photo.imageURL] delegate:photoWebImageManager];
+            } else {
+                NSLog(@"Already downloading image with server id %@ and url %@", photo.serverID, photo.imageURL);
+            }
+        }
     }
+    
     PFUser * currentUser = [PFUser currentUser];
     [photoView updateLikesCount:photo.likesCount likedPersonally:[photo likeExistsForUserServerID:currentUser.objectId]];
     BOOL deleteAllowed = [self deleteAllowedForCurrentUser:currentUser withPhoto:photo];
-    [photoView setActionButtonWithCode:Delete enabled:deleteAllowed faded:!deleteAllowed];
+    [photoView setActionButtonWithCode:Delete enabled:deleteAllowed visible:deleteAllowed];
     [self updatePhotoViewCaption:photoView withDataFromPhoto:photo oppositeOfFocus:self.focus];
     
+}
+
+- (Photo *) photoAtIndex:(int)index {
+    Photo * photo = nil;
+    if (index >= 0 && index < self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count) {
+        photo = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]];
+    }
+    return photo;
 }
 
 - (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus {
@@ -538,56 +563,58 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     photoView.photoCaptionTextField.textColor = captionColor;
 }
 
+- (int) indexForContentOffsetX:(CGFloat)contentOffsetX {
+    int contentOffsetMiddleWithinBounds = (int)MIN(MAX(0, contentOffsetX),
+                                                   self.photosScrollView.contentSize.width - 1); // Sort of a view-controller-specific hackish implementation, based on the fact that there is no point in returning an index that will invariably be out of bounds.
+    return contentOffsetMiddleWithinBounds / (int)self.photosScrollView.frame.size.width;
+}
+
+- (int) indexForScrollViewCenterWithContentOffsetX:(CGFloat)contentOffsetX {
+    return [self indexForContentOffsetX:contentOffsetX + floorf(self.photosScrollView.frame.size.width / 2.0)];
+}
+
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-    [self.photoViewInView showActionButtons:NO animated:YES];
-    [self.photoViewCenter showLikes:NO animated:YES];
-    [self.photoViewLeftmost showLikes:NO animated:YES];
-    [self.photoViewLeftCenter showLikes:NO animated:YES];
-    [self.photoViewRightCenter showLikes:NO animated:YES];
-    [self.photoViewRightmost showLikes:NO animated:YES];
+    [self.photoViewCenter showActionButtons:NO animated:YES];
+    // The following may not be necessary... I think we actually just need to showLikes:NO for self.photoViewCenter. But this probably isn't all that expensive for now.
+    for (PhotoView * photoView in self.photoViews) {
+        [photoView showLikes:NO animated:YES];
+    }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    //    CGFloat pulledOutDistance = MAX(0, -scrollView.contentOffset.x);
-    //    NSLog(@"pulledOutDistance = %f", MAX(0, -scrollView.contentOffset.x));
-    self.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.x);//pulledOutDistance;
-    [self.flagStretchView setActivated:scrollView.isTracking && self.flagStretchView.pulledOutDistance >= self.flagStretchView.activationDistanceEnd animated:YES];
-    //    [self.flagStretchView setActivated:scrollView.isTracking && -scrollView.contentOffset.x >= self.flagStretchView.activationDistanceEnd animated:YES];
+//    NSLog(@"scrollViewDidScroll");
+    self.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.x);
+    BOOL activationZone = scrollView.isTracking && self.flagStretchView.pulledOutDistance >= self.flagStretchView.activationDistanceEnd;
+    [self.flagStretchView setActivated:activationZone animated:YES];
+//    if (!self.refreshAllRequested) {
+//        self.photosScrollView.contentInset = activationZone ? UIEdgeInsetsMake(0, self.flagStretchView.activationDistanceEnd, 0, 0) : UIEdgeInsetsZero;
+//    }
+    if (!self.controllerChangingContent) {
+        self.photoCenterIndex = [self indexForScrollViewCenterWithContentOffsetX:scrollView.contentOffset.x]; // This will potentially cause view updates to occur, depending on whether photoCenterIndex has changed.
+    }
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-    CGFloat contentOffsetToMiddleX = scrollView.contentOffset.x + (scrollView.frame.size.width / 2.0);
-    contentOffsetToMiddleX = MAX(contentOffsetToMiddleX, 0);
-    contentOffsetToMiddleX = MIN(contentOffsetToMiddleX, self.photosScrollView.contentSize.width - self.photosScrollView.frame.size.width);
-    NSUInteger indexOfPhotoInView = (int)contentOffsetToMiddleX / (int)self.photosScrollView.frame.size.width;
-    Photo * photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
     if (!decelerate) {
-        self.photoInView = photoInView;
-        self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
-        [self.photoViewInView showLikes:self.photoInView.likesCount.intValue > 0 animated:YES];
-        //        NSLog(@"Photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
-        //        NSLog(@"Photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
+        [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
     }
-    [self reloadPhotoViewsFocusedOnPhoto:photoInView];
-    //    self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
-    //    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
-    if (self.flagStretchView.activated) {
+    if (self.flagStretchView.activated && !self.refreshAllInProgress) {
+        self.refreshAllRequested = YES;
+        self.view.userInteractionEnabled = NO;
+    }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
+    if (self.refreshAllRequested) {
+        self.refreshAllRequested = NO;
+        self.view.userInteractionEnabled = YES;
         if (self.focus == FeelingFocus) {
             [self getPhotosFromServerForFeeling:self.feelingFocus];
         } else {
             [self getPhotosFromServerForUser:self.userFocus];
         }
     }
-}
-
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    NSUInteger indexOfPhotoInView = (int)scrollView.contentOffset.x / (int)self.photosScrollView.frame.size.width;
-    self.photoInView = [self.fetchedResultsControllerForCurrentFocus objectAtIndexPath:[NSIndexPath indexPathForRow:indexOfPhotoInView inSection:0]];
-    self.photoInView.shouldHighlight = [NSNumber numberWithBool:NO];
-    [self.photoViewInView showLikes:self.photoInView.likesCount.intValue > 0 animated:YES];
-    //    NSLog(@"Photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
-    //    NSLog(@"Photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
-    //    [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
 }
 
 - (NSFetchedResultsController *)fetchedResultsControllerForCurrentFocus {
@@ -625,7 +652,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     fetchRequest.entity = [NSEntityDescription entityForName:@"Photo" inManagedObjectContext:self.coreDataManager.managedObjectContext];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:@"feeling == %@ && hidden == NO", self.feelingFocus];
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]];
-    fetchRequest.fetchBatchSize = 10;
+    fetchRequest.fetchBatchSize = 10; // Think about this later?
     
     _fetchedResultsControllerFeeling = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:@"FeelingFocus"];
     _fetchedResultsControllerFeeling.delegate = self;
@@ -644,7 +671,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     fetchRequest.entity = [NSEntityDescription entityForName:@"Photo" inManagedObjectContext:self.coreDataManager.managedObjectContext];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", self.userFocus];
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]];
-    fetchRequest.fetchBatchSize = 10;
+    fetchRequest.fetchBatchSize = 10; // Think about this later?
     
     _fetchedResultsControllerUser = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:@"UserFocus"];
     _fetchedResultsControllerUser.delegate = self;
@@ -656,6 +683,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     if (controller == self.fetchedResultsControllerForCurrentFocus) {
         NSLog(@"self.fetchedResultsControllerForCurrentFocus willChangeContent");
+        self.refreshAllNetChangeBeforePreviousPhotoCenterIndex = 0;
+        NSLog(@"self.refreshAllNetChangeBeforePreviousPhotoCenterIndex reset to 0");
+        self.controllerChangingContent = YES;
     }
 }
 
@@ -664,71 +694,136 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 //NSFetchedResultsChangeMove   = 3
 //NSFetchedResultsChangeUpdate = 4
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
+//    NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeObject:%@ atIndexPath:%d-%d forChangeType:%d newIndexPath:%d-%d", anObject, indexPath.section, indexPath.row, type, newIndexPath.section, newIndexPath.row);
     if (controller == self.fetchedResultsControllerForCurrentFocus) {
-        NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeObject:%@ atIndexPath:%d-%d forChangeType:%d newIndexPath:%d-%d", anObject, indexPath.section, indexPath.row, type, newIndexPath.section, newIndexPath.row);
-        //        if (type == NSFetchedResultsChangeUpdate) {
-        //            [self reloadPhotoViewsFocusedOnPhoto:self.photoInView];
-        //        }
+        if (type == NSFetchedResultsChangeDelete && self.focus == UserFocus) {
+            Photo * photo = (Photo *)anObject;
+            photo.feeling.word = photo.feeling.word;
+        }
+        if (!self.refreshAllInProgress) {
+            if (type == NSFetchedResultsChangeUpdate) {
+                int photoViewLowestPhotoIndex  = self.photoCenterIndex - self.photoViewCenterIndex;
+                int photoViewHighestPhotoIndex = self.photoCenterIndex + self.photoViewCenterIndex;
+                if (indexPath.row >= photoViewLowestPhotoIndex &&
+                    indexPath.row <= photoViewHighestPhotoIndex) {
+                    NSUInteger photoViewIndex = self.photoViewCenterIndex - (self.photoCenterIndex - indexPath.row);
+    //                NSLog(@"Going to update photoView %@ at photoViewIndex=%d withPhotooAtIndex:%d", [self.photoViews objectAtIndex:photoViewIndex], photoViewIndex, indexPath.row);
+                    [self updatePhotoView:[self.photoViews objectAtIndex:photoViewIndex] atPhotoViewIndex:photoViewIndex withPhotoAtIndex:indexPath.row];
+                    if (!self.photosScrollView.isTracking) {
+                        [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
+                    }
+                }
+            } else if (type == NSFetchedResultsChangeDelete) {
+                if (indexPath.row == self.photoCenterIndex) {
+                    self.view.userInteractionEnabled = NO;
+                    
+                    if (self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count == 0) {
+                        [self viewControllerFinishedWithNoMorePhotos:YES];
+                    } else {
+                        
+                        self.photoCenter.feeling.word = self.photoCenter.feeling.word; // Touch the Feeling object so that the Gallery's fetched results controller is notified of the Photo delete and the potential resulting disappearance of the Feeling (if it was the last visible Photo for the Feeling)
+                        
+                        [UIScrollView animateWithDuration:0.25 animations:^{ // Note the receiver Class UIScrollView here. New trick I hadn't known before!
+                            self.photoViewCenter.alpha = 0.0;
+                            if (self.photoCenterIndex < self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count) {
+                                self.photoViewRightCenter.frame = self.photoViewCenter.frame;
+                                self.photoViewRightmost.frame = CGRectOffset(self.photoViewRightCenter.frame, self.photoViewRightCenter.frame.size.width, 0);                            
+                            } else {
+                                [self.photosScrollView setContentOffset:CGPointMake(self.photosScrollView.contentSize.width -  2 * self.photosScrollView.frame.size.width, 0)];
+                            }
+                        } completion:^(BOOL finished) {
+                            [self setPhotoCenterIndex:MIN(self.photoCenterIndex, self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count - 1) forcePhotoViewsUpdate:YES];
+                            [self.photoViewCenter showActionButtons:NO animated:NO];                
+                            self.photoViewCenter.alpha = 1.0;
+                            self.photoViewRightCenter.frame = CGRectOffset(self.photoViewCenter.frame, self.photoViewCenter.frame.size.width, 0);
+                            self.photoViewRightmost.frame = CGRectOffset(self.photoViewRightCenter.frame, self.photoViewRightCenter.frame.size.width, 0);
+                            [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
+                            self.view.userInteractionEnabled = YES;
+                            self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
+                        }];
+                    }
+                }
+            }
+        } else {
+            if (type == NSFetchedResultsChangeInsert && newIndexPath.row <= self.photoCenterIndex) {
+                self.refreshAllNetChangeBeforePreviousPhotoCenterIndex++;
+                NSLog(@"self.refreshAllNetChangeBeforePreviousPhotoCenterIndex = %d", self.refreshAllNetChangeBeforePreviousPhotoCenterIndex);
+            } else if (type == NSFetchedResultsChangeDelete && indexPath.row < self.photoCenterIndex) {
+                self.refreshAllNetChangeBeforePreviousPhotoCenterIndex--;
+                NSLog(@"self.refreshAllNetChangeBeforePreviousPhotoCenterIndex = %d", self.refreshAllNetChangeBeforePreviousPhotoCenterIndex);
+            }
+        }
     }
 }
 
-- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id<NSFetchedResultsSectionInfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
-    if (controller == self.fetchedResultsControllerForCurrentFocus) {
-        NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeSection...");
-    }
-}
-
-- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    if (controller == self.fetchedResultsControllerForCurrentFocus) {
-        NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeContent...");
-    }
-}
-
-//- (void)tappedToSelectPhotoView:(UITapGestureRecognizer *)tapGestureRecognizer {
-//    CGPoint locationInScrollView = [tapGestureRecognizer locationInView:self.photosScrollView];
-//    if (CGRectContainsPoint(CGRectInset(self.photosScrollView.bounds, PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, 0), locationInScrollView)) {
-////        PhotoView * photoViewTapped = self.photoViewCenter;
-////        CGPoint locationInPhotosContainer = [tapGestureRecognizer locationInView:self.photosContainer];
-////        if (CGRectContainsPoint(self.photoViewLeftCenter.frame, locationInPhotosContainer)) {
-////            photoViewTapped = self.photoViewLeftCenter;
-//////            NSLog(@"self.photoViewLeftCenter");
-////        } else if (CGRectContainsPoint(self.photoViewRightCenter.frame, locationInPhotosContainer)) {
-////            photoViewTapped = self.photoViewRightCenter;
-//////            NSLog(@"self.photoViewRightCenter");
-////        } else {
-//////            NSLog(@"self.photoViewCenter");
-////        }
-//        [self photoInView:self.photoInView selectedFromPhotoView:self.photoViewInView];
-////        [self photoInView:self.photoInView selectedFromPhotoView:photoViewTapped];
+//- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id<NSFetchedResultsSectionInfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
+//    if (controller == self.fetchedResultsControllerForCurrentFocus) {
+//        NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeSection...");
 //    }
 //}
 
+- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
+    if (controller == self.fetchedResultsControllerForCurrentFocus) {
+        NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeContent");
+        if (self.refreshAllInProgress) {
+            
+            if (self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count == 0) {
+                
+                [self viewControllerFinishedWithNoMorePhotos:YES];
+                
+            } else {
+                
+                Photo * oldPhotoCenter = self.photoCenter;
+                BOOL oldPhotoCenterHidden = oldPhotoCenter.hidden.boolValue;
+                int oldPhotoCenterIndex = self.photoCenterIndex;
+                int newPhotoCenterIndex = oldPhotoCenterIndex;
+                
+                self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
+                
+                if (oldPhotoCenterHidden) {
+                    newPhotoCenterIndex += self.refreshAllNetChangeBeforePreviousPhotoCenterIndex;
+                    newPhotoCenterIndex = MIN(MAX(0, newPhotoCenterIndex), (int)(self.photosScrollView.contentSize.width - 1) / self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count);
+                } else {
+                    newPhotoCenterIndex = [self.fetchedResultsControllerForCurrentFocus indexPathForObject:oldPhotoCenter].row;
+                }
+                NSLog(@"oldPhotoCenterIndex = %d, newPhotoCenterIndex = %d, self.refreshAllNetChangeBeforePreviousPhotoCenterIndex = %d", oldPhotoCenterIndex, newPhotoCenterIndex, self.refreshAllNetChangeBeforePreviousPhotoCenterIndex);
+                
+                [self.photosScrollView stopScroll];
+                [self setPhotoCenterIndex:newPhotoCenterIndex forcePhotoViewsUpdate:YES];
+                [self.photosScrollView setContentOffset:CGPointMake(self.photoCenterIndex * self.photosScrollView.frame.size.width, 0) animated:NO];
+                [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
+                
+            }
+            
+        }
+        self.refreshAllInProgress = NO;
+    }
+    self.controllerChangingContent = NO;
+}
+
 - (void)photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
-    if (photoView == self.photoViewInView) {
-        [self photoInView:self.photoInView selectedFromPhotoView:self.photoViewInView];
+    if (photoView == self.photoViewCenter) {
+        [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
     }
 }
 
 - (void)photoView:(PhotoView *)photoView tapSingleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
-    if (photoView == self.photoViewInView) {
-        if (photoView.actionButtonsVisible) {
-            [photoView showActionButtons:NO animated:YES];
+    if (photoView == self.photoViewCenter) {
+        if (self.photoViewCenter.actionButtonsVisible) {
+            [self.photoViewCenter showActionButtons:NO animated:YES];
         } else {
-            [self photoInView:self.photoInView selectedFromPhotoView:self.photoViewInView];
+            [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
         }
     }
 }
 
 - (void)photoView:(PhotoView *)photoView tapDoubleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
-    if (photoView == self.photoViewInView) {
-        NSLog(@"LIKE");
-        [self userCurrent:[PFUser currentUser] likedPhotoAttempt:self.photoInView];
+    if (photoView == self.photoViewCenter) {
+        [self userCurrent:[PFUser currentUser] likedPhotoAttempt:self.photoCenter];
     }
 }
 
 - (void) userCurrent:(PFUser *)userCurrent likedPhotoAttempt:(Photo *)photoLiked {
-    NSLog(@"userCurrent likedPhotoAttempt");
-    NSLog(@"%d", unlimited_likes_allowed);
     if (userCurrent == nil) {
         [self.signInAlertView show];
     } else {
@@ -740,9 +835,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void) userCurrent:(PFUser *)userCurrent likedPhoto:(Photo *)photoLiked {
-    NSString * photoInViewServerID = photoLiked.serverID;
+    NSString * photoCenterServerID = photoLiked.serverID;
     PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
-    photoServer.objectId = photoInViewServerID;
+    photoServer.objectId = photoCenterServerID;
     [photoServer incrementKey:@"likesCount"];
     [photoServer saveInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
         if (succeeded) {
@@ -751,15 +846,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             Like * likeObjectLocal = [NSEntityDescription insertNewObjectForEntityForName:@"Like" inManagedObjectContext:self.coreDataManager.managedObjectContext];
             likeObjectLocal.photo = photoLiked;
             likeObjectLocal.user = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"SELF.serverID == %@", userCurrent.objectId] usingSortDescriptors:nil];
-            // Local data updates...
-            photoLiked.likesCount = [NSNumber numberWithInt:photoLiked.likesCount.intValue + 1];
             // Local data save...
             [self.coreDataManager saveCoreData];
             
-            // View update
-            if (photoLiked == self.photoInView) {
-                [self.photoViewInView showLikes:YES likesCount:self.photoInView.likesCount likedPersonally:YES animated:YES];
-            }
+//            // View update // Taken care of now in controller:didChangeObject:...
+//            if (photoLiked == self.photoCenter) {
+//                [self.photoViewCenter showLikes:YES likesCount:self.photoCenter.likesCount likedPersonally:YES animated:YES];
+//            }
             
             // More server calls...
             PFObject * likeObject = [PFObject objectWithClassName:@"Like"];
@@ -769,11 +862,14 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             
             // More server calls...
             PFQuery * photoUpdatedQuery = [PFQuery queryWithClassName:@"Photo"];
-            [photoUpdatedQuery getObjectInBackgroundWithId:photoInViewServerID block:^(PFObject * object, NSError * error){
-                if (object != nil) {
+            [photoUpdatedQuery getObjectInBackgroundWithId:photoCenterServerID block:^(PFObject * object, NSError * error){
+                if (!error && object != nil) {
                     [self.coreDataManager addOrUpdatePhotoFromServer:object];
-                    [self.coreDataManager saveCoreData];
+                } else {
+                    // Local data updates...
+                    photoLiked.likesCount = [NSNumber numberWithInt:photoLiked.likesCount.intValue + 1];
                 }
+                [self.coreDataManager saveCoreData];
             }];
             
             // Client push notification
@@ -815,11 +911,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)photoView:(PhotoView *)photoView tapHoldGestureRecognized:(UILongPressGestureRecognizer *)gestureRecognizer {
-    if (photoView == self.photoViewInView) {
+    if (photoView == self.photoViewCenter) {
         if ([PFUser currentUser] == nil) {
             [self.signInAlertView show];
         } else {
-            [photoView showActionButtons:!photoView.actionButtonsVisible animated:YES];            
+            [self.photoViewCenter showActionButtons:!self.photoViewCenter.actionButtonsVisible animated:YES];
         }
     }    
 }
@@ -853,21 +949,20 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             //            break;
         case TextMessage:
             // TextMessage...
-            // ...
-            //            break;
+            [tempFeatureInProgressAlertView show];
+            break;
         case Flag:
             // Flag...
-            // ...
             [tempFeatureInProgressAlertView show];
             break;
         case Delete:
             // Delete...
-//            [self userCurrent:[PFUser currentUser] deletedPhotoAttempt:self.photoInView];
-            [tempFeatureInProgressAlertView show];
+            [self userCurrent:[PFUser currentUser] deletedPhotoAttempt:self.photoCenter];
+//            [tempFeatureInProgressAlertView show];
             break;
         case LikePhoto:
             // Like...
-            [self userCurrent:[PFUser currentUser] likedPhotoAttempt:self.photoInView];
+            [self userCurrent:[PFUser currentUser] likedPhotoAttempt:self.photoCenter];
             break;
         default:
             break;
@@ -875,13 +970,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     
 }
 
-- (void)photoInView:(Photo *)photo selectedFromPhotoView:(PhotoView *)photoView {
-    
-    //    NSLog(@"Selected photo view in view : %@", [self photoViewNameForPhotoView:self.photoViewInView]);
-    //    NSLog(@"Selected photo in view : %@-%@", self.photoInView.feeling.word, self.photoInView.user.name);
+- (void)photoViewSelected:(PhotoView *)photoView withPhoto:(Photo *)photo {
     
     PhotosStripViewController * oppositeFocusStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
     oppositeFocusStripViewController.delegate = self.delegate;
+    oppositeFocusStripViewController.modalTransitionStyle = self.modalTransitionStyle;
     oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
     oppositeFocusStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
     if (self.focus == FeelingFocus) {
@@ -890,7 +983,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
     }
     [oppositeFocusStripViewController setShouldAnimateIn:YES fromSource:PhotosStripOpposite withPersistentImage:photoView.photoImageView.image];
-    oppositeFocusStripViewController.galleryScreenshot = self.galleryScreenshot;
+//    oppositeFocusStripViewController.galleryScreenshot = self.galleryScreenshot;
     
     self.view.userInteractionEnabled = NO;
     
@@ -898,20 +991,17 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     //    CGRect headerFrame = self.headerButton.frame;
     //    CGRect captionFrame = photoView.photoCaptionTextField.frame;
     [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
-        [self.photoViewInView showActionButtons:NO animated:NO];
+        [photoView showActionButtons:NO animated:NO];
         CGFloat headerTextLeftEdgeInView = self.headerButton.frame.origin.x + self.headerButton.contentEdgeInsets.left;
         CGFloat captionTextRightEdgeInView = CGRectGetMaxX([self.view convertRect:photoView.frame fromView:photoView.superview]);
         //        NSLog(@"%f %f", headerTextLeftEdgeInView, captionTextRightEdgeInView);
         self.headerButton.frame = CGRectOffset(self.headerButton.frame, self.headerButton.frame.size.width - headerTextLeftEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN, 0);
         photoView.photoCaptionTextField.frame = CGRectOffset(photoView.photoCaptionTextField.frame, -(captionTextRightEdgeInView + PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN), 0);
-        void(^photoViewAlpha)(PhotoView *)=^(PhotoView * photoViewInQuestion){
-            photoViewInQuestion.alpha = photoView == photoViewInQuestion ? 1.0 : 0.0;
-        };
-        photoViewAlpha(self.photoViewCenter);
-        photoViewAlpha(self.photoViewLeftCenter);
-        photoViewAlpha(self.photoViewRightCenter);
-        photoViewAlpha(self.photoViewLeftmost);
-        photoViewAlpha(self.photoViewRightmost);
+        for (PhotoView * photoViewToAdjust in self.photoViews) {
+            if (photoViewToAdjust != photoView) {
+                photoViewToAdjust.alpha = 0.0;
+            }
+        }
         self.addPhotoLabel.alpha = 0.0;
         [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
     } completion:^(BOOL finished){
@@ -928,73 +1018,51 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)headerButtonTouched:(UIButton *)button {
-    [self viewControllerFinished];
+    [self viewControllerFinishedWithNoMorePhotos:NO];
 }
 
 - (void)pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer {
     if (pinchGestureRecognizer.velocity < 0.0) {
-        [self viewControllerFinished];
-        self.finishing = YES;
+        [self viewControllerFinishedWithNoMorePhotos:NO];
     }
 }
 
-- (void)viewControllerFinished {
-    //    NSLog(@"viewControllerFinished");
+- (void)viewControllerFinishedWithNoMorePhotos:(BOOL)noMorePhotos {
     
     if (!self.finishing) {
         
-        self.galleryImageView.image = self.galleryScreenshot;
+        self.finishing = YES;
+        [self.photosScrollView stopScroll];
+        
+////        self.galleryImageView.image = self.galleryScreenshot;
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
-        self.floatingImageView.image = self.photoViewInView.photoImageView.image;
+        self.floatingImageView.image = self.photoViewCenter.photoImageView.image;
         self.floatingImageView.alpha = 1.0;
-        //    [UIView animateWithDuration:0.5 animations:^{
-        //        self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
-        //        self.floatingImageView.alpha = 0.0;
-        //    }];
-        self.photoViewInView.photoImageView.alpha = 0.0;
-        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            
-            [self.photoViewInView showActionButtons:NO animated:NO];
-            self.headerButton.alpha = 0.0;
-            self.addPhotoLabel.alpha = 0.0;
-            self.photosScrollView.alpha = 0.0;
-            self.backgroundView.alpha = 0.0;            
-            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
-            self.floatingImageView.alpha = 0.0;
-            if (self.focus == UserFocus) {
-                [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
-            }
-            
-        } completion:^(BOOL finished){
-            
-            [self.delegate photosStripViewControllerFinished:self];
-            
-            //        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            //            self.backgroundView.alpha = 0.0;            
-            ////            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
-            ////            self.floatingImageView.alpha = 0.0;
-            //        } completion:^(BOOL finished){
-            //            [self.delegate photosStripViewControllerFinished:self];
-            //        }];
-            
-        }];
+        self.photoViewCenter.photoImageView.alpha = 0.0;
+        
+        [self.delegate photosStripViewControllerFinished:self withNoMorePhotos:noMorePhotos];
+        
+//        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+////
+////            [self.photoViewCenter showActionButtons:NO animated:NO];
+////            self.headerButton.alpha = 0.0;
+////            self.addPhotoLabel.alpha = 0.0;
+////            self.photosScrollView.alpha = 0.0;
+//////            self.backgroundView.alpha = 0.0;            
+//            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
+//            self.floatingImageView.alpha = 0.0;
+//////            if (self.focus == UserFocus) {
+//////                [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
+//////            }
+////            
+//        } completion:^(BOOL finished){
+////            
+//////            [self.delegate photosStripViewControllerFinished:self withNoMorePhotos:noMorePhotos];
+////            
+//        }];
         
     }
     
-}
-
-- (PhotoView *)photoViewInView {
-    int indexOfPhotoView = (int)(self.photosScrollView.contentOffset.x - self.photosContainer.frame.origin.x) / self.photosScrollView.frame.size.width;
-    PhotoView * photoView = nil;
-    switch (indexOfPhotoView) {
-        case 2: photoView = self.photoViewCenter; break;
-        case 1: photoView = self.photoViewLeftCenter; break;
-        case 3: photoView = self.photoViewRightCenter; break;
-        case 0: photoView = self.photoViewLeftmost; break;
-        case 4: photoView = self.photoViewRightmost; break;
-        default: break;
-    }
-    return photoView;
 }
 
 - (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView {
@@ -1014,7 +1082,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)emotishLogoTouched:(UIButton *)button {
-    [self viewControllerFinished];
+    [self viewControllerFinishedWithNoMorePhotos:NO];
 }
 
 - (void)swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
@@ -1031,13 +1099,14 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             
             PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
             feelingViewController.delegate = self.delegate;
+            feelingViewController.modalTransitionStyle = self.modalTransitionStyle;
             feelingViewController.coreDataManager = self.coreDataManager;
             feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
             [feelingViewController setFocusToFeeling:nextFeeling photo:[nextFeeling.mostRecentPhotos objectAtIndex:0]];
-            feelingViewController.galleryScreenshot = self.galleryScreenshot;
+//            feelingViewController.galleryScreenshot = self.galleryScreenshot;
             
-            feelingViewController.galleryImageView.alpha = 0.0;
-            feelingViewController.backgroundView.alpha = 0.0;
+//            feelingViewController.galleryImageView.alpha = 0.0;
+//            feelingViewController.backgroundView.alpha = 0.0;
             feelingViewController.topBar.alpha = 0.0;
             feelingViewController.bottomBar.alpha = 0.0;
             feelingViewController.addPhotoButton.alpha = 0.0;
@@ -1045,8 +1114,12 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             
             [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
             int direction = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? -1 : 1;
-            feelingViewController.view.frame = CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
+            feelingViewController.view.frame = CGRectMake(0, -direction * self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);// CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
+            NSLog(@"self = %@", NSStringFromCGRect(self.view.frame));
+            NSLog(@"feel = %@", NSStringFromCGRect(feelingViewController.view.frame));
             CGFloat originYAdjustment = direction * self.view.frame.size.height;
+            NSLog(@"yadj = %f", originYAdjustment);
+            
             [UIView animateWithDuration:0.125 animations:^{
                 self.addPhotoLabel.alpha = 0.0;
             } completion:^(BOOL finished){
@@ -1058,8 +1131,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                 self.contentView.frame = CGRectOffset(self.contentView.frame, 0, originYAdjustment);
                 feelingViewController.view.frame = CGRectOffset(feelingViewController.view.frame, 0, originYAdjustment);
             } completion:^(BOOL finished){
-                feelingViewController.galleryImageView.alpha = 1.0;
-                feelingViewController.backgroundView.alpha = 1.0;
+//                feelingViewController.galleryImageView.alpha = 1.0;
+//                feelingViewController.backgroundView.alpha = 1.0;
                 feelingViewController.topBar.alpha = 1.0;
                 feelingViewController.bottomBar.alpha = 1.0;
                 feelingViewController.addPhotoButton.alpha = 1.0;
@@ -1078,8 +1151,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     if (swipeLocationInHeaderButton.x >= self.headerButton.contentEdgeInsets.left && 
         swipeLocationInHeaderButton.x <= [self.headerButton.titleLabel.text sizeWithFont:self.headerButton.titleLabel.font constrainedToSize:CGSizeMake(self.headerButton.frame.size.width - self.headerButton.contentEdgeInsets.left - self.headerButton.contentEdgeInsets.right, self.headerButton.frame.size.height)].width + self.headerButton.contentEdgeInsets.left) {
         if (!self.photosScrollView.isTracking) {
-            NSLog(@"Swipe right");
-            [self photoInView:self.photoInView selectedFromPhotoView:self.photoViewInView];
+            [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
         }
     }
 }
@@ -1097,6 +1169,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
+    self.refreshAllInProgress = YES;
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     NSLog(@"%@", NSStringFromSelector(_cmd));
     self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
@@ -1113,6 +1186,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)getPhotosFromServerForUser:(User *)user {
+    self.refreshAllInProgress = YES;
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     NSLog(@"%@", NSStringFromSelector(_cmd));
     self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
@@ -1140,7 +1214,6 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
         }
         [self.coreDataManager saveCoreData];
-        [self updateViewsForCurrentFocus]; // This has issues with contentOffset
     } else {
         NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
         UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -1149,20 +1222,20 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 }
 
-- (void)getUpdateFromServerForPhoto:(Photo *)photo {
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    PFQuery * photoUpdateQuery = [PFQuery queryWithClassName:@"Photo"];
-    [self.photoUpdateQueries addObject:photoUpdateQuery];
-    [photoUpdateQuery getObjectInBackgroundWithId:photo.serverID block:^(PFObject *object, NSError * error){
-        if (!error && object != nil) {
-            [self.coreDataManager addOrUpdatePhotoFromServer:object];
-            [self.coreDataManager saveCoreData];
-            [self updateViewsForCurrentFocus]; // Ridiculously heavyweight
-        }
-        [self.photoUpdateQueries removeObject:photoUpdateQuery];
-    }];
-}
+//- (void)getUpdateFromServerForPhoto:(Photo *)photo {
+//    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+//    NSLog(@"%@", NSStringFromSelector(_cmd));
+//    PFQuery * photoUpdateQuery = [PFQuery queryWithClassName:@"Photo"];
+//    [self.photoUpdateQueries addObject:photoUpdateQuery];
+//    [photoUpdateQuery getObjectInBackgroundWithId:photo.serverID block:^(PFObject *object, NSError * error){
+//        if (!error && object != nil) {
+//            [self.coreDataManager addOrUpdatePhotoFromServer:object];
+//            [self.coreDataManager saveCoreData];
+//            [self updateViewsForCurrentFocus]; // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight // Ridiculously heavyweight
+//        }
+//        [self.photoUpdateQueries removeObject:photoUpdateQuery];
+//    }];
+//}
 
 - (void)profileButtonTouched:(UIButton *)button {
     NSLog(@"Profile button touched...");
@@ -1179,12 +1252,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             
             PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
             feelingViewController.delegate = self.delegate;
+            feelingViewController.modalTransitionStyle = self.modalTransitionStyle;
             feelingViewController.coreDataManager = self.coreDataManager;
             feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
             Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
             [feelingViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
             [feelingViewController setShouldAnimateIn:YES fromSource:PhotosStripUnrelated withPersistentImage:nil];
-            feelingViewController.galleryScreenshot = self.galleryScreenshot;
+//            feelingViewController.galleryScreenshot = self.galleryScreenshot;
             
             [UIView animateWithDuration:0.25 animations:^{
                 self.contentView.alpha = 0.0;
@@ -1256,6 +1330,25 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (BOOL) deleteAllowedForCurrentUser:(PFUser *)currentUser withPhoto:(Photo *)photo {
     return currentUser != nil && [currentUser.objectId isEqualToString:photo.user.serverID];
+}
+
+- (void)photoWebImageManager:(PhotoWebImageManager *)photoWebImangeManager withWebImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image {
+    NSLog(@"photoWebImageManager:withWebImageManager:didFinishWithImage:%@forPhotoWithServerID:%@", image, photoWebImangeManager.photoServerID);
+    NSUInteger photoViewIndexOfPhotoServerID = [self.photoViewsPhotoServerIDs indexOfObject:photoWebImangeManager.photoServerID];
+    if (photoViewIndexOfPhotoServerID != NSNotFound) {
+        ((PhotoView *)[self.photoViews objectAtIndex:photoViewIndexOfPhotoServerID]).photoImageView.image = image;
+    }
+    [self.photoWebImageManagersForPhotoServerIDs removeObjectForKey:photoWebImangeManager.photoServerID];
+}
+
+- (void)photoWebImageManager:(PhotoWebImageManager *)photoWebImangeManager withWebImageManager:(SDWebImageManager *)imageManager didFailWithError:(NSError *)error {
+    NSLog(@"photoWebImageManager:withWebImageManager:didFailWithError:%@forPhotoWithServerID:%@", error, photoWebImangeManager.photoServerID);
+    // Not sure what to do really... Hope that a future download will succeed, I suppose?
+    [self.photoWebImageManagersForPhotoServerIDs removeObjectForKey:photoWebImangeManager.photoServerID];
+}
+                 
+- (NSUInteger) photoViewCenterIndex {
+    return self.photoViews.count / 2;
 }
 
 @end

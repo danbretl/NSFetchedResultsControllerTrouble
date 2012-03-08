@@ -199,9 +199,9 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
     
     BOOL debugging = NO;
     if (debugging) {
-        self.photoImageView.backgroundColor = [UIColor blueColor];
-        self.photoCaptionTextField.backgroundColor = [UIColor greenColor];
-        self.photoCaptionButton.backgroundColor = [UIColor redColor];
+//        self.photoImageView.backgroundColor = [UIColor blueColor];
+//        self.photoCaptionTextField.backgroundColor = [UIColor greenColor];
+//        self.photoCaptionButton.backgroundColor = [UIColor redColor];
     } else {
         self.backgroundColor = [UIColor clearColor];
         self.photoImageView.backgroundColor = [UIColor clearColor];
@@ -278,10 +278,10 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
     
 }
 
-- (void) setActionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode enabled:(BOOL)enabled faded:(BOOL)faded {
+- (void) setActionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode enabled:(BOOL)enabled visible:(BOOL)visible {
     UIButton * actionButton = [self actionButtonWithCode:actionButtonCode];
     actionButton.userInteractionEnabled = enabled;
-    actionButton.alpha = faded ? 0.5 : 1.0;
+    actionButton.alpha = visible ? 1.0 : 0.0;
 }
 
 - (UIButton *)actionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode {

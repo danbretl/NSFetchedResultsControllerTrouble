@@ -1085,6 +1085,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         [[PFUser currentUser] deleteInBackground]; // This may or may not work.
         NSLog(@"Logging out [PFUser currentUser]");
         [PFUser logOut];
+        [self.coreDataManager deleteAllLikes];
         [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
     }
 }

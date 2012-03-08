@@ -13,6 +13,7 @@
 #import "UIColor+Emotish.h"
 #import "NotificationConstants.h"
 #import "EmotishAlertViews.h"
+#import "SDImageCache.h"
 
 static NSString * SPVC_FEELING_PLACEHOLDER_TEXT = @"something";
 static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
@@ -531,7 +532,12 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
         savingSuccess = [photoServer save];
         NSLog(@"  saving photoServer success? %d", savingSuccess);
         
+        NSLog(@"getting full saved photo");
+        photoServer = [PFQuery getObjectOfClass:@"Photo" objectId:photoServer.objectId];
+        NSLog(@"  photo retrieved = %@", photoServer);
+        
         self.submittedPhoto = [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:currentUser];
+        self.submittedPhoto.shouldHighlight = [NSNumber numberWithBool:NO];
         [self.coreDataManager saveCoreData];
         
         // Facebook?
@@ -552,6 +558,9 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
             self.waitingForTwitterPost = NO;
         }
         
+        self.submittedImage = [UIImage imageWithData:imageData];
+        [[SDImageCache sharedImageCache] storeImage:self.submittedImage forKey:self.submittedPhoto.imageURL];
+        [[SDImageCache sharedImageCache] storeImage:[UIImage imageWithData:imageThumbData] forKey:self.submittedPhoto.thumbURL];
         [self attemptSubmissionCompletion];
         
     }

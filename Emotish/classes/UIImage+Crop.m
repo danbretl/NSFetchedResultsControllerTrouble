@@ -8,7 +8,6 @@
 
 #import "UIImage+Crop.h"
 #import "ViewConstants.h"
-#import "UIImage+Resize.h"
 #import "GalleryConstants.h"
 
 @implementation UIImage(Crop)
