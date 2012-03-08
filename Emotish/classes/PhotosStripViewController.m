@@ -496,9 +496,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void) updatePhotoViewsPhotosForPhotoCenterIndex:(int)photoCenterIndex {
-    for (int i=0; i<self.photoViews.count; i++) {
+    int bumpDirection = -1;
+    for (int n=0; n<self.photoViews.count; n++) {
+        int bump = (n + 1 / 2) * bumpDirection;
+        int i = self.photoViewCenterIndex + bump;
         PhotoView * photoView = [self.photoViews objectAtIndex:i];
         [self updatePhotoView:photoView atPhotoViewIndex:i withPhotoAtIndex:photoCenterIndex - self.photoViewCenterIndex + i];
+        bumpDirection *= -1;
     }
 }
 
