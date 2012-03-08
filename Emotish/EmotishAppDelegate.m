@@ -36,6 +36,8 @@
 @synthesize appOpenedURLFlag=_appOpenedURLFlag;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    NSLog(@"application:didFinishLaunchingWithOptions:%@", launchOptions);
 
     NSLog(@"emotish_parse_app_id=%@", emotish_parse_app_id);
     NSLog(@"emotish_parse_app_client_key=%@", emotish_parse_app_client_key);
@@ -78,6 +80,14 @@
 
     self.window.rootViewController = self.rootNavController;
     [self.window makeKeyAndVisible];
+    
+    NSDictionary * remoteNotificationDictionary = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+    if (remoteNotificationDictionary != nil) {
+        self.notificationPhotoServerID = [remoteNotificationDictionary objectForKey:PUSH_LIKED_PHOTO_SERVER_ID];
+        if (self.notificationPhotoServerID != nil) {
+            [self attemptNavigateToPhotoWithServerID:self.notificationPhotoServerID];
+        }
+    }
         
     return YES;
 }

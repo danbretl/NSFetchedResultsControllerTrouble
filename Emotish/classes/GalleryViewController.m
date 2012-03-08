@@ -748,7 +748,7 @@
 
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID {
     
-    self.navigationController.visibleViewController.view.userInteractionEnabled = NO;
+//    self.navigationController.visibleViewController.view.userInteractionEnabled = NO;
     
     Photo * photoLocal = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", photoServerID] usingSortDescriptors:nil];
     if (photoLocal != nil &&
@@ -756,7 +756,7 @@
         photoLocal.feeling != nil) {
         [self navToRoot];
         [self showPhotosStripViewControllerFocusedOnUser:photoLocal.user photo:photoLocal updatePhotoData:YES animated:NO];
-        self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
+//        self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
     } else {
         [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
         PFQuery * photoQuery = [PFQuery queryWithClassName:@"Photo"];
@@ -774,7 +774,7 @@
                 UIAlertView * photoTroubleAlertView = [[UIAlertView alloc] initWithTitle:@"Hmmm..." message:@"Something went wrong, and we can't seem to find that particular Photo right now. Sorry! We'll work on this." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [photoTroubleAlertView show];
             }
-            self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
+//            self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
         }];
     }
         
