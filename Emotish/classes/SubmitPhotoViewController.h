@@ -17,17 +17,21 @@
 
 @protocol SubmitPhotoViewControllerDelegate;
 
-@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, PhotoViewDelegate, PF_FBRequestDelegate>
+@interface SubmitPhotoViewController : UIViewController <UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CameraOverlayViewHandlerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, PhotoViewDelegate, PF_FBRequestDelegate, UITableViewDelegate, UITableViewDataSource>
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
-@property (unsafe_unretained, nonatomic) IBOutlet UIScrollView * scrollView;
 @property (unsafe_unretained, nonatomic) IBOutlet UITextFieldWithInset * feelingTextField;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView * photoView;
 @property (unsafe_unretained, nonatomic) IBOutlet UIView * shareContainer;
 @property (unsafe_unretained, nonatomic) IBOutlet UILabel * shareLabel;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * twitterButton;
 @property (unsafe_unretained, nonatomic) IBOutlet UIButton * facebookButton;
+@property (strong, nonatomic) UITableView * feelingsTableView;
+@property (strong, nonatomic) UITableView * feelingsTableViewCamera;
+
+@property (strong, nonatomic) NSArray * feelings;
+@property (strong, nonatomic) NSArray * feelingsMatched;
 
 //@property (strong, nonatomic) UIImage * feelingImageOriginal;
 @property (strong, nonatomic) UIImage * feelingImageSquare;

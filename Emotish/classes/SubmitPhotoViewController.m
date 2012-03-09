@@ -7,6 +7,7 @@
 //
 
 #import "SubmitPhotoViewController.h"
+#import "SubmitPhotoShared.h"
 #import "ViewConstants.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 #import "UIImage+Crop.h"
@@ -14,11 +15,17 @@
 #import "NotificationConstants.h"
 #import "EmotishAlertViews.h"
 #import "SDImageCache.h"
+#import "FeelingWordCell.h"
 
-static NSString * SPVC_FEELING_PLACEHOLDER_TEXT = @"something";
 static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 const CGFloat SPVC_SHARE_CONTAINER_MARGIN_TOP = 0.0;
 const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
+const CGFloat SPVC_FEELINGS_TABLE_VIEW_ROW_HEIGHT_SUBMISSION = 40.0;
+const CGFloat SPVC_FEELINGS_TABLE_VIEW_ROW_HEIGHT_CAMERA = 40.0;
+const CGFloat SPVC_FEELINGS_TABLE_VIEW_MARGIN_TOP = -8.0;
+const CGFloat SPVC_FEELINGS_TABLE_VIEW_PADDING_BOTTOM = 5.0;
+const CGFloat APPLE_SCROLL_INDICATOR_THICKNESS = 5.0; // HARD-CODED, COULD CHANGE SOMEDAY
+const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
 
 @interface SubmitPhotoViewController()
 - (void) updateViewsWithCurrentData;
@@ -35,13 +42,16 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
 - (IBAction)shareButtonTouched:(UIButton *)shareButton;
 @property (nonatomic) BOOL facebookShareEnabled;
 @property (nonatomic) BOOL twitterShareEnabled;
-
 @property (nonatomic) BOOL waitingForFacebookPost;
 @property (nonatomic) BOOL waitingForTwitterPost;
 - (void) attemptSubmissionCompletion;
 @property (nonatomic, strong) Photo * submittedPhoto;
 @property (nonatomic, strong) UIImage * submittedImage;
-
+- (NSArray *) feelingsFrom:(NSArray *)arrayOfFeelings matchingString:(NSString *)inputString;
+- (BOOL)feelingInputExistsForTableView:(UITableView *)tableView;
+//- (BOOL)feelingInputIsSubstantial:(NSString *)feelingInput;
+//@property (nonatomic) BOOL feelingInputExists;
+- (void) textFieldDidChangeText:(UITextField *)textField;
 @end
 
 @implementation SubmitPhotoViewController
@@ -49,7 +59,8 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
 @synthesize shareLabel = _shareLabel;
 @synthesize twitterButton = _twitterButton;
 @synthesize facebookButton = _facebookButton;
-@synthesize scrollView = _scrollView;
+@synthesize feelingsTableView=_feelingsTableView, feelingsTableViewCamera=_feelingsTableViewCamera, feelings=_feelings, feelingsMatched=_feelingsMatched;
+//@synthesize feelingInputExists=_feelingInputExists;
 
 @synthesize topBar=_topBar, feelingTextField=_feelingTextField, photoView=_photoView, bottomBar=_bottomBar;
 @synthesize /*feelingImageOriginal=_feelingImageOriginal,*/ feelingImageSquare=_feelingImageSquare, feelingWord=_feelingWord;
@@ -68,7 +79,9 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     if (self) {
 //        self.feelingImageOriginal = nil;
         self.feelingImageSquare = nil;
-        self.feelingWord = SPVC_FEELING_PLACEHOLDER_TEXT;
+        self.feelingWord = SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT;
+        self.feelings = nil;
+        self.feelingsMatched = nil;
     }
     return self;
 }
@@ -90,9 +103,6 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     self.photoView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL * 2, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM + PC_PHOTO_CELL_LABEL_HEIGHT + PC_PHOTO_CELL_PADDING_BOTTOM);
     self.photoView.photoImageView.clipsToBounds = YES;
     self.photoView.userInteractionEnabled = YES;
-//    self.photoView.photoCaptionTextField.userInteractionEnabled = YES;
-//    self.photoView.button.userInteractionEnabled = NO;
-//    self.photoView.photoCaptionTextField.delegate = self;
     self.photoView.photoCaptionTextField.textColor = [UIColor userColor];
     self.photoView.delegate = self;
     self.photoView.actionButtonsEnabled = NO;
@@ -104,6 +114,12 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     // The following is still not matching up perfectly with PhotosStripViewController headerButton when font size is being adjusted for a long string.
     self.feelingTextField.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photoView.frame));
     self.feelingTextField.textFieldInsets = UIEdgeInsetsMake(0, self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_MARGIN_TOP, 320 - (CGRectGetMaxX(self.photoView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
+    self.feelingTextField.backgroundColor = [UIColor clearColor];
+    CAGradientLayer * feelingTextFieldGradientLayer = [CAGradientLayer layer];
+    feelingTextFieldGradientLayer.frame = self.feelingTextField.bounds;
+    feelingTextFieldGradientLayer.colors = [NSArray arrayWithObjects:(id)[UIColor whiteColor].CGColor, (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor, nil];
+    feelingTextFieldGradientLayer.locations = [NSArray arrayWithObjects:(id)[NSNumber numberWithFloat:0.95], (id)[NSNumber numberWithFloat:1.0], nil];
+    [self.feelingTextField.layer addSublayer:feelingTextFieldGradientLayer];
     
     self.shareContainer.frame = CGRectMake(self.feelingTextField.textFieldInsets.left, CGRectGetMaxY(self.photoView.frame) + SPVC_SHARE_CONTAINER_MARGIN_TOP, self.feelingTextField.frame.size.width - (self.feelingTextField.textFieldInsets.left + self.feelingTextField.textFieldInsets.right), SPVC_SHARE_CONTAINER_HEIGHT);
     self.shareContainer.backgroundColor = [UIColor whiteColor];
@@ -111,7 +127,41 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     [self.facebookButton setImage:[UIImage imageNamed:@"btn_share_facebook_touch.png"] forState:UIControlStateHighlighted|UIControlStateSelected];
     [self.twitterButton setImage:[UIImage imageNamed:@"btn_share_twitter_touch.png"] forState:UIControlStateHighlighted|UIControlStateSelected];
     
-    self.scrollView.contentSize = self.view.bounds.size;
+    // Init
+    self.feelingsTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width - floorf(((self.view.bounds.size.width - (PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X + PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)) - APPLE_SCROLL_INDICATOR_THICKNESS) / 2.0), self.view.bounds.size.height) style:UITableViewStylePlain];
+    // Basic setup
+    self.feelingsTableView.backgroundColor = [UIColor whiteColor];
+    self.feelingsTableView.opaque = YES;
+    self.feelingsTableView.delegate = self;
+    self.feelingsTableView.dataSource = self;
+    self.feelingsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.feelingsTableView.alpha = 0.0;
+    self.feelingsTableView.showsVerticalScrollIndicator = NO;
+    // More setup
+    self.feelingsTableView.rowHeight = SPVC_FEELINGS_TABLE_VIEW_ROW_HEIGHT_SUBMISSION;
+    UIEdgeInsets feelingsTableViewInsets = UIEdgeInsetsMake(CGRectGetMaxY(self.feelingTextField.frame) + SPVC_FEELINGS_TABLE_VIEW_MARGIN_TOP, 0, self.bottomBar.frame.size.height + SPVC_FEELINGS_TABLE_VIEW_PADDING_BOTTOM, 0);
+    self.feelingsTableView.contentInset = feelingsTableViewInsets;
+    self.feelingsTableView.scrollIndicatorInsets = feelingsTableViewInsets;
+    // Add subview
+    [self.view insertSubview:self.feelingsTableView belowSubview:self.feelingTextField];
+    
+    // Init
+    self.feelingsTableViewCamera = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain]; // Frame will be updated later when cameraOverlayView is set up
+    // Basic setup
+    self.feelingsTableViewCamera.backgroundColor = [UIColor whiteColor];
+    self.feelingsTableViewCamera.opaque = YES;
+    self.feelingsTableViewCamera.delegate = self;
+    self.feelingsTableViewCamera.dataSource = self;
+    self.feelingsTableViewCamera.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.feelingsTableViewCamera.alpha = 0.0;
+    self.feelingsTableViewCamera.showsVerticalScrollIndicator = NO;
+    // More setup
+    // The rest is set up later when cameraOverlayView has been set up
+    // Add subview
+    // This table view is added to the cameraOverlayView's subviews later
+    
+    self.feelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:[NSPredicate predicateWithFormat:@"ANY photos.hidden == NO"] sortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES]]];
+    self.feelingsMatched = self.feelings;
     
     // Register for keyboard events
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
@@ -124,11 +174,12 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     [self setFeelingTextField:nil];
     [self setBottomBar:nil];
     [self setPhotoView:nil];
-    [self setScrollView:nil];
     [self setShareContainer:nil];
     [self setShareLabel:nil];
     [self setTwitterButton:nil];
     [self setFacebookButton:nil];
+    [self setFeelingsTableView:nil];
+    [self setFeelingsTableViewCamera:nil];
     [super viewDidUnload];
 }
 
@@ -176,17 +227,27 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
         BOOL rearCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear];
         self.imagePickerControllerCamera.cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
         
+        self.imagePickerControllerCamera.cameraFlashMode = UIImagePickerControllerCameraFlashModeOff; // Not even going to give the option to use flash for now. People at bars might get angry...
+        
         cameraOverlayView = [[CameraOverlayView alloc] initWithFrame:[UIScreen mainScreen].bounds];
         cameraOverlayView.swapCamerasButton.hidden = !(frontCameraAvailable && rearCameraAvailable);
         if (self.feelingWord && self.feelingWord.length > 0) {
             [cameraOverlayView setFeelingText:self.feelingWord];//.lowercaseString];
         }
+        self.feelingsTableViewCamera.alpha = 0.0;
+        [cameraOverlayView insertSubview:self.feelingsTableViewCamera belowSubview:cameraOverlayView.topBar];
+        self.feelingsTableViewCamera.frame = cameraOverlayView.bounds;
+        self.feelingsTableViewCamera.rowHeight = SPVC_FEELINGS_TABLE_VIEW_ROW_HEIGHT_CAMERA;
+        UIEdgeInsets feelingsTableViewCameraInsets = UIEdgeInsetsMake(cameraOverlayView.topBar.frame.size.height + SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL, 0, cameraOverlayView.bottomBar.frame.size.height + SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL, 0);
+        self.feelingsTableViewCamera.contentInset = feelingsTableViewCameraInsets;
+        self.feelingsTableViewCamera.scrollIndicatorInsets = feelingsTableViewCameraInsets;
         //        self.imagePickerControllerCamera.cameraOverlayView = cameraOverlayView;
         
         self.cameraOverlayViewHandler = [[CameraOverlayViewHandler alloc] init];
         self.cameraOverlayViewHandler.delegate = self;
         self.cameraOverlayViewHandler.imagePickerController = self.imagePickerControllerCamera;
         self.cameraOverlayViewHandler.cameraOverlayView = cameraOverlayView;
+        self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.delegate = self;
         if (self.feelingImageSquare != nil) {
             [self.cameraOverlayViewHandler showImageReview:self.feelingImageSquare];
         }
@@ -320,7 +381,7 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
 
 - (void)updateViewsWithCurrentData {
     
-    self.feelingTextField.text = self.feelingWord && self.feelingWord.length > 0 ? self.feelingWord : SPVC_FEELING_PLACEHOLDER_TEXT;
+    self.feelingTextField.text = self.feelingWord && self.feelingWord.length > 0 ? self.feelingWord : SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT;
     
     self.photoView.photoImageView.image = self.feelingImageSquare;
     self.photoView.photoCaptionTextField.text = [PFUser currentUser] != nil ? ((PFUser *)[PFUser currentUser]).username : SPVC_USER_PLACEHOLDER_TEXT;
@@ -330,44 +391,105 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     
 }
 
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
+    
+    if (textField == self.feelingTextField ||
+        textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+        
+        if ([textField.text isEqualToString:SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT]) {
+            textField.text = @"";
+        }
+        self.feelingsMatched = [self feelingsFrom:self.feelings matchingString:textField.text];
+        
+        UITableView * feelingsTableView = (textField == self.feelingTextField) ? self.feelingsTableView : self.feelingsTableViewCamera;
+        [feelingsTableView reloadData];
+        feelingsTableView.contentOffset = CGPointMake(0, -feelingsTableView.contentInset.top);
+                
+        [UIView animateWithDuration:0.25 animations:^{
+            feelingsTableView.alpha = 1.0;
+        }];
+        
+    }
+    
+    return YES;
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    NSLog(@"textFieldDidBeginEditing");
+    if (textField == self.feelingTextField ||
+        textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+        [textField addTarget:self action:@selector(textFieldDidChangeText:) forControlEvents:UIControlEventEditingChanged];
+//        [self.feelingTextField addTarget:self action:@selector(textFieldDidChangeText:) forControlEvents:UIControlEventEditingChanged];
+//        [cameraOverlayView.feelingTextField addTarget:self action:@selector(textFieldDidChangeText:) forControlEvents:UIControlEventEditingChanged];
+        // The following has been moved to textFieldShouldBeginEditing
+//        if ([textField.text isEqualToString:SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT]) {
+//            textField.text = @"";
+//        }
+    }
+}
+
+- (NSArray *) feelingsFrom:(NSArray *)arrayOfFeelings matchingString:(NSString *)inputString {
+    return inputString.length > 0 ? [[arrayOfFeelings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF.word beginswith[cd] %@", inputString]] arrayByAddingObjectsFromArray:[arrayOfFeelings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT SELF.word beginswith[cd] %@ AND SELF.word contains[cd] %@", inputString, inputString]]] : arrayOfFeelings;
+}
+
+//- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+//    if (textField == self.feelingTextField ||
+//        textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+//        NSString * upcomingTextFieldString = [textField.text stringByReplacingCharactersInRange:range withString:string];
+//        self.feelingsMatched = [self feelingsFrom:self.feelings matchingString:upcomingTextFieldString];
+//        UITableView * feelingsTableView = (textField == self.feelingTextField) ? self.feelingsTableView : self.feelingsTableViewCamera;
+//        [feelingsTableView reloadData];
+//        [feelingsTableView setContentOffset:CGPointMake(0, -feelingsTableView.contentInset.top) animated:NO];
+//        if (textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+//            [self.cameraOverlayViewHandler.cameraOverlayView adjustFeelingPromptLabelForFeelingString:upcomingTextFieldString];
+//        }
+//    }
+//    return YES;
+//}
+
+- (void)textFieldDidChangeText:(UITextField *)textField {
+    if (textField == self.feelingTextField ||
+        textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+        self.feelingsMatched = [self feelingsFrom:self.feelings matchingString:textField.text];
+        UITableView * feelingsTableView = (textField == self.feelingTextField) ? self.feelingsTableView : self.feelingsTableViewCamera;
+        [feelingsTableView reloadData];
+        [feelingsTableView setContentOffset:CGPointMake(0, -feelingsTableView.contentInset.top) animated:NO];
+        if (textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+            [self.cameraOverlayViewHandler.cameraOverlayView adjustFeelingPromptLabelForFeelingString:textField.text];
+        }
+    }
+}
+
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
     BOOL shouldReturn = YES;
     if (textField == self.feelingTextField ||
-        textField == self.photoView.photoCaptionTextField) {
+        textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
         shouldReturn = NO;
         [textField resignFirstResponder];
     }
     return shouldReturn;
 }
 
-- (void)textFieldDidBeginEditing:(UITextField *)textField {
-    NSLog(@"textFieldDidBeginEditing");
-    if (textField == self.feelingTextField) {
-        if ([textField.text isEqualToString:SPVC_FEELING_PLACEHOLDER_TEXT]) {
-            textField.text = @"";
-        }
-        [self.scrollView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
-    } else if (textField == self.photoView.photoCaptionTextField) {
-        if ([textField.text isEqualToString:SPVC_USER_PLACEHOLDER_TEXT]) {
-            textField.text = @"";
-        }
-        [self.scrollView scrollRectToVisible:[self.scrollView convertRect:self.photoView.photoCaptionTextField.frame fromView:self.photoView.photoCaptionTextField.superview] animated:YES];
-    }
-}
-
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     NSLog(@"textFieldDidEndEditing");
-    if ([textField.text isEqualToString:@""]) {
-        if (textField == self.feelingTextField) {
-            textField.text = SPVC_FEELING_PLACEHOLDER_TEXT;
-        } else if (textField == self.photoView.photoCaptionTextField) {
-            textField.text = SPVC_USER_PLACEHOLDER_TEXT;
+    [textField removeTarget:self action:@selector(textFieldDidChangeText:) forControlEvents:UIControlEventEditingChanged];
+    if (textField == self.feelingTextField ||
+        textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+        
+        UITableView * feelingsTableView = (textField == self.feelingTextField) ? self.feelingsTableView : self.feelingsTableViewCamera;
+        [UIView animateWithDuration:0.25 animations:^{
+            feelingsTableView.alpha = 0.0;
+        }];
+        if ([textField.text isEqualToString:@""]) {
+            textField.text = SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT;
+        } else {
+            textField.text = [textField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         }
+        if (textField == self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField) {
+            [self.cameraOverlayViewHandler.cameraOverlayView adjustFeelingPromptLabelForFeelingString:textField.text];
+        }
+        self.feelingWord = textField.text;
     }
-    self.feelingTextField.text = [self.feelingTextField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    self.photoView.photoCaptionTextField.text = [self.photoView.photoCaptionTextField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    self.feelingWord = self.feelingTextField.text;
-    
 }
 
 - (void)photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
@@ -449,7 +571,6 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
 - (void) backButtonTouched:(UIButton *)button {
     NSLog(@"backButtonTouched");
     [self.feelingTextField resignFirstResponder];
-    [self.photoView.photoCaptionTextField resignFirstResponder];
     [self pushImagePicker];
 }
 
@@ -457,11 +578,10 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     NSLog(@"doneButtonTouched");
         
     [self.feelingTextField resignFirstResponder];
-    [self.photoView.photoCaptionTextField resignFirstResponder];
     
     PFUser * currentUser = [PFUser currentUser];
     
-    if ([self.feelingWord isEqualToString:SPVC_FEELING_PLACEHOLDER_TEXT]) {
+    if ([self.feelingWord isEqualToString:SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT]) {
         [self.noFeelingAlertView show];
     } else if (currentUser == nil) {
         [self.noUserAlertView show];
@@ -595,11 +715,21 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
 	CGSize keyboardSize = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
     double keyboardAnimationDuration = [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationCurve keyboardAnimationCurve = [[info objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue];
-    CGRect rectToMakeVisible = [self.photoView.photoCaptionTextField isFirstResponder] ? [self.scrollView convertRect:self.photoView.photoCaptionTextField.frame fromView:self.photoView.photoCaptionTextField.superview] : CGRectMake(0, 0, 1, 1);
     [UIView animateWithDuration:keyboardAnimationDuration delay:0.0 options:keyboardAnimationCurve animations:^{
-        self.scrollView.contentInset = UIEdgeInsetsMake(0, 0, keyboardSize.height, 0);
-        [self.scrollView scrollRectToVisible:rectToMakeVisible animated:NO];
-//        self.photoView.photoCaptionTextField.backgroundColor = [UIColor redColor];
+        // Submission Screen
+        UIEdgeInsets feelingsTableContentInset = self.feelingsTableView.contentInset;
+        feelingsTableContentInset.bottom = keyboardSize.height + SPVC_FEELINGS_TABLE_VIEW_PADDING_BOTTOM;
+        self.feelingsTableView.contentInset = feelingsTableContentInset;
+        UIEdgeInsets feelingsTableScrollInsets = self.feelingsTableView.scrollIndicatorInsets;
+        feelingsTableScrollInsets.bottom = keyboardSize.height + SPVC_FEELINGS_TABLE_VIEW_PADDING_BOTTOM;
+        self.feelingsTableView.scrollIndicatorInsets = feelingsTableScrollInsets;
+        // Camera Screen
+        UIEdgeInsets feelingsTableCameraContentInset = self.feelingsTableViewCamera.contentInset;
+        feelingsTableCameraContentInset.bottom = keyboardSize.height + SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL;
+        self.feelingsTableViewCamera.contentInset = feelingsTableCameraContentInset;
+        UIEdgeInsets feelingsTableCameraScrollInsets = self.feelingsTableViewCamera.scrollIndicatorInsets;
+        feelingsTableCameraScrollInsets.bottom = keyboardSize.height + SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL;
+        self.feelingsTableViewCamera.scrollIndicatorInsets = feelingsTableCameraScrollInsets;
     } completion:NULL];
 }
 
@@ -609,9 +739,20 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
     double keyboardAnimationDuration = [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationCurve keyboardAnimationCurve = [[info objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue];
     [UIView animateWithDuration:keyboardAnimationDuration delay:0.0 options:keyboardAnimationCurve animations:^{
-        self.scrollView.contentInset = UIEdgeInsetsZero;
-        [self.scrollView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:NO];
-//        self.photoView.photoCaptionTextField.backgroundColor = [UIColor clearColor];
+        // Submission Screen
+        UIEdgeInsets feelingsTableContentInset = self.feelingsTableView.contentInset;
+        feelingsTableContentInset.bottom = self.bottomBar.frame.size.height + SPVC_FEELINGS_TABLE_VIEW_PADDING_BOTTOM;
+        self.feelingsTableView.contentInset = feelingsTableContentInset;
+        UIEdgeInsets feelingsTableScrollInsets = self.feelingsTableView.scrollIndicatorInsets;
+        feelingsTableScrollInsets.bottom = self.bottomBar.frame.size.height + SPVC_FEELINGS_TABLE_VIEW_PADDING_BOTTOM;
+        self.feelingsTableView.scrollIndicatorInsets = feelingsTableScrollInsets;    
+        // Camera Screen
+        UIEdgeInsets feelingsTableCameraContentInset = self.feelingsTableViewCamera.contentInset;
+        feelingsTableCameraContentInset.bottom = self.cameraOverlayViewHandler.cameraOverlayView.bottomBar.frame.size.height + SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL;
+        self.feelingsTableViewCamera.contentInset = feelingsTableCameraContentInset;
+        UIEdgeInsets feelingsTableCameraScrollInsets = self.feelingsTableViewCamera.scrollIndicatorInsets;
+        feelingsTableCameraScrollInsets.bottom = self.cameraOverlayViewHandler.cameraOverlayView.bottomBar.frame.size.height + SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL;
+        self.feelingsTableViewCamera.scrollIndicatorInsets = feelingsTableCameraScrollInsets;
     } completion:NULL];
 }
 
@@ -679,6 +820,75 @@ const CGFloat SPVC_SHARE_CONTAINER_HEIGHT = 44.0;
         self.photoView.photoCaptionTextField.text = SPVC_USER_PLACEHOLDER_TEXT;
     }
     [self dismissModalViewControllerAnimated:YES];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    NSInteger rowCount = 0;
+    if ([self feelingInputExistsForTableView:tableView]) {
+        rowCount = self.feelingsMatched.count + 1;
+    } else {
+        rowCount = self.feelingsMatched.count;
+    }
+    return rowCount;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    // Get / Create the cell
+    static NSString * CellID = @"FeelingWordCellID";
+    FeelingWordCell * cell = (FeelingWordCell *)[tableView dequeueReusableCellWithIdentifier:CellID];
+    if (cell == nil) {
+        cell = [[FeelingWordCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellID];
+    }
+    
+    cell.textLabel.font = [UIFont boldSystemFontOfSize:24.0];
+    if (tableView == self.feelingsTableView) {
+        cell.textLabelPadding = UIEdgeInsetsMake(0, PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, 0, tableView.bounds.size.width - PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X - PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
+//        cell.textLabel.font = self.feelingTextField.font;
+    } else if (tableView == self.feelingsTableViewCamera) {
+        cell.textLabelPadding = UIEdgeInsetsMake(0, CAMERA_VIEW_TOP_BAR_PADDING_HORIZONTAL, 0, CAMERA_VIEW_TOP_BAR_PADDING_HORIZONTAL);
+//        cell.textLabel.font = self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField.font;
+    }
+
+    int feelingIndex = indexPath.row;
+    UITextField * textField = tableView == self.feelingsTableView ? self.feelingTextField : self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField;
+    if ([self feelingInputExistsForTableView:tableView] && indexPath.row == 0) {
+        cell.textLabel.text = [NSString stringWithFormat:/*@"+*/@"%@", textField.text];
+        cell.textLabel.textColor = [UIColor emotishColor];
+    } else {
+        cell.textLabel.textColor = [UIColor feelingColor];
+        if ([self feelingInputExistsForTableView:tableView]) {
+            feelingIndex--;
+        }
+        Feeling * feeling = [self.feelingsMatched objectAtIndex:feelingIndex];
+        cell.textLabel.text = feeling.word;
+    }
+    
+    // Return the cell
+    return cell;
+    
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSString * selectedString = nil;
+    UITextField * textField = tableView == self.feelingsTableView ? self.feelingTextField : self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField;
+    [textField removeTarget:self action:@selector(textFieldDidChangeText:) forControlEvents:UIControlEventEditingChanged];
+    if ([self feelingInputExistsForTableView:tableView] && indexPath.row == 0) {
+        selectedString = textField.text;
+    } else {
+        int selectedFeelingIndex = indexPath.row;
+        if ([self feelingInputExistsForTableView:tableView]) {
+            selectedFeelingIndex--;
+        }
+        Feeling * feeling = [self.feelingsMatched objectAtIndex:selectedFeelingIndex];
+        textField.text = feeling.word;
+    }
+    [textField resignFirstResponder];
+}
+
+- (BOOL)feelingInputExistsForTableView:(UITableView *)tableView {
+    UITextField * textField = tableView == self.feelingsTableView ? self.feelingTextField : self.cameraOverlayViewHandler.cameraOverlayView.feelingTextField;
+    return textField.text.length > 0 && ![textField.text isEqualToString:SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT];
 }
 
 @end

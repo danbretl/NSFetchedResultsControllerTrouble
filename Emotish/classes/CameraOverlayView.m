@@ -7,11 +7,11 @@
 //
 
 #import "CameraOverlayView.h"
+#import "SubmitPhotoShared.h"
 #import "UIColor+Emotish.h"
 #import "ViewConstants.h"
 #import <QuartzCore/QuartzCore.h>
 
-const CGFloat COV_TOP_BAR_PADDING_HORIZONTAL = 20.0;
 const CGFloat COV_BOTTOM_BAR_PADDING_LEFT = 3.0;
 const CGFloat COV_BOTTOM_BAR_PADDING_RIGHT = 5.0;
 const CGFloat COV_FEELING_PROMPT_MARGIN_RIGHT = 6.0;
@@ -21,7 +21,6 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
 
 
 @interface CameraOverlayView()
-@property (strong, nonatomic, readonly) NSString * feelingPlaceholderText;
 @property (nonatomic) int feelingPromptIndex;
 @property (strong, nonatomic, readonly) NSString * feelingPromptTextLong;
 @property (strong, nonatomic, readonly) NSString * feelingPromptTextShort;
@@ -29,7 +28,6 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
 @property (strong, nonatomic, readonly) NSArray * feelingPromptsLongestToShortest; // Array of NSStrings
 @property (strong, nonatomic, readonly) NSArray * feelingPromptsWidthsLongestToShortest; // Array of NSNumbers
 @property (strong, nonatomic) UILabel * feelingPromptLabel;
-- (void) adjustFeelingPromptLabelForFeelingString:(NSString *)feelingString;
 @end
 
 @implementation CameraOverlayView
@@ -59,15 +57,12 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
         self.topBar.layer.shadowOpacity = shadowOpacity;
         self.topBar.layer.shadowOffset = CGSizeMake(0, 0);
 
-        self.feelingTextField = [[UITextField alloc] initWithFrame:CGRectMake(COV_TOP_BAR_PADDING_HORIZONTAL, 0, self.topBar.frame.size.width - 2 * COV_TOP_BAR_PADDING_HORIZONTAL, self.topBar.frame.size.height)];
-//        self.feelingTextField.text = self.feelingPlaceholderText;
-//        self.feelingTextField.textColor = [UIColor emotishColor];
+        self.feelingTextField = [[UITextField alloc] initWithFrame:CGRectMake(CAMERA_VIEW_TOP_BAR_PADDING_HORIZONTAL, 0, self.topBar.frame.size.width - 2 * CAMERA_VIEW_TOP_BAR_PADDING_HORIZONTAL, self.topBar.frame.size.height)];
         self.feelingTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         self.feelingTextField.adjustsFontSizeToFitWidth = NO;
         self.feelingTextField.font = [UIFont boldSystemFontOfSize:24.0];
         self.feelingTextField.textColor = [UIColor feelingColor];
         self.feelingTextField.returnKeyType = UIReturnKeyDone;
-        self.feelingTextField.delegate = self;
         self.feelingTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
         self.feelingTextField.leftViewMode = UITextFieldViewModeAlways;
         [self.topBar addSubview:self.feelingTextField];
@@ -80,7 +75,7 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
         self.feelingPromptLabel.textColor = [UIColor emotishColor];
         self.feelingPromptIndex = 0;
         self.feelingTextField.leftView = self.feelingPromptLabel;
-        [self setFeelingText:self.feelingPlaceholderText];
+        [self setFeelingText:SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT];
         
         self.bottomBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.frame.size.height - CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT, self.frame.size.width, CAMERA_OVERLAY_BOTTOM_BAR_HEIGHT)];
         self.bottomBar.contentMode = UIViewContentModeBottomLeft;
@@ -88,7 +83,7 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
         bottomBarBackgroundImageView.contentMode = UIViewContentModeBottom;
         bottomBarBackgroundImageView.image = [UIImage imageNamed:@"bottom_bar_camera_view.png"];
         [self.bottomBar addSubview:bottomBarBackgroundImageView];
-        [self addSubview:self.bottomBar];
+        [self insertSubview:self.bottomBar belowSubview:self.topBar];
         self.bottomBar.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.bottomBar.bounds].CGPath;
         // The shadow seems to be included in the image, but I can't see it in the app. Going to keep drawing the shadow in code for now.
         self.bottomBar.layer.shadowOpacity = shadowOpacity;
@@ -184,51 +179,6 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
     return self;
 }
 
-//+ (CGRect) imageCropFrame {
-////    CGSize hardCodedScreenSize = [UIScreen mainScreen].bounds.size;
-////    CGFloat hardCodedBottomBarHeight = 54.0;
-////    CGFloat minScreenSideLength = MIN(hardCodedScreenSize.width, hardCodedScreenSize.height);
-////    CGSize imageSize = CGSizeMake(minScreenSideLength, minScreenSideLength);
-//    return CGRectMake(0, CAMERA_OVERLAY_TOP_BAR_HEIGHT, CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH, CAMERA_VIEW_SCREEN_DISPLAY_SIDE_LENGTH);
-////    return CGRectMake(0, hardCodedScreenSize.height - imageSize.height - hardCodedBottomBarHeight, imageSize.width, imageSize.height);
-//}
-
-- (BOOL)textFieldShouldReturn:(UITextField *)textField {
-    BOOL shouldReturn = YES;
-    if (textField == self.feelingTextField) {
-        shouldReturn = NO;
-        [textField resignFirstResponder];
-    }
-    return shouldReturn;
-}
-
-- (void)textFieldDidBeginEditing:(UITextField *)textField {
-    if ([textField.text isEqualToString:self.feelingPlaceholderText]) {
-        textField.text = @"";
-    }
-}
-
-- (void)textFieldDidEndEditing:(UITextField *)textField {
-    if ([textField.text isEqualToString:@""]) {
-        textField.text = self.feelingPlaceholderText;
-    } else {
-        textField.text = [textField.text.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        [self adjustFeelingPromptLabelForFeelingString:textField.text];
-    }
-}
-
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    [self adjustFeelingPromptLabelForFeelingString:[textField.text stringByReplacingCharactersInRange:range withString:string]];    
-//    NSLog(@"stringWillBeSize = %@", NSStringFromCGSize(stringWillBeSize));
-//    NSLog(@"textFieldSize = %@", NSStringFromCGSize(textField.frame.size));
-//    NSLog(@"promptSize = %@", NSStringFromCGSize(textField.leftView.frame.size));
-//    NSLog(@"stringWillBeSize = %@", NSStringFromCGSize(stringWillBeSize));
-//    NSLog(@"textField.text = %@", textField.text);
-//    NSLog(@"range = %@", NSStringFromRange(range));
-//    NSLog(@"replacementString = %@", string);
-    return YES;
-}
-
 - (void) adjustFeelingPromptLabelForFeelingString:(NSString *)feelingString {
     CGSize feelingStringSize = [feelingString sizeWithFont:self.feelingTextField.font constrainedToSize:self.feelingTextField.frame.size];
     CGFloat feelingPromptAvailableWidth = self.feelingTextField.frame.size.width - feelingStringSize.width;
@@ -242,7 +192,6 @@ const CGFloat COV_CAMERA_BUTTON_WIDTH = 100.0;
     }
 }
 
-- (NSString *)feelingPlaceholderText { return @"something"; }
 - (NSString *)feelingPromptTextShortest { return @""; }
 - (NSString *)feelingPromptTextShort    { return @"I'm"; }
 - (NSString *)feelingPromptTextLong     { return @"I'm feeling"; }

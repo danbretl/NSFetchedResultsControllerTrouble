@@ -24,6 +24,8 @@
 @property (strong, nonatomic) UIButton * libraryButton;
 @property (strong, nonatomic) UIButton * acceptButton;
 
+- (void) adjustFeelingPromptLabelForFeelingString:(NSString *)feelingString;
+
 //+ (CGRect) imageCropFrame;
 
 @end
