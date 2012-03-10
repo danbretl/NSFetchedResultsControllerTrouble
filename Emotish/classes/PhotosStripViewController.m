@@ -47,9 +47,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void) updatePhotoViewCaption:(PhotoView *)photoView withDataFromPhoto:(Photo *)photo oppositeOfFocus:(PhotosStripFocus)mainViewDataFocus;
 - (void) pinchedToZoomOut:(UIPinchGestureRecognizer *)pinchGestureRecognizer;
 - (void) swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
-//- (void) swipedRightTwoFingerOnScrollView:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
-- (void) swipedRightOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
-- (void) swipedLeftOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
+- (void) swipedOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer;
 - (void) photoViewSelected:(PhotoView *)photoView withPhoto:(Photo *)photo;
 - (void) viewControllerFinishedWithNoMorePhotos:(BOOL)noMorePhotos;
 - (IBAction)headerButtonTouched:(UIButton *)button;
@@ -89,6 +87,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @property (nonatomic) int refreshAllNetChangeBeforePreviousPhotoCenterIndex;
 @property (nonatomic) BOOL controllerChangingContent;
 @property BOOL blockViewControllerFinishing;
+@property (nonatomic) BOOL suppressDownloadsForScrollJump;
 @end
 
 @implementation PhotosStripViewController
@@ -111,7 +110,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize photosClipView=_photosClipView, photosScrollView=_photosScrollView, flagStretchView=_flagStretchView, photosContainer=_photosContainer, photoViews=_photoViews, photoViewLeftmost=_photoViewLeftmost, photoViewLeftCenter=_photoViewLeftCenter, photoViewCenter=_photoViewCenter, photoViewRightCenter=_photoViewRightCenter, photoViewRightmost=_photoViewRightmost;
 @synthesize floatingImageView=_floatingImageView;
 @synthesize addPhotoButton = _addPhotoButton, addPhotoLabel = _addPhotoLabel;
-@synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer, swipeLeftHeaderGestureRecognizer=_swipeLeftHeaderGestureRecognizer, swipeRightTwoFingerScrollGestureRecognizer=_swipeRightTwoFingerScrollGestureRecognizer;
+@synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer, swipeLeftHeaderGestureRecognizer=_swipeLeftHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
 @synthesize getPhotosQuery=_getPhotosQuery;
 @synthesize signInAlertView=_signInAlertView, confirmDeleteAlertView=_confirmDeleteAlertView;
@@ -121,6 +120,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize photoViewsPhotoServerIDs=_photoViewsPhotoServerIDs, photoWebImageManagersForPhotoServerIDs=_photoWebImageManagersForPhotoServerIDs;
 @synthesize refreshAllRequested=_refreshAllRequested, refreshAllInProgress=_refreshAllInProgress, refreshAllNetChangeBeforePreviousPhotoCenterIndex=_refreshAllNetChangeBeforePreviousPhotoCenterIndex, controllerChangingContent=_controllerChangingContent;
 @synthesize blockViewControllerFinishing=_blockViewControllerFinishing;
+@synthesize suppressDownloadsForScrollJump=_suppressDownloadsForScrollJump;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -155,6 +155,12 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.addPhotoButton.contentEdgeInsets = UIEdgeInsetsMake(0, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, 0);
     //    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
     self.addPhotoLabel.frame = CGRectMake(CGRectGetMaxX(self.addPhotoButton.frame) + PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT, self.addPhotoButton.frame.origin.y, self.view.frame.size.width - CGRectGetMaxX(self.addPhotoButton.frame), self.addPhotoButton.frame.size.height);
+    CALayer * addPhotoButtonShadowLayer = [CALayer layer];
+    addPhotoButtonShadowLayer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_PADDING_TOP, VC_ADD_PHOTO_BUTTON_WIDTH, VC_ADD_PHOTO_BUTTON_HEIGHT) cornerRadius:VC_ADD_PHOTO_BUTTON_WIDTH / 2.0].CGPath;
+    addPhotoButtonShadowLayer.shadowOpacity = 0.4;
+    addPhotoButtonShadowLayer.shadowOffset = CGSizeMake(0, 0);
+    addPhotoButtonShadowLayer.shadowColor = [UIColor colorWithWhite:120.0/255.0 alpha:1.0].CGColor;
+    [self.addPhotoButton.layer insertSublayer:addPhotoButtonShadowLayer atIndex:0];
     
     [self.topBar.buttonBranding addTarget:self action:@selector(emotishLogoTouched:) forControlEvents:UIControlEventTouchUpInside];
     //    if (self.focus == FeelingFocus) {
@@ -217,17 +223,12 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.floatingImageView.userInteractionEnabled = NO;
     self.floatingImageView.backgroundColor = [UIColor clearColor];
     self.floatingImageView.clipsToBounds = YES;
-    
-//    self.swipeRightTwoFingerScrollGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self.photosClipView action:@selector(swipedRightTwoFingerOnScrollView:)];
-//    self.swipeRightTwoFingerScrollGestureRecognizer.numberOfTouchesRequired = 2;
-//    self.swipeRightTwoFingerScrollGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
-//    [self.contentView addGestureRecognizer:self.swipeRightTwoFingerScrollGestureRecognizer];
-    
-    self.swipeRightHeaderGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedRightOnHeader:)];
+        
+    self.swipeRightHeaderGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedOnHeader:)];
     self.swipeRightHeaderGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
     [self.headerButton addGestureRecognizer:self.swipeRightHeaderGestureRecognizer];
     
-    self.swipeLeftHeaderGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedLeftOnHeader:)];
+    self.swipeLeftHeaderGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipedOnHeader:)];
     self.swipeLeftHeaderGestureRecognizer.direction = UISwipeGestureRecognizerDirectionLeft;
     [self.headerButton addGestureRecognizer:self.swipeLeftHeaderGestureRecognizer];
     
@@ -541,13 +542,19 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             } else {
                 photoView.photoImageView.image = [UIImage imageNamed:@"photo_image_placeholder.png"];
             }
-            if ([self.photoWebImageManagersForPhotoServerIDs objectForKey:photo.serverID] == nil) {
-                NSLog(@"Download image with server id %@ and url %@", photo.serverID, photo.imageURL);
-                PhotoWebImageManager * photoWebImageManager = [PhotoWebImageManager photoWebImageManagerForPhotoServerID:photo.serverID withDelegate:self];
-                [self.photoWebImageManagersForPhotoServerIDs setObject:photoWebImageManager forKey:photo.serverID];
-                [[SDWebImageManager sharedManager] downloadWithURL:[NSURL URLWithString:photo.imageURL] delegate:photoWebImageManager];
+            if (!self.suppressDownloadsForScrollJump) {
+                if (photoViewIndex >= self.photoViewCenterIndex - 1 && 
+                    photoViewIndex <= self.photoViewCenterIndex + 1 &&
+                    [self.photoWebImageManagersForPhotoServerIDs objectForKey:photo.serverID] == nil) {
+                    NSLog(@"Download image with server id %@ and url %@", photo.serverID, photo.imageURL);
+                    PhotoWebImageManager * photoWebImageManager = [PhotoWebImageManager photoWebImageManagerForPhotoServerID:photo.serverID withDelegate:self];
+                    [self.photoWebImageManagersForPhotoServerIDs setObject:photoWebImageManager forKey:photo.serverID];
+                    [[SDWebImageManager sharedManager] downloadWithURL:[NSURL URLWithString:photo.imageURL] delegate:photoWebImageManager];
+                } else {
+                    NSLog(@"Already downloading image with server id %@ and url %@", photo.serverID, photo.imageURL);
+                }
             } else {
-                NSLog(@"Already downloading image with server id %@ and url %@", photo.serverID, photo.imageURL);
+                NSLog(@"Not downloading image with server id %@ and url %@ because we are scrolling so quickly. Maybe later.", photo.serverID, photo.imageURL);
             }
         }
     }
@@ -613,6 +620,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     if (!self.controllerChangingContent) {
         self.photoCenterIndex = [self indexForScrollViewCenterWithContentOffsetX:scrollView.contentOffset.x]; // This will potentially cause view updates to occur, depending on whether photoCenterIndex has changed.
     }
+}
+
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
+    self.suppressDownloadsForScrollJump = NO;
+    [self updatePhotoViewsPhotosForPhotoCenterIndex:self.photoCenterIndex];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
@@ -1185,35 +1197,36 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     
 }
 
-- (void)swipedRightOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
+- (void) swipedOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
+
+    BOOL directionLeft = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionLeft;
+    
     CGPoint swipeLocationInHeaderButton = [swipeGestureRecognizer locationInView:self.headerButton];
-    if (swipeLocationInHeaderButton.x >= self.headerButton.contentEdgeInsets.left && 
-        swipeLocationInHeaderButton.x <= [self.headerButton.titleLabel.text sizeWithFont:self.headerButton.titleLabel.font constrainedToSize:CGSizeMake(self.headerButton.frame.size.width - self.headerButton.contentEdgeInsets.left - self.headerButton.contentEdgeInsets.right, self.headerButton.frame.size.height)].width + self.headerButton.contentEdgeInsets.left) {
-        if (!self.photosScrollView.isTracking) {
-            [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
+    BOOL acceptSwipe = !self.photosScrollView.isTracking && (directionLeft || (swipeLocationInHeaderButton.x <= [self.headerButton.titleLabel.text sizeWithFont:self.headerButton.titleLabel.font constrainedToSize:CGSizeMake(self.headerButton.frame.size.width - self.headerButton.contentEdgeInsets.left - self.headerButton.contentEdgeInsets.right, self.headerButton.frame.size.height)].width + self.headerButton.contentEdgeInsets.left));
+    
+    if (acceptSwipe) {
+        
+        self.suppressDownloadsForScrollJump = YES;
+    
+        CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
+        animation.autoreverses = YES;
+        animation.repeatCount = 1; // Play it just once, and then reverse it
+        animation.duration = 0.15;
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        CGFloat screenBufferLeft = 5.0;
+        CGFloat positionXAdjustment = (directionLeft ? -1 : 1) * (self.headerButton.contentEdgeInsets.left - screenBufferLeft);
+        animation.toValue = [NSValue valueWithCGPoint:CGPointMake(self.headerButton.layer.position.x + positionXAdjustment, self.headerButton.layer.position.y)];
+        [self.headerButton.layer addAnimation:animation forKey:nil];
+        
+        CGPoint contentOffsetAdjusted = CGPointZero;
+        if (!directionLeft) {
+            contentOffsetAdjusted = CGPointMake(MAX(0, self.photosScrollView.contentSize.width - self.photosScrollView.frame.size.width), 0);
         }
+        [self.photosScrollView setContentOffset:contentOffsetAdjusted animated:YES];
+        
     }
-}
-
-- (void)swipedLeftOnHeader:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
-
-    CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
-    animation.autoreverses = YES;
-    animation.repeatCount = 1; // Play it just once, and then reverse it
-    animation.duration = 0.15;
-    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    CGFloat screenBufferLeft = 5.0;
-    animation.toValue = [NSValue valueWithCGPoint:CGPointMake(self.headerButton.layer.position.x - self.headerButton.contentEdgeInsets.left + screenBufferLeft, self.headerButton.layer.position.y)];
-    [self.headerButton.layer addAnimation:animation forKey:nil];
-    
-    [self.photosScrollView setContentOffset:CGPointZero animated:YES];
     
 }
-
-//- (void)swipedRightTwoFingerOnScrollView:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
-//    NSLog(@"swipedRightTwoFingerOnScrollView");
-//    [self.photosScrollView setContentOffset:CGPointZero animated:YES];
-//}
 
 - (IBAction)addPhotoButtonTouched:(id)sender {
     SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];

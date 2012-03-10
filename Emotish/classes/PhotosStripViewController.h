@@ -71,7 +71,6 @@ typedef enum {
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeDownGestureRecognizer;
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeRightHeaderGestureRecognizer;
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeLeftHeaderGestureRecognizer;
-@property (strong, nonatomic) UISwipeGestureRecognizer * swipeRightTwoFingerScrollGestureRecognizer;
 
 @property (unsafe_unretained, nonatomic) id<PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate> delegate;
 

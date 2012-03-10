@@ -94,8 +94,12 @@
     CGSize addPhotoButtonSize = CGSizeMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE + VC_ADD_PHOTO_BUTTON_WIDTH + VC_ADD_PHOTO_BUTTON_PADDING_RIGHT, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE + VC_ADD_PHOTO_BUTTON_HEIGHT + VC_ADD_PHOTO_BUTTON_PADDING_TOP);
     self.addPhotoButton.frame = CGRectMake(0, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - addPhotoButtonSize.height, addPhotoButtonSize.width, addPhotoButtonSize.height);
     self.addPhotoButton.contentEdgeInsets = UIEdgeInsetsMake(0, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, 0);
-//    NSLog(@"%@", NSStringFromCGRect(self.addPhotoButton.frame));
-//    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
+    CALayer * addPhotoButtonShadowLayer = [CALayer layer];
+    addPhotoButtonShadowLayer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_PADDING_TOP, VC_ADD_PHOTO_BUTTON_WIDTH, VC_ADD_PHOTO_BUTTON_HEIGHT) cornerRadius:VC_ADD_PHOTO_BUTTON_WIDTH / 2.0].CGPath;
+    addPhotoButtonShadowLayer.shadowOpacity = 0.4;
+    addPhotoButtonShadowLayer.shadowOffset = CGSizeMake(0, 0);
+    addPhotoButtonShadowLayer.shadowColor = [UIColor colorWithWhite:120.0/255.0 alpha:1.0].CGColor;
+    [self.addPhotoButton.layer insertSublayer:addPhotoButtonShadowLayer atIndex:0];
     
     [self.topBar.buttonBranding addTarget:self action:@selector(emotishLogoTouched:) forControlEvents:UIControlEventTouchUpInside];
     [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
