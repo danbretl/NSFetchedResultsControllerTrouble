@@ -27,7 +27,7 @@
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int PSVC_PHOTO_VIEWS_COUNT = 5;
-const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 8.0;
+const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 3.0;
 const CGFloat PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START = 35.0;
 const CGFloat PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_END = 65.0;
 const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGHT = 0.66;
@@ -478,7 +478,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     } else if (self.focus == UserFocus) {
         headerString = self.userFocus.name;
         headerColor = [UIColor userColor];
-        addPhotoString = @"What's your feeling?";
+        addPhotoString = @"What are you feeling?";
     } else {
         headerString = @"";
     }
