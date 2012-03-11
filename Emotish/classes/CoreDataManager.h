@@ -27,6 +27,7 @@
 - (void) deleteAllLikes;
 - (void) deleteAllLikesNotAssociatedWithUserLocal:(User *)user;
 - (void) deleteAllLikesNotAssociatedWithUserServer:(PFUser *)userServer;
+- (void) clearAllFlags;
 
 //- (NSArray *) getFeelings;
 //- (Feeling *) getFeelingAlphabeticallyBeforeFeeling:(Feeling *)feeling;
@@ -38,6 +39,7 @@
 //
 - (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer;
 - (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer;
+- (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer withFlagFromServer:(PFObject *)flagServer;
 //
 - (Like *) addOrUpdateLikeFromServer:(PFObject *)likeServer;
 - (Like *) addOrUpdateLikeFromServer:(PFObject *)likeServer photoFromServer:(PFObject *)photoServer userFromServer:(PFObject *)userServer;

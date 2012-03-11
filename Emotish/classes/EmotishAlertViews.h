@@ -20,4 +20,6 @@
 + (UIAlertView *) twitterAccountTakenByOtherUserAlertView;
 + (UIAlertView *) socialNetworkAccountTakenByOtherUserAlertView:(NSString *)socialNetworkName;
 
++ (UIAlertView *) flaggedFeedbackAlertView;
+
 @end

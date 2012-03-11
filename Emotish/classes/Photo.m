@@ -24,6 +24,8 @@
 @dynamic likes;
 @dynamic hidden;
 @dynamic thumbURL;
+@dynamic hiddenLocal;
+@dynamic hiddenServer;
 
 - (BOOL)likeExistsForUserServerID:(NSString *)userServerID {
     BOOL likeExists = NO;

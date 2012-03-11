@@ -545,7 +545,6 @@
     NSFetchRequest * fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [NSEntityDescription entityForName:@"Feeling" inManagedObjectContext:self.coreDataManager.managedObjectContext];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:@"ANY photos.hidden == NO"];
-//    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"foo == YES"];
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES selector:@selector(localizedCaseInsensitiveCompare:)]];
     fetchRequest.fetchBatchSize = 20;
     

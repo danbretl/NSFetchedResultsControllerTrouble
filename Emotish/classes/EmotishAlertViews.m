@@ -39,4 +39,8 @@
     return [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ Error", socialNetworkName] message:[NSString stringWithFormat:@"There is already another Emotish account associated with this %@ account.", socialNetworkName] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
 }
 
++ (UIAlertView *)flaggedFeedbackAlertView {
+    return [[UIAlertView alloc] initWithTitle:@"Photo Flagged" message:@"Thanks for the feedback - we'll check it out, and you won't ever see that Photo again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
 @end

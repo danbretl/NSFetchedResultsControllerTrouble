@@ -63,6 +63,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @property (nonatomic, strong, readonly) UIAlertView * connectionErrorGeneralAlertView;
 // Utility BOOLs
 @property (nonatomic) BOOL waitingForLikes;
+@property (nonatomic) BOOL waitingForFlags;
 @property (nonatomic) BOOL waitingToSubscribeToNotificationsChannel;
 // Facebook & Twitter
 @property (nonatomic, strong) PF_FBRequest * fbRequestMe;
@@ -82,7 +83,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 - (void) showContainer:(UIView *)viewsContainer animated:(BOOL)animated blockToExecuteOnAnimationCompletion:(void(^)(void))blockToExecute;
 - (void) showAccountCreationInputViews:(BOOL)shouldShowCreationViews showPasswordConfirmation:(BOOL)shouldShowPasswordConfirmation activateAppropriateFirstResponder:(BOOL)shouldActivateFirstResponder animated:(BOOL)animated;
 - (void) setTextFieldToBeVisible:(UITextField *)textField animated:(BOOL)animated;
-- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer pullLikes:(BOOL)shouldPullLikes;
+- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer pullLikes:(BOOL)shouldPullLikes pullFlags:(BOOL)shouldPullFlags;
 // Methods - Keyboard responses
 - (void) keyboardWillHide:(NSNotification *)notification;
 - (void) keyboardWillShow:(NSNotification *)notification;
@@ -102,6 +103,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 - (void) cancelRequested;
 // Methods - User
 - (void) deleteAndLogOutCurrentUser;
+- (void) getLikesForUserServer:(PFUser *)userServer;
+- (void) getFlagsForUserServer:(PFUser *)userServer;
 //- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate;
 
 @end
@@ -118,7 +121,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @synthesize emailAccountAssuranceLabel;
 @synthesize swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightGestureRecognizer=_swipeRightGestureRecognizer, swipeDownToCancelEnabled=_swipeDownToCancelEnabled, swipeRightToCancelEnabled=_swipeRightToCancelEnabled;
 @synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, emailInvalidAlertView=_emailInvalidAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView, connectionErrorGeneralAlertView=_connectionErrorGeneralAlertView;
-@synthesize waitingForLikes=_waitingForLikes, waitingToSubscribeToNotificationsChannel=_waitingToSubscribeToNotificationsChannel;
+@synthesize waitingForLikes=_waitingForLikes, waitingForFlags=_waitingForFlags, waitingToSubscribeToNotificationsChannel=_waitingToSubscribeToNotificationsChannel;
 @synthesize workingOnAccountFromFacebook=_workingOnAccountFromFacebook;
 @synthesize workingOnAccountFromTwitter=_workingOnAccountFromTwitter;
 @synthesize fbRequestMe=_fbRequestMe, twConnectionBasicInfo=_twConnectionBasicInfo, twConnectionBasicInfoData=_twConnectionBasicInfoData;
@@ -132,10 +135,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         initialPromptScreenVisible = YES;
         accountCreationViewsVisible = YES;
         confirmPasswordVisible = YES;
-        self.waitingForLikes = NO;
-        self.waitingToSubscribeToNotificationsChannel = NO;
-        self.swipeDownToCancelEnabled = NO;
-        self.swipeRightToCancelEnabled = NO;
     }
     return self;
 }
@@ -371,7 +370,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             NSLog(@"User logged in through %@!", socialNetworkName);
             [self.coreDataManager addOrUpdateUserFromServer:user];
             [self.coreDataManager saveCoreData];
-            [self accountConnectLastStepsForUserServer:user pullLikes:YES];
+            [self accountConnectLastStepsForUserServer:user pullLikes:YES pullFlags:YES];
             
         }
         
@@ -652,37 +651,79 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     
 }
 
-- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer pullLikes:(BOOL)shouldPullLikes {
+- (void) getLikesForUserServer:(PFUser *)userServer {
+    
+    self.waitingForLikes = YES;
+    
+    PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
+    [likesQuery whereKey:@"user" equalTo:userServer];
+    [likesQuery includeKey:@"photo"];
+    [likesQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (!error) {
+            if (objects != nil && objects.count > 0) {
+                NSLog(@"Logged in user has %d previous likes. Attempting to restore them locally.", objects.count);
+                for (PFObject * likeServer in objects) {
+                    PFObject * photoServer = [likeServer objectForKey:@"photo"];
+                    [self.coreDataManager addOrUpdateLikeFromServer:likeServer photoFromServer:photoServer userFromServer:userServer];
+                }
+                [self.coreDataManager saveCoreData];
+            }
+            self.waitingForLikes = NO;
+            [self attemptToProceedWithSuccessfulLogin];
+        } else {
+            [self.connectionErrorGeneralAlertView show];
+            self.waitingForLikes = NO;
+            [self deleteAndLogOutCurrentUser];
+        }
+        
+    }];
+    
+}
+
+- (void)getFlagsForUserServer:(PFUser *)userServer {
+    
+    self.waitingForFlags = YES;
+    
+    PFQuery * flagsQuery = [PFQuery queryWithClassName:@"Flag"];
+    [flagsQuery whereKey:@"user" equalTo:userServer];
+    [flagsQuery includeKey:@"photo"];
+    [flagsQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (!error) {
+            if (objects != nil && objects.count > 0) {
+                NSLog(@"Logged in user has %d previous flags. Attempting to respect them locally.", objects.count);
+                for (PFObject * flagServer in objects) {
+                    PFObject * photoServer = [flagServer objectForKey:@"photo"];
+                    [self.coreDataManager addOrUpdatePhotoFromServer:photoServer withFlagFromServer:flagServer];
+                }
+                [self.coreDataManager saveCoreData];
+            }
+            self.waitingForFlags = NO;
+            [self attemptToProceedWithSuccessfulLogin];
+        } else {
+            [self.connectionErrorGeneralAlertView show];
+            self.waitingForFlags = NO;
+            [self deleteAndLogOutCurrentUser];
+        }
+        
+    }];
+    
+}
+
+- (void) accountConnectLastStepsForUserServer:(PFUser *)userServer pullLikes:(BOOL)shouldPullLikes pullFlags:(BOOL)shouldPullFlags {
     
     if (shouldPullLikes) {
-        self.waitingForLikes = YES;
-        PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
-        [likesQuery whereKey:@"user" equalTo:userServer];
-        [likesQuery includeKey:@"photo"];
-        [likesQuery findObjectsInBackgroundWithBlock:^(NSArray * objects, NSError * error){
-            self.waitingForLikes = NO;
-            if (!error) {
-                if (objects != nil && objects.count > 0) {
-                    NSLog(@"Logged in user has %d previous likes. Attempting to restore them locally.", objects.count);
-                    for (PFObject * likeServer in objects) {
-                        PFObject * photoServer = [likeServer objectForKey:@"photo"];
-                        [self.coreDataManager addOrUpdateLikeFromServer:likeServer photoFromServer:photoServer userFromServer:userServer];
-                    }
-                    [self.coreDataManager saveCoreData];
-                }
-                [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:userServer.objectId];
-            } else {
-                [self.connectionErrorGeneralAlertView show];
-                [PFUser logOut];
-                [[UIApplication sharedApplication] cancelAllLocalNotifications];
-                [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
-            }
-            [self attemptToProceedWithSuccessfulLogin];
-        }];
-    } else {
-        [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:userServer.objectId];
-        [self attemptToProceedWithSuccessfulLogin];
+        [self getLikesForUserServer:userServer];
     }
+    
+    if (shouldPullFlags) {
+        [self getFlagsForUserServer:userServer];
+    }
+    
+    [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:userServer.objectId];
+
+    [self attemptToProceedWithSuccessfulLogin];
     
 }
 
@@ -692,7 +733,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             NSLog(@"Logged in with user %@", user);
             [self.coreDataManager addOrUpdateUserFromServer:user];
             [self.coreDataManager saveCoreData];
-            [self accountConnectLastStepsForUserServer:user pullLikes:YES];
+            [self accountConnectLastStepsForUserServer:user pullLikes:YES pullFlags:YES];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
             [self.passwordIncorrectAlertView show];
@@ -709,7 +750,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 }
 
 - (void) attemptToProceedWithSuccessfulLogin {
-    if (!(self.waitingForLikes || self.waitingToSubscribeToNotificationsChannel)) {
+    if (!(self.waitingForLikes || self.waitingForFlags || self.waitingToSubscribeToNotificationsChannel)) {
         AccountConnectMethod method = UsernameEmailAccountConnect;
         if (self.workingOnAccountFromFacebook) {
             method = FacebookAccountConnect;
@@ -798,7 +839,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         
         void(^successfulUserActionBlock)(PFUser *) = ^(PFUser * user){
             [self.coreDataManager addOrUpdateUserFromServer:user];
-            [self accountConnectLastStepsForUserServer:user pullLikes:NO];
+            [self accountConnectLastStepsForUserServer:user pullLikes:NO pullFlags:NO];
         };
         
         void(^respondToUserRelatedErrorBlock)(NSError *) = ^(NSError * userRelatedError){
@@ -1086,7 +1127,10 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         NSLog(@"Logging out [PFUser currentUser]");
         [PFUser logOut];
         [self.coreDataManager deleteAllLikes];
+        [self.coreDataManager clearAllFlags];
+        [self.coreDataManager saveCoreData];
         [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
+        [[UIApplication sharedApplication] cancelAllLocalNotifications];
     }
 }
 

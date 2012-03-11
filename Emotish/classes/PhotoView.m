@@ -198,7 +198,8 @@ const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
         // Below is TEMPORARY, while features are being developed...
         BOOL enabled = YES;
         if (actionButtonInfo.code != LikePhoto &&
-            actionButtonInfo.code != Delete) {
+            actionButtonInfo.code != Delete &&
+            actionButtonInfo.code != Flag) {
             enabled = NO;
         }
         actionButton.alpha = enabled ? 1.0 : 0.5;

@@ -67,8 +67,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void) userCurrent:(PFUser *)userCurrent likedPhoto:(Photo *)photoLiked;
 - (void) userCurrent:(PFUser *)userCurrent deletedPhotoAttempt:(Photo *)photoDeleted;
 - (void) userDeletedPhoto:(Photo *)photoDeleted;
+- (void) userCurrent:(PFUser *)userCurrent flaggedPhotoAttempt:(Photo *)photoFlagged;
+- (void) userCurrent:(PFUser *)userCurrent flaggedPhoto:(Photo *)photoFlagged;
 @property (strong, nonatomic, readonly) UIAlertView * signInAlertView;
 @property (strong, nonatomic, readonly) UIAlertView * confirmDeleteAlertView;
+@property (strong, nonatomic, readonly) UIAlertView * confirmFlagAlertView;
 - (void) showAccountViewController;
 - (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
 - (BOOL) deleteAllowedForCurrentUser:(PFUser *)currentUser withPhoto:(Photo *)photo;
@@ -113,7 +116,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer, swipeLeftHeaderGestureRecognizer=_swipeLeftHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
 @synthesize getPhotosQuery=_getPhotosQuery;
-@synthesize signInAlertView=_signInAlertView, confirmDeleteAlertView=_confirmDeleteAlertView;
+@synthesize signInAlertView=_signInAlertView, confirmDeleteAlertView=_confirmDeleteAlertView, confirmFlagAlertView=_confirmFlagAlertView;
 @synthesize photoToDelete=_photoToDelete;
 @synthesize photoUpdateQueries=_photoUpdateQueries;
 @synthesize photoCenterIndex=_photoCenterIndex;
@@ -913,7 +916,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void) userDeletedPhoto:(Photo *)photoDeleted {
     
-    photoDeleted.hidden = [NSNumber numberWithBool:YES];
+    photoDeleted.hiddenServer = [NSNumber numberWithBool:YES];
+    photoDeleted.hidden = photoDeleted.hiddenServer;
     [self.coreDataManager saveCoreData];
     
     PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
@@ -921,6 +925,35 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [photoServer setObject:[NSNumber numberWithBool:YES] forKey:@"deleted"];
     [photoServer saveEventually];
     
+}
+
+- (void) userCurrent:(PFUser *)userCurrent flaggedPhotoAttempt:(Photo *)photoFlagged {
+    if (userCurrent == nil) {
+        [self.signInAlertView show];
+    } else {
+        [self.confirmFlagAlertView show];
+    }
+}
+
+- (void)userCurrent:(PFUser *)userCurrent flaggedPhoto:(Photo *)photoFlagged {
+
+    photoFlagged.hiddenLocal = [NSNumber numberWithBool:YES];
+    photoFlagged.hidden = [NSNumber numberWithBool:YES];
+    [self.coreDataManager saveCoreData];
+
+    NSString * photoCenterServerID = photoFlagged.serverID;
+    PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
+    photoServer.objectId = photoCenterServerID;
+    [photoServer setObject:[NSNumber numberWithBool:YES] forKey:@"flaggedProposed"];
+    [photoServer saveEventually];
+
+    PFObject * flagObject = [PFObject objectWithClassName:@"Flag"];
+    [flagObject setObject:userCurrent forKey:@"user"];
+    [flagObject setObject:photoServer forKey:@"photo"];
+    [flagObject saveEventually];
+
+    [[EmotishAlertViews flaggedFeedbackAlertView] show];
+
 }
 
 - (void)photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
@@ -969,6 +1002,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         [self showAccountViewController];
     } else if (alertView == self.confirmDeleteAlertView && buttonIndex == alertView.cancelButtonIndex) {
         [self userDeletedPhoto:self.photoToDelete];
+    } else if (alertView == self.confirmFlagAlertView && buttonIndex == alertView.cancelButtonIndex) {
+        [self userCurrent:[PFUser currentUser] flaggedPhoto:self.photoCenter];
     }
 }
 
@@ -997,12 +1032,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             break;
         case Flag:
             // Flag...
-            [tempFeatureInProgressAlertView show];
+            [self userCurrent:[PFUser currentUser] flaggedPhotoAttempt:self.photoCenter];
             break;
         case Delete:
             // Delete...
             [self userCurrent:[PFUser currentUser] deletedPhotoAttempt:self.photoCenter];
-//            [tempFeatureInProgressAlertView show];
             break;
         case LikePhoto:
             // Like...
@@ -1359,11 +1393,35 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection viaConnectMethod:(AccountConnectMethod)connectMethod {
+    // THIS BLOCK OF CODE IS DUPLICATED IN accountViewController:didFinishWithConnection:viaConnectMethod AND settingsViewControllerFinished
+    self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
+    if (self.photoCenter.hidden.boolValue) {
+        [self setPhotoCenterIndex:MIN(self.photoCenterIndex, self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count - 1) forcePhotoViewsUpdate:YES];
+    } else {
+        [self setPhotoCenterIndex:[self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoCenter].row forcePhotoViewsUpdate:YES];        
+    }
+    [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
+    [self.photosScrollView setContentOffset:CGPointMake(self.photoCenterIndex * self.photosScrollView.frame.size.width, 0) animated:NO];
+    // THIS BLOCK OF CODE IS DUPLICATED IN accountViewController:didFinishWithConnection:viaConnectMethod AND settingsViewControllerFinished
     [self dismissModalViewControllerAnimated:YES];
     if (finishedWithConnection) {
         UIAlertView * loggedInAlertView = [[UIAlertView alloc] initWithTitle:@"Logged In" message:@"Have fun expressing yourself!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [loggedInAlertView show];
     }
+}
+
+- (void) settingsViewControllerFinished:(SettingsViewController *)settingsViewController {
+    // THIS BLOCK OF CODE IS DUPLICATED IN accountViewController:didFinishWithConnection:viaConnectMethod AND settingsViewControllerFinished
+    self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
+    if (self.photoCenter.hidden.boolValue) {
+        [self setPhotoCenterIndex:MIN(self.photoCenterIndex, self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count - 1) forcePhotoViewsUpdate:YES];
+    } else {
+        [self setPhotoCenterIndex:[self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoCenter].row forcePhotoViewsUpdate:YES];        
+    }
+    [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
+    [self.photosScrollView setContentOffset:CGPointMake(self.photoCenterIndex * self.photosScrollView.frame.size.width, 0) animated:NO];
+    // THIS BLOCK OF CODE IS DUPLICATED IN accountViewController:didFinishWithConnection:viaConnectMethod AND settingsViewControllerFinished
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 - (void)settingsButtonTouched:(UIButton *)button {
@@ -1384,10 +1442,6 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [self presentModalViewController:settingsNavController animated:YES];
 }
 
-- (void) settingsViewControllerFinished:(SettingsViewController *)settingsViewController {
-    [self dismissModalViewControllerAnimated:YES];
-}
-
 - (UIAlertView *)signInAlertView {
     if (_signInAlertView == nil) {
         _signInAlertView = [[UIAlertView alloc] initWithTitle:@"Sign In" message:@"Sign in to an Emotish account to Like, Share, and Post Photos!" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Sign In", nil];
@@ -1402,6 +1456,14 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         _confirmDeleteAlertView.delegate = self;
     }
     return _confirmDeleteAlertView;
+}
+
+- (UIAlertView *)confirmFlagAlertView {
+    if (_confirmFlagAlertView == nil) {
+        _confirmFlagAlertView = [[UIAlertView alloc] initWithTitle:@"Flag Photo?" message:@"Are you sure you want to flag this Photo as offensive? We will review the Photo and take it down if necessary." delegate:self cancelButtonTitle:@"Flag" otherButtonTitles:@"Cancel", nil];
+        _confirmFlagAlertView.delegate = self;
+    }
+    return _confirmFlagAlertView;
 }
 
 - (BOOL) deleteAllowedForCurrentUser:(PFUser *)currentUser withPhoto:(Photo *)photo {

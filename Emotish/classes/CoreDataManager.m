@@ -74,6 +74,15 @@
     [self deleteAllLikesNotAssociatedWithUserLocal:userLocal];
 }
 
+- (void) clearAllFlags {
+    NSArray * allFlaggedPhotos = [self getAllObjectsForEntityName:@"Photo" predicate:[NSPredicate predicateWithFormat:@"hiddenLocal == YES"] sortDescriptors:nil];
+    for (Photo * photo in allFlaggedPhotos) {
+        photo.hiddenLocal = [NSNumber numberWithBool:NO];
+        photo.hidden = photo.hiddenServer;
+        photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
+    }
+}
+
 //- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors {
 //    NSArray * matchingObjects = [self getAllObjectsForEntityName:entityName predicate:predicate sortDescriptors:sortDescriptors];
 //    NSManagedObject * matchingObject = matchingObjects.count > 0 ? [matchingObjects objectAtIndex:0] : nil;
@@ -109,7 +118,8 @@
     photo.thumbURL = thumbFile.url;
     photo.datetime = photoServer.createdAt;
     photo.likesCount = [photoServer objectForKey:@"likesCount"];
-    photo.hidden = [NSNumber numberWithBool:[[photoServer objectForKey:@"deleted"] boolValue] || [[photoServer objectForKey:@"flagged"] boolValue]];
+    photo.hiddenServer = [NSNumber numberWithBool:[[photoServer objectForKey:@"deleted"] boolValue] || [[photoServer objectForKey:@"flagged"] boolValue]];
+    photo.hidden = [NSNumber numberWithBool:(photo.hiddenServer.boolValue || photo.hiddenLocal.boolValue)];
 //    photo.shouldHighlight = [NSNumber numberWithBool:newObjectMadeIndicator]; // This is unnecessary, for now. This value defaults to YES, which is what we want. Otherwise, it is set to NO when an image is viewed.
     return photo;
 }
@@ -118,6 +128,14 @@
     Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
     photo.feeling = [self addOrUpdateFeelingFromServer:feelingServer];
     photo.user = [self addOrUpdateUserFromServer:userServer];
+    return photo;
+}
+
+- (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer withFlagFromServer:(PFObject *)flagServer {
+    Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
+    photo.hiddenLocal = [NSNumber numberWithBool:YES];
+    photo.hidden = [NSNumber numberWithBool:YES];
+    photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
     return photo;
 }
 

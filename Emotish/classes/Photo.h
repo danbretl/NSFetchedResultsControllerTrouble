@@ -24,6 +24,8 @@
 @property (nonatomic, retain) NSSet * likes;
 @property (nonatomic, retain) NSNumber * hidden;
 @property (nonatomic, retain) NSString * thumbURL;
+@property (nonatomic, retain) NSNumber * hiddenLocal;
+@property (nonatomic, retain) NSNumber * hiddenServer;
 
 @end
 
