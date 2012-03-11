@@ -25,10 +25,15 @@ typedef enum {
 
 @property (strong, nonatomic) UIImageView * photoImageView;
 //@property (strong, nonatomic) UILabel * photoCaptionLabel;
+@property (strong, nonatomic) UIView * photoInfoContainer;
 @property (strong, nonatomic) UIButton * likesButton;
+@property (strong, nonatomic) UIButton * timeButton;
+//- (void) showInfo:(BOOL)shouldShowInfo showTime:(BOOL)shouldShowTime showLikes:(BOOL)shouldShowLikes animated:(BOOL)animated;
+- (void) showInfo:(BOOL)shouldShowInfo animated:(BOOL)animated;
+- (void)showInfo:(BOOL)shouldShowInfo showLikes:(BOOL)shouldShowLikes animated:(BOOL)animated;
 - (void) showLikes:(BOOL)shouldShowLikes animated:(BOOL)animated;
+- (void) updateTime:(NSDate *)timestamp;
 - (void) updateLikesCount:(NSNumber *)likesCount likedPersonally:(BOOL)likedPersonally;
-- (void) showLikes:(BOOL)shouldShowLikes likesCount:(NSNumber *)likesCount likedPersonally:(BOOL)likedPersonally animated:(BOOL)animated;
 @property (strong, nonatomic) UITextFieldWithInset * photoCaptionTextField;
 @property (strong, nonatomic) UIButton * photoCaptionButton;
 

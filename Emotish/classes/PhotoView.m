@@ -12,7 +12,8 @@
 
 const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
 const double PV_ACTION_BUTTONS_VISIBLE_ANIMATION_DURATION = 0.25;
-const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
+const double PV_INFO_VISIBLE_ANIMATION_DURATION = 0.15;
+const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
 
 @interface PhotoViewActionButtonInfo : NSObject
 @property (nonatomic) PhotoViewActionButtonCode code;
@@ -65,13 +66,15 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
 - (void) tapDouble:(UITapGestureRecognizer *)gestureRecognizer;
 - (void) tapHold:(UILongPressGestureRecognizer *)gestureRecognizer;
 @property (nonatomic) BOOL actionButtonsVisible;
+- (void) show:(BOOL)shouldShow infoButton:(UIButton *)infoButton animated:(BOOL)animated;
+- (void) showTime:(BOOL)shouldShowTime animated:(BOOL)animated;
 @end
 
 @implementation PhotoView
 
 @synthesize photoCaptionButton=_photoCaptionButton;
 @synthesize photoImageView=_photoImageView;
-@synthesize likesButton=_likesButton;
+@synthesize photoInfoContainer=_photoInfoContainer, likesButton=_likesButton, timeButton=_timeButton;
 //@synthesize photoCaptionLabel=_photoCaptionLabel;
 @synthesize photoCaptionTextField=_photoCaptionTextField;
 @synthesize delegate=_delegate;
@@ -105,12 +108,32 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
     
     CGFloat captionsHeight = PC_PHOTO_CELL_PADDING_BOTTOM +  PC_PHOTO_CELL_LABEL_HEIGHT + PC_PHOTO_CELL_IMAGE_MARGIN_BOTTOM;
     
+    self.photoInfoContainer = [[UIView alloc] initWithFrame:CGRectMake(self.photoImageView.frame.origin.x, CGRectGetMaxY(self.photoImageView.frame), self.photoImageView.frame.size.width, captionsHeight)];
+    [self addSubview:self.photoInfoContainer];
+    
+    self.timeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.timeButton.frame = CGRectMake(0, 0, 40, self.photoInfoContainer.frame.size.height);
+    self.timeButton.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
+    self.timeButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+    self.timeButton.imageEdgeInsets = UIEdgeInsetsMake(10, 0, 0, 0);
+    self.timeButton.titleEdgeInsets = UIEdgeInsetsMake(6, 4, 0, 0);
+    self.timeButton.imageView.contentMode = UIViewContentModeCenter;
+    self.timeButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
+    self.timeButton.titleLabel.adjustsFontSizeToFitWidth = NO;
+    [self.timeButton setTitleColor:[UIColor colorWithWhite:204.0/255.0 alpha:1.0] forState:UIControlStateNormal];
+    [self.timeButton setImage:[UIImage imageNamed:@"icon_clock.png"] forState:UIControlStateNormal];
+    self.timeButton.backgroundColor = [UIColor clearColor];
+    self.timeButton.imageView.backgroundColor = [UIColor clearColor];
+    self.timeButton.titleLabel.backgroundColor = [UIColor clearColor];
+    self.timeButton.userInteractionEnabled = NO;
+    [self.photoInfoContainer addSubview:self.timeButton];
+    
     self.likesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.likesButton.frame = CGRectMake(self.photoImageView.frame.origin.x, CGRectGetMaxY(self.photoImageView.frame), self.photoImageView.frame.size.width, captionsHeight);
+    self.likesButton.frame = CGRectMake(CGRectGetMaxX(self.timeButton.frame), 0, 80, self.photoInfoContainer.frame.size.height);
     self.likesButton.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
     self.likesButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     self.likesButton.imageEdgeInsets = UIEdgeInsetsMake(8, 0, 0, 0);
-    self.likesButton.titleEdgeInsets = UIEdgeInsetsMake(7, 5, 0, 0);
+    self.likesButton.titleEdgeInsets = UIEdgeInsetsMake(6, 5, 0, 0);
     self.likesButton.imageView.contentMode = UIViewContentModeCenter;
     self.likesButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
     self.likesButton.titleLabel.adjustsFontSizeToFitWidth = NO;
@@ -122,7 +145,13 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
     self.likesButton.imageView.backgroundColor = [UIColor clearColor];
     self.likesButton.titleLabel.backgroundColor = [UIColor clearColor];
     self.likesButton.userInteractionEnabled = NO;
-    [self addSubview:self.likesButton];
+    [self.photoInfoContainer addSubview:self.likesButton];
+    
+    [self showInfo:NO animated:NO];
+    
+//    self.photoInfoContainer.backgroundColor = [UIColor redColor];
+//    self.timeButton.backgroundColor = [UIColor yellowColor];
+//    self.likesButton.backgroundColor = [UIColor orangeColor];
     
     self.photoCaptionTextField = [[UITextFieldWithInset alloc] initWithFrame:CGRectMake(self.photoImageView.frame.origin.x, CGRectGetMaxY(self.photoImageView.frame), self.photoImageView.frame.size.width, captionsHeight)];
     self.photoCaptionTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
@@ -234,14 +263,74 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
     self.tapHoldGestureRecognizer.enabled = self.actionButtonsEnabled;
 }
 
+- (void)showInfo:(BOOL)shouldShowInfo animated:(BOOL)animated {
+    [self showInfo:shouldShowInfo showLikes:shouldShowInfo animated:animated];
+}
+
+- (void)showInfo:(BOOL)shouldShowInfo showLikes:(BOOL)shouldShowLikes animated:(BOOL)animated {
+    [self showTime:shouldShowInfo  animated:animated];
+    [self showLikes:shouldShowInfo && shouldShowLikes animated:animated];
+}
+
+- (void) showTime:(BOOL)shouldShowTime animated:(BOOL)animated {
+    [self show:shouldShowTime infoButton:self.timeButton animated:animated];
+}
+
 - (void) showLikes:(BOOL)shouldShowLikes animated:(BOOL)animated {
+    [self show:shouldShowLikes infoButton:self.likesButton animated:animated];
+}
+
+- (void) show:(BOOL)shouldShow infoButton:(UIButton *)infoButton animated:(BOOL)animated {
+    if (shouldShow) { NSLog(@"DEBUGDEBUGDEBUGDEBUGDEBUGDEBUG"); }
     if (animated) {
-        [UIView animateWithDuration:PV_LIKES_VISIBLE_ANIMATION_DURATION delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-            self.likesButton.alpha = shouldShowLikes ? 1.0 : 0.0;
+        [UIView animateWithDuration:PV_INFO_VISIBLE_ANIMATION_DURATION delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            infoButton.alpha = shouldShow ? 1.0 : 0.0;
         } completion:NULL];
     } else {
-        self.likesButton.alpha = shouldShowLikes ? 1.0 : 0.0;        
+        infoButton.alpha = shouldShow ? 1.0 : 0.0;
     }
+}
+
+- (void) updateTime:(NSDate *)timestamp {
+    NSLog(@"updateTime:%@", timestamp);
+    int timeValue = 0;
+    NSString * timeUnit = nil;
+    int seconds = abs((int)[timestamp timeIntervalSinceNow]);
+    if (seconds < 60) {
+        timeValue = seconds;
+        timeUnit = @"s";
+    } else if (seconds < (60 * 60)) {
+        timeValue = seconds / (60);
+        timeUnit = @"m";
+    } else if (seconds < (60 * 60 * 24)) {
+        timeValue = seconds / (60 * 60);
+        timeUnit = @"h";
+    } else if (seconds < (60 * 60 * 24 * 7)) {
+        timeValue = seconds / (60 * 60 * 24);
+        timeUnit = @"d";
+    } else if (seconds < (60 * 60 * 24 * 7 * 52)) {
+        timeValue = seconds / (60 * 60 * 24 * 7);
+        timeUnit = @"w";
+    } else {
+        timeValue = seconds / (60 * 60 * 24 * 7 * 52);
+        timeUnit = @"y";
+    }
+    NSString * timeString = [NSString stringWithFormat:@"%d%@", timeValue, timeUnit];
+    NSLog(@"timeString:%@", timeString);
+    
+    [self.timeButton setTitle:timeString forState:UIControlStateNormal];
+    
+    CGSize timeSize = [timeString sizeWithFont:self.timeButton.titleLabel.font];
+    NSLog(@"timeStringWidth = %f", timeSize.width);
+    CGRect timeButtonFrame = self.timeButton.frame;
+    timeButtonFrame.size.width = self.timeButton.titleLabel.frame.origin.x + timeSize.width;
+    self.timeButton.frame = timeButtonFrame;
+//    self.timeButton.imageView.backgroundColor = [UIColor blueColor];
+//    self.timeButton.titleLabel.backgroundColor = [UIColor greenColor];
+    CGRect likesButtonFrame = self.likesButton.frame;
+    likesButtonFrame.origin.x = CGRectGetMaxX(self.timeButton.frame) + PV_TIME_BUTTON_MARGIN_RIGHT;
+    self.likesButton.frame = likesButtonFrame;
+    
 }
 
 - (void) updateLikesCount:(NSNumber *)likesCount likedPersonally:(BOOL)likedPersonally {
@@ -256,26 +345,6 @@ const double PV_LIKES_VISIBLE_ANIMATION_DURATION = 0.15;
         normalImageFilename = @"icon_like_touch.png";
     }
     [self.likesButton setImage:[UIImage imageNamed:normalImageFilename] forState:UIControlStateNormal];
-}
-
-- (void)showLikes:(BOOL)shouldShowLikes likesCount:(NSNumber *)likesCount likedPersonally:(BOOL)likedPersonally animated:(BOOL)animated {
-    
-    if (animated) {
-        if (shouldShowLikes) {
-            [self updateLikesCount:likesCount likedPersonally:likedPersonally];
-        }
-        [UIView animateWithDuration:PV_LIKES_VISIBLE_ANIMATION_DURATION delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-            [self showLikes:shouldShowLikes animated:NO];
-        } completion:^(BOOL finished){
-            if (!shouldShowLikes) {
-                [self updateLikesCount:likesCount likedPersonally:likedPersonally];
-            }
-        }];
-    } else {
-        [self updateLikesCount:likesCount likedPersonally:likedPersonally];
-        [self showLikes:shouldShowLikes animated:NO];
-    }
-    
 }
 
 - (void) setActionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode enabled:(BOOL)enabled visible:(BOOL)visible {

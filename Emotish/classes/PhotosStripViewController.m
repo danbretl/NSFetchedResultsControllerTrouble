@@ -87,7 +87,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @property (nonatomic) int refreshAllNetChangeBeforePreviousPhotoCenterIndex;
 @property (nonatomic) BOOL controllerChangingContent;
 @property BOOL blockViewControllerFinishing;
-@property (nonatomic) BOOL suppressDownloadsForScrollJump;
+@property (nonatomic) BOOL scrollJumpInProgress;
 @end
 
 @implementation PhotosStripViewController
@@ -120,7 +120,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize photoViewsPhotoServerIDs=_photoViewsPhotoServerIDs, photoWebImageManagersForPhotoServerIDs=_photoWebImageManagersForPhotoServerIDs;
 @synthesize refreshAllRequested=_refreshAllRequested, refreshAllInProgress=_refreshAllInProgress, refreshAllNetChangeBeforePreviousPhotoCenterIndex=_refreshAllNetChangeBeforePreviousPhotoCenterIndex, controllerChangingContent=_controllerChangingContent;
 @synthesize blockViewControllerFinishing=_blockViewControllerFinishing;
-@synthesize suppressDownloadsForScrollJump=_suppressDownloadsForScrollJump;
+@synthesize scrollJumpInProgress=_scrollJumpInProgress;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -182,7 +182,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.photoViews = [NSArray arrayWithObjects:self.photoViewLeftmost, self.photoViewLeftCenter, self.photoViewCenter, self.photoViewRightCenter, self.photoViewRightmost, nil];
     for (PhotoView * photoView in self.photoViews) {
         photoView.delegate = self;
-        [photoView showLikes:NO animated:NO];
+        [photoView showInfo:NO animated:NO];
         [self.photoViewsPhotoServerIDs addObject:[NSNull null]];
     }
     
@@ -435,7 +435,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     if (_photoCenter != photoCenter) {
         NSLog(@"Change in photoCenter (%@, %@'s %@ -> %@, %@'s %@)", _photoCenter.serverID, _photoCenter.user.name, _photoCenter.feeling.word, photoCenter.serverID, photoCenter.user.name, photoCenter.feeling.word);
         _photoCenter = photoCenter;
-        if (self.photoCenter.shouldHighlight.boolValue) {
+        if (self.photoCenter.shouldHighlight.boolValue && !self.scrollJumpInProgress) {
             self.photoCenter.shouldHighlight = [NSNumber numberWithBool:NO];
         }
     }
@@ -493,7 +493,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
     
     [self setPhotoCenterIndex:[self.fetchedResultsControllerForCurrentFocus indexPathForObject:self.photoCenter].row forcePhotoViewsUpdate:YES];
-    [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
+    [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
     [self.photosScrollView setContentOffset:CGPointMake(self.photoCenterIndex * self.photosScrollView.frame.size.width, 0) animated:NO];
     
 }
@@ -542,7 +542,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             } else {
                 photoView.photoImageView.image = [UIImage imageNamed:@"photo_image_placeholder.png"];
             }
-            if (!self.suppressDownloadsForScrollJump) {
+            if (!self.scrollJumpInProgress) {
                 if (photoViewIndex >= self.photoViewCenterIndex - 1 && 
                     photoViewIndex <= self.photoViewCenterIndex + 1 &&
                     [self.photoWebImageManagersForPhotoServerIDs objectForKey:photo.serverID] == nil) {
@@ -559,10 +559,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         }
     }
     
-    PFUser * currentUser = [PFUser currentUser];
-    [photoView updateLikesCount:photo.likesCount likedPersonally:[photo likeExistsForUserServerID:currentUser.objectId]];
-    BOOL deleteAllowed = [self deleteAllowedForCurrentUser:currentUser withPhoto:photo];
-    [photoView setActionButtonWithCode:Delete enabled:deleteAllowed visible:deleteAllowed];
+    if (!self.scrollJumpInProgress) {
+        PFUser * currentUser = [PFUser currentUser];
+        [photoView updateLikesCount:photo.likesCount likedPersonally:[photo likeExistsForUserServerID:currentUser.objectId]];
+        [photoView updateTime:photo.datetime];
+        BOOL deleteAllowed = [self deleteAllowedForCurrentUser:currentUser withPhoto:photo];
+        [photoView setActionButtonWithCode:Delete enabled:deleteAllowed visible:deleteAllowed];        
+    }
     [self updatePhotoViewCaption:photoView withDataFromPhoto:photo oppositeOfFocus:self.focus];
     
 }
@@ -603,10 +606,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     [self.photoViewCenter showActionButtons:NO animated:YES];
-    // The following may not be necessary... I think we actually just need to showLikes:NO for self.photoViewCenter. But this probably isn't all that expensive for now.
-    for (PhotoView * photoView in self.photoViews) {
-        [photoView showLikes:NO animated:YES];
-    }
+    [self.photoViewCenter showInfo:NO animated:YES];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -623,13 +623,15 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
-    self.suppressDownloadsForScrollJump = NO;
+    NSLog(@"scrollViewDidEndScrollingAnimation");
+    self.scrollJumpInProgress = NO;
     [self updatePhotoViewsPhotosForPhotoCenterIndex:self.photoCenterIndex];
+    [self.photoViewCenter showInfo:YES showLikes:(self.photoCenter.likesCount.intValue > 0) animated:YES];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     if (!decelerate) {
-        [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
+        [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
     }
     if (self.flagStretchView.activated && !self.refreshAllInProgress) {
         self.refreshAllRequested = YES;
@@ -638,7 +640,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
+    [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
     if (self.refreshAllRequested) {
         self.refreshAllRequested = NO;
         self.view.userInteractionEnabled = YES;
@@ -743,7 +745,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     //                NSLog(@"Going to update photoView %@ at photoViewIndex=%d withPhotooAtIndex:%d", [self.photoViews objectAtIndex:photoViewIndex], photoViewIndex, indexPath.row);
                     [self updatePhotoView:[self.photoViews objectAtIndex:photoViewIndex] atPhotoViewIndex:photoViewIndex withPhotoAtIndex:indexPath.row];
                     if (!self.photosScrollView.isTracking) {
-                        [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
+                        [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
                     }
                 }
             } else if (type == NSFetchedResultsChangeDelete) {
@@ -770,7 +772,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                             self.photoViewCenter.alpha = 1.0;
                             self.photoViewRightCenter.frame = CGRectOffset(self.photoViewCenter.frame, self.photoViewCenter.frame.size.width, 0);
                             self.photoViewRightmost.frame = CGRectOffset(self.photoViewRightCenter.frame, self.photoViewRightCenter.frame.size.width, 0);
-                            [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
+                            [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:YES];
                             self.view.userInteractionEnabled = YES;
                             self.photosScrollView.contentSize = CGSizeMake(self.fetchedResultsControllerForCurrentFocus.fetchedObjects.count * self.photosScrollView.frame.size.width, self.photosScrollView.frame.size.height);
                         }];
@@ -824,7 +826,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                 [self.photosScrollView stopScroll];
                 [self setPhotoCenterIndex:newPhotoCenterIndex forcePhotoViewsUpdate:YES];
                 [self.photosScrollView setContentOffset:CGPointMake(self.photoCenterIndex * self.photosScrollView.frame.size.width, 0) animated:NO];
-                [self.photoViewCenter showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
+                [self.photoViewCenter showInfo:YES showLikes:self.photoCenter.likesCount.intValue > 0 animated:NO];
                 
             }
             
@@ -1205,9 +1207,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     BOOL acceptSwipe = !self.photosScrollView.isTracking && (directionLeft || (swipeLocationInHeaderButton.x <= [self.headerButton.titleLabel.text sizeWithFont:self.headerButton.titleLabel.font constrainedToSize:CGSizeMake(self.headerButton.frame.size.width - self.headerButton.contentEdgeInsets.left - self.headerButton.contentEdgeInsets.right, self.headerButton.frame.size.height)].width + self.headerButton.contentEdgeInsets.left));
     
     if (acceptSwipe) {
-        
-        self.suppressDownloadsForScrollJump = YES;
-    
+            
         CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
         animation.autoreverses = YES;
         animation.repeatCount = 1; // Play it just once, and then reverse it
@@ -1222,7 +1222,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         if (!directionLeft) {
             contentOffsetAdjusted = CGPointMake(MAX(0, self.photosScrollView.contentSize.width - self.photosScrollView.frame.size.width), 0);
         }
-        [self.photosScrollView setContentOffset:contentOffsetAdjusted animated:YES];
+        if (!CGPointEqualToPoint(self.photosScrollView.contentOffset, contentOffsetAdjusted)) {
+            [self.photoViewCenter showInfo:NO animated:NO];            
+            self.scrollJumpInProgress = YES;
+            [self.photosScrollView setContentOffset:contentOffsetAdjusted animated:YES];
+        }
         
     }
     

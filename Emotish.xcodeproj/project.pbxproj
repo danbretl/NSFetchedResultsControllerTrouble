@@ -100,6 +100,8 @@
 		3209DCD914EBF6A50056AD4E /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3209DCD814EBF6A50056AD4E /* SystemConfiguration.framework */; };
 		3209DCDB14EBF6B70056AD4E /* libz.1.1.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3209DCDA14EBF6B70056AD4E /* libz.1.1.3.dylib */; };
 		3209DCDD14EBF6C00056AD4E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3209DCDC14EBF6C00056AD4E /* Security.framework */; };
+		320B6856150C1C5200FE0852 /* icon_clock.png in Resources */ = {isa = PBXBuildFile; fileRef = 320B6854150C1C5200FE0852 /* icon_clock.png */; };
+		320B6857150C1C5200FE0852 /* icon_clock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 320B6855150C1C5200FE0852 /* icon_clock@2x.png */; };
 		3211736E14E9C4A90081CD3E /* UITextFieldWithInset.m in Sources */ = {isa = PBXBuildFile; fileRef = 3211736D14E9C4A90081CD3E /* UITextFieldWithInset.m */; };
 		3221779814EC2D9D00D48F99 /* SDImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 3221778714EC2D9D00D48F99 /* SDImageCache.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3221779914EC2D9D00D48F99 /* SDWebImageDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 3221778B14EC2D9D00D48F99 /* SDWebImageDecoder.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -306,6 +308,8 @@
 		3209DCD814EBF6A50056AD4E /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		3209DCDA14EBF6B70056AD4E /* libz.1.1.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.1.3.dylib; path = usr/lib/libz.1.1.3.dylib; sourceTree = SDKROOT; };
 		3209DCDC14EBF6C00056AD4E /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		320B6854150C1C5200FE0852 /* icon_clock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_clock.png; sourceTree = "<group>"; };
+		320B6855150C1C5200FE0852 /* icon_clock@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_clock@2x.png"; sourceTree = "<group>"; };
 		3211736C14E9C4A90081CD3E /* UITextFieldWithInset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UITextFieldWithInset.h; path = classes/UITextFieldWithInset.h; sourceTree = "<group>"; };
 		3211736D14E9C4A90081CD3E /* UITextFieldWithInset.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UITextFieldWithInset.m; path = classes/UITextFieldWithInset.m; sourceTree = "<group>"; };
 		3221778614EC2D9D00D48F99 /* SDImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDImageCache.h; path = classes/SDImageCache.h; sourceTree = "<group>"; };
@@ -681,6 +685,8 @@
 				3248245214FC1B6500BF5E65 /* icon_like_touch@2x.png */,
 				3248245314FC1B6500BF5E65 /* icon_like.png */,
 				3248245414FC1B6500BF5E65 /* icon_like@2x.png */,
+				320B6854150C1C5200FE0852 /* icon_clock.png */,
+				320B6855150C1C5200FE0852 /* icon_clock@2x.png */,
 			);
 			name = "Photos Strip";
 			sourceTree = "<group>";
@@ -1211,6 +1217,8 @@
 				32B8ED4C14FE7A4F0066F253 /* iTunesArtwork in Resources */,
 				32B8ED4E14FE7AC10066F253 /* Icon.png in Resources */,
 				32B8ED5014FE7ACB0066F253 /* Icon@2x.png in Resources */,
+				320B6856150C1C5200FE0852 /* icon_clock.png in Resources */,
+				320B6857150C1C5200FE0852 /* icon_clock@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
