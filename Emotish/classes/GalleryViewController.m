@@ -184,6 +184,7 @@
 //    NSLog(@"GalleryViewController viewDidAppear");
     [super viewDidAppear:animated];
     self.view.userInteractionEnabled = YES;
+    self.feelingsTableView.userInteractionEnabled = YES;
 //    self.galleryScreenshot = nil;
     for (GalleryFeelingCell * galleryFeelingCell in self.feelingsTableView.visibleCells) {
         for (GalleryFeelingImageCell * galleryFeelingImageCell in galleryFeelingCell.imagesTableView.visibleCells) {
