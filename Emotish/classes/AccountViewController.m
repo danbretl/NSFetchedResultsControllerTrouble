@@ -658,6 +658,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
     [likesQuery whereKey:@"user" equalTo:userServer];
     [likesQuery includeKey:@"photo"];
+    likesQuery.limit = [NSNumber numberWithInt:1000]; // THIS WILL EVENTUALLY BE A PROBLEM WHEN USERS HAVE MORE THAN 1000 LIKES TO PULL IN.
     [likesQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
         if (!error) {
@@ -688,6 +689,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     PFQuery * flagsQuery = [PFQuery queryWithClassName:@"Flag"];
     [flagsQuery whereKey:@"user" equalTo:userServer];
     [flagsQuery includeKey:@"photo"];
+    flagsQuery.limit = [NSNumber numberWithInt:1000]; // THIS COULD EVENTUALLY BE A PROBLEM IF USERS HAVE MORE THAN 1000 FLAGS TO PULL IN. UNLIKELY, BUT STILL...
     [flagsQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
         if (!error) {
