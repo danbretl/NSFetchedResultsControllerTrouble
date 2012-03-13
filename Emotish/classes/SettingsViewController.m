@@ -14,6 +14,7 @@
 #import "EmotishAlertViews.h"
 #import "NotificationConstants.h"
 #import "EditAccountViewController.h"
+#import "SendFeedbackViewController.h"
 
 @interface SettingsItem : NSObject
 @property (nonatomic, strong) NSString * titleNormal;
@@ -372,10 +373,10 @@
     [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
 }
 - (void) sendFeedbackTouched:(SettingsItem *)settingsItem {
-    // Push a VC to give text feedback
-    NSLog(@"%@", NSStringFromSelector(_cmd));    
-    [self.tempUnfinishedAlertView show];
-    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+    // Push a VC to send feedback
+    NSLog(@"%@", NSStringFromSelector(_cmd));
+    SendFeedbackViewController * sendFeedbackViewController = [[SendFeedbackViewController alloc] initWithNibName:@"SendFeedbackViewController" bundle:[NSBundle mainBundle]];
+    [self.navigationController pushViewController:sendFeedbackViewController animated:YES];
 }
 - (void) aboutEmotishTouched:(SettingsItem *)settingsItem {
     // Push a VC about the app and team

@@ -196,6 +196,8 @@
 		32D240C514E4D56700AB368C /* SubmitPhotoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32D240C314E4D56700AB368C /* SubmitPhotoViewController.m */; };
 		32D240C614E4D56700AB368C /* SubmitPhotoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32D240C414E4D56700AB368C /* SubmitPhotoViewController.xib */; };
 		32D240D114E4D6D300AB368C /* TopBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32D240D014E4D6D300AB368C /* TopBarView.m */; };
+		32E14FE8150ED48F00A9D0C2 /* SendFeedbackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E14FE6150ED48E00A9D0C2 /* SendFeedbackViewController.m */; };
+		32E14FE9150ED48F00A9D0C2 /* SendFeedbackViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32E14FE7150ED48F00A9D0C2 /* SendFeedbackViewController.xib */; };
 		32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EB14D0929F00191C6F /* UIKit.framework */; };
 		32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1ED14D0929F00191C6F /* Foundation.framework */; };
 		32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EF14D0929F00191C6F /* CoreGraphics.framework */; };
@@ -469,6 +471,9 @@
 		32D240C414E4D56700AB368C /* SubmitPhotoViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SubmitPhotoViewController.xib; path = classes/SubmitPhotoViewController.xib; sourceTree = "<group>"; };
 		32D240CF14E4D6D300AB368C /* TopBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TopBarView.h; path = classes/TopBarView.h; sourceTree = "<group>"; };
 		32D240D014E4D6D300AB368C /* TopBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TopBarView.m; path = classes/TopBarView.m; sourceTree = "<group>"; };
+		32E14FE5150ED48E00A9D0C2 /* SendFeedbackViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SendFeedbackViewController.h; path = classes/SendFeedbackViewController.h; sourceTree = "<group>"; };
+		32E14FE6150ED48E00A9D0C2 /* SendFeedbackViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SendFeedbackViewController.m; path = classes/SendFeedbackViewController.m; sourceTree = "<group>"; };
+		32E14FE7150ED48F00A9D0C2 /* SendFeedbackViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SendFeedbackViewController.xib; path = classes/SendFeedbackViewController.xib; sourceTree = "<group>"; };
 		32E2F1E714D0929F00191C6F /* Emotish.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Emotish.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32E2F1EB14D0929F00191C6F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		32E2F1ED14D0929F00191C6F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -1049,6 +1054,9 @@
 				3237426B150E788100950B4A /* EditAccountViewController.h */,
 				3237426C150E788100950B4A /* EditAccountViewController.m */,
 				3237426D150E788100950B4A /* EditAccountViewController.xib */,
+				32E14FE5150ED48E00A9D0C2 /* SendFeedbackViewController.h */,
+				32E14FE6150ED48E00A9D0C2 /* SendFeedbackViewController.m */,
+				32E14FE7150ED48F00A9D0C2 /* SendFeedbackViewController.xib */,
 			);
 			name = Settings;
 			sourceTree = "<group>";
@@ -1243,6 +1251,7 @@
 				320B6856150C1C5200FE0852 /* icon_clock.png in Resources */,
 				320B6857150C1C5200FE0852 /* icon_clock@2x.png in Resources */,
 				3237426F150E788100950B4A /* EditAccountViewController.xib in Resources */,
+				32E14FE9150ED48F00A9D0C2 /* SendFeedbackViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1309,6 +1318,7 @@
 				32CDE0521509F4440038EC82 /* SubmitPhotoShared.m in Sources */,
 				3237426E150E788100950B4A /* EditAccountViewController.m in Sources */,
 				32374272150EAD0500950B4A /* InputHandler.m in Sources */,
+				32E14FE8150ED48F00A9D0C2 /* SendFeedbackViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
