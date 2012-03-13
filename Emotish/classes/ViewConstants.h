@@ -12,13 +12,6 @@
 #define VC_TOP_BAR_HEIGHT                               44.0
 #define VC_BOTTOM_BAR_HEIGHT                            10.0
 
-#define VC_ADD_PHOTO_BUTTON_WIDTH                       44.0
-#define VC_ADD_PHOTO_BUTTON_HEIGHT                      44.0
-#define VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE     12.0
-#define VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE    8.0
-#define VC_ADD_PHOTO_BUTTON_PADDING_TOP                  8.0
-#define VC_ADD_PHOTO_BUTTON_PADDING_RIGHT                8.0
-
 #define PC_PHOTO_CELL_MARGIN_TOP 10.0
 
 #define PC_PHOTO_CELL_IMAGE_SIDE_LENGTH         240.0

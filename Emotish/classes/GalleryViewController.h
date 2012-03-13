@@ -16,6 +16,7 @@
 #import "SubmitPhotoViewController.h"
 #import "AccountViewController.h"
 #import "SettingsViewController.h"
+#import "CameraButtonView.h"
 
 @interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate, AccountViewControllerDelegate, SettingsViewControllerDelegate> {
     
@@ -35,7 +36,7 @@
 @property (strong, nonatomic) UIImageView * floatingImageView;
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
-@property (unsafe_unretained, nonatomic) IBOutlet UIButton * addPhotoButton;
+@property (unsafe_unretained, nonatomic) IBOutlet CameraButtonView *cameraButtonView;
 
 - (void) getFeelingsFromServer;
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID;

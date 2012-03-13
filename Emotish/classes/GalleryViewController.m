@@ -19,7 +19,7 @@
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
 - (void) emotishLogoTouched:(UIButton *)button;
 - (void) profileButtonTouched:(UIButton *)button;
-- (IBAction)addPhotoButtonTouched:(id)sender;
+- (IBAction)cameraButtonTouched:(id)sender;
 - (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 //@property (strong, nonatomic) UIImage * galleryScreenshot;
 //@property (strong, nonatomic, readonly) UIImage * galleryScreenshotCurrent;
@@ -45,28 +45,7 @@
 @synthesize floatingImageView=_floatingImageView;
 @synthesize topBar=_topBar;
 @synthesize bottomBar = _bottomBar;
-@synthesize addPhotoButton = _addPhotoButton;
-//@synthesize galleryScreenshot=_galleryScreenshot;
-
-//- (void) changeColor:(NSTimer *)timer {
-//    if ([self.topBar.backgroundView.backgroundColor isEqual:[UIColor whiteColor]]) {
-//        self.topBar.backgroundView.backgroundColor = [UIColor blackColor];
-//    } else {
-//        self.topBar.backgroundView.backgroundColor = [UIColor whiteColor];
-//    }
-//}
-//
-//- (void) animateTopBar {
-//    self.topBar.backgroundView.image = nil;
-//    NSTimer * timer = [NSTimer timerWithTimeInterval:0.25 target:self selector:@selector(changeColor:) userInfo:nil repeats:YES];
-//    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
-////    [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionRepeat animations:^{
-////        NSLog(@"animateTopBar");
-////        self.topBar.backgroundView.backgroundColor = whiteBool ? [UIColor whiteColor] : [UIColor blackColor];
-////        whiteBool = !whiteBool;
-////        NSLog(@"animateTopBar");
-////    } completion:NULL];
-//}
+@synthesize cameraButtonView = _cameraButtonView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -90,16 +69,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 //    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
-        
-    CGSize addPhotoButtonSize = CGSizeMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE + VC_ADD_PHOTO_BUTTON_WIDTH + VC_ADD_PHOTO_BUTTON_PADDING_RIGHT, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE + VC_ADD_PHOTO_BUTTON_HEIGHT + VC_ADD_PHOTO_BUTTON_PADDING_TOP);
-    self.addPhotoButton.frame = CGRectMake(0, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - addPhotoButtonSize.height, addPhotoButtonSize.width, addPhotoButtonSize.height);
-    self.addPhotoButton.contentEdgeInsets = UIEdgeInsetsMake(0, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, 0);
-    CALayer * addPhotoButtonShadowLayer = [CALayer layer];
-    addPhotoButtonShadowLayer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_PADDING_TOP, VC_ADD_PHOTO_BUTTON_WIDTH, VC_ADD_PHOTO_BUTTON_HEIGHT) cornerRadius:VC_ADD_PHOTO_BUTTON_WIDTH / 2.0].CGPath;
-    addPhotoButtonShadowLayer.shadowOpacity = 0.4;
-    addPhotoButtonShadowLayer.shadowOffset = CGSizeMake(0, 0);
-    addPhotoButtonShadowLayer.shadowColor = [UIColor colorWithWhite:120.0/255.0 alpha:1.0].CGColor;
-    [self.addPhotoButton.layer insertSublayer:addPhotoButtonShadowLayer atIndex:0];
+    
+    [self.cameraButtonView positionInSuperview:self.view];
+    [self.cameraButtonView.button addTarget:self action:@selector(cameraButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.topBar.buttonBranding addTarget:self action:@selector(emotishLogoTouched:) forControlEvents:UIControlEventTouchUpInside];
     [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
@@ -154,14 +126,12 @@
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203130226"];
     }
     
-//    [self animateTopBar];
-    
 }
 
 - (void)viewDidUnload {
-    [self setAddPhotoButton:nil];
     [self setFlagStretchView:nil];
     [self setBottomBar:nil];
+    [self setCameraButtonView:nil];
     [super viewDidUnload];
     self.feelingsTableView = nil;
     self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
@@ -643,7 +613,7 @@
     }
 }
 
-- (IBAction)addPhotoButtonTouched:(id)sender {
+- (IBAction)cameraButtonTouched:(id)sender {
 //    self.galleryScreenshot = self.galleryScreenshotCurrent;
     SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
     submitPhotoViewController.shouldPushImagePicker = YES;

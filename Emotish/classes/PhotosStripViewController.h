@@ -13,6 +13,7 @@
 #import "PhotoView.h"
 #import "ClipView.h"
 #import "TopBarView.h"
+#import "CameraButtonView.h"
 #import "SubmitPhotoViewController.h"
 #import "FlagStretchView.h"
 #import "SettingsViewController.h"
@@ -63,8 +64,8 @@ typedef enum {
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewRightCenter;
 @property (unsafe_unretained, nonatomic) IBOutlet PhotoView *photoViewRightmost;
 @property (strong, nonatomic) UIImageView * floatingImageView;
-@property (unsafe_unretained, nonatomic) IBOutlet UIButton * addPhotoButton;
-@property (unsafe_unretained, nonatomic) IBOutlet UILabel * addPhotoLabel;
+
+@property (unsafe_unretained, nonatomic) IBOutlet CameraButtonView *cameraButtonView;
 
 @property (strong, nonatomic) UIPinchGestureRecognizer * zoomOutGestureRecognizer;
 @property (strong, nonatomic) UISwipeGestureRecognizer * swipeUpGestureRecognizer;

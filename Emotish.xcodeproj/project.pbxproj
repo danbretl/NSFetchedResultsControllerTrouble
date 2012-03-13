@@ -133,7 +133,6 @@
 		323401B514F5733300B887F2 /* AccountViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 323401B314F5733300B887F2 /* AccountViewController.xib */; };
 		3237426E150E788100950B4A /* EditAccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3237426C150E788100950B4A /* EditAccountViewController.m */; };
 		3237426F150E788100950B4A /* EditAccountViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3237426D150E788100950B4A /* EditAccountViewController.xib */; };
-		32374272150EAD0500950B4A /* InputHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 32374271150EAD0500950B4A /* InputHandler.m */; };
 		323B2FD614D765250035BF74 /* UIColor+Emotish.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FD514D765250035BF74 /* UIColor+Emotish.m */; };
 		323B2FDD14D77B0E0035BF74 /* CoreDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */; };
 		323B2FE014D77C4A0035BF74 /* User.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FDF14D77C4A0035BF74 /* User.m */; };
@@ -183,6 +182,7 @@
 		329D112F14D9B0BD00F69263 /* PhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D112E14D9B0BD00F69263 /* PhotoView.m */; };
 		329D113214D9DBF900F69263 /* ClipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D113114D9DBF900F69263 /* ClipView.m */; };
 		329E2C4314DCBCE5004AE89D /* FlagStretchView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329E2C4214DCBCE5004AE89D /* FlagStretchView.m */; };
+		32A9EDC2150FDEEF00665023 /* CameraButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32A9EDC1150FDEEF00665023 /* CameraButtonView.m */; };
 		32B8ED4A14FE7A4F0066F253 /* Icon-Small.png in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4714FE7A4F0066F253 /* Icon-Small.png */; };
 		32B8ED4B14FE7A4F0066F253 /* Icon-Small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4814FE7A4F0066F253 /* Icon-Small@2x.png */; };
 		32B8ED4C14FE7A4F0066F253 /* iTunesArtwork in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4914FE7A4F0066F253 /* iTunesArtwork */; };
@@ -363,8 +363,6 @@
 		3237426B150E788100950B4A /* EditAccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EditAccountViewController.h; path = classes/EditAccountViewController.h; sourceTree = "<group>"; };
 		3237426C150E788100950B4A /* EditAccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EditAccountViewController.m; path = classes/EditAccountViewController.m; sourceTree = "<group>"; };
 		3237426D150E788100950B4A /* EditAccountViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EditAccountViewController.xib; path = classes/EditAccountViewController.xib; sourceTree = "<group>"; };
-		32374270150EAD0500950B4A /* InputHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputHandler.h; path = classes/InputHandler.h; sourceTree = "<group>"; };
-		32374271150EAD0500950B4A /* InputHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InputHandler.m; path = classes/InputHandler.m; sourceTree = "<group>"; };
 		323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 001.xcdatamodel"; sourceTree = "<group>"; };
 		323B2FD414D765250035BF74 /* UIColor+Emotish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIColor+Emotish.h"; path = "classes/UIColor+Emotish.h"; sourceTree = "<group>"; };
 		323B2FD514D765250035BF74 /* UIColor+Emotish.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIColor+Emotish.m"; path = "classes/UIColor+Emotish.m"; sourceTree = "<group>"; };
@@ -455,6 +453,8 @@
 		329D113114D9DBF900F69263 /* ClipView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ClipView.m; path = classes/ClipView.m; sourceTree = "<group>"; };
 		329E2C4114DCBCE5004AE89D /* FlagStretchView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FlagStretchView.h; path = classes/FlagStretchView.h; sourceTree = "<group>"; };
 		329E2C4214DCBCE5004AE89D /* FlagStretchView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FlagStretchView.m; path = classes/FlagStretchView.m; sourceTree = "<group>"; };
+		32A9EDC0150FDEEF00665023 /* CameraButtonView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CameraButtonView.h; path = classes/CameraButtonView.h; sourceTree = "<group>"; };
+		32A9EDC1150FDEEF00665023 /* CameraButtonView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CameraButtonView.m; path = classes/CameraButtonView.m; sourceTree = "<group>"; };
 		32B8ED4714FE7A4F0066F253 /* Icon-Small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-Small.png"; sourceTree = "<group>"; };
 		32B8ED4814FE7A4F0066F253 /* Icon-Small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-Small@2x.png"; sourceTree = "<group>"; };
 		32B8ED4914FE7A4F0066F253 /* iTunesArtwork */ = {isa = PBXFileReference; lastKnownFileType = file; path = iTunesArtwork; sourceTree = "<group>"; };
@@ -867,8 +867,6 @@
 				32FF145F14FCA6E500829FB0 /* PushConstants.m */,
 				323BDC5015013FC4004FF030 /* EmotishAlertViews.h */,
 				323BDC5115013FC4004FF030 /* EmotishAlertViews.m */,
-				32374270150EAD0500950B4A /* InputHandler.h */,
-				32374271150EAD0500950B4A /* InputHandler.m */,
 				32D240CF14E4D6D300AB368C /* TopBarView.h */,
 				32D240D014E4D6D300AB368C /* TopBarView.m */,
 				329D112D14D9B0BD00F69263 /* PhotoView.h */,
@@ -877,6 +875,8 @@
 				3211736D14E9C4A90081CD3E /* UITextFieldWithInset.m */,
 				323F2EFD14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.h */,
 				323F2EFE14F48E250089B1AA /* UITextFieldWithInsetAndUnderline.m */,
+				32A9EDC0150FDEEF00665023 /* CameraButtonView.h */,
+				32A9EDC1150FDEEF00665023 /* CameraButtonView.m */,
 				3290AD9C150C63A6001C9E74 /* Categories */,
 				3254DF0C14FFF6CF0089CDF9 /* Web */,
 			);
@@ -1317,8 +1317,8 @@
 				327E45F91509AA1800579A96 /* FeelingWordCell.m in Sources */,
 				32CDE0521509F4440038EC82 /* SubmitPhotoShared.m in Sources */,
 				3237426E150E788100950B4A /* EditAccountViewController.m in Sources */,
-				32374272150EAD0500950B4A /* InputHandler.m in Sources */,
 				32E14FE8150ED48F00A9D0C2 /* SendFeedbackViewController.m in Sources */,
+				32A9EDC2150FDEEF00665023 /* CameraButtonView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -27,7 +27,6 @@
 
 const CGFloat PSVC_LABELS_ANIMATION_EXTRA_DISTANCE_OFFSCREEN = 10.0;
 const int     PSVC_PHOTO_VIEWS_COUNT = 5;
-const CGFloat PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT = 1.0;
 const CGFloat PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_START = 35.0;
 const CGFloat PSVC_FLAG_STRETCH_VIEW_ACTIVATION_DISTANCE_END = 65.0;
 const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGHT = 0.66;
@@ -57,7 +56,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @property (nonatomic) BOOL finishing;
 - (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView;
 - (void)emotishLogoTouched:(UIButton *)button;
-- (IBAction)addPhotoButtonTouched:(id)sender;
+- (void)cameraButtonTouched:(id)sender;
 - (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
 @property (strong, nonatomic) PFQuery * getPhotosQuery;
 @property (strong, nonatomic) NSMutableArray * photoUpdateQueries;
@@ -114,7 +113,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize headerButton=_headerButton;
 @synthesize photosClipView=_photosClipView, photosScrollView=_photosScrollView, flagStretchView=_flagStretchView, photosContainer=_photosContainer, photoViews=_photoViews, photoViewLeftmost=_photoViewLeftmost, photoViewLeftCenter=_photoViewLeftCenter, photoViewCenter=_photoViewCenter, photoViewRightCenter=_photoViewRightCenter, photoViewRightmost=_photoViewRightmost;
 @synthesize floatingImageView=_floatingImageView;
-@synthesize addPhotoButton = _addPhotoButton, addPhotoLabel = _addPhotoLabel;
+@synthesize cameraButtonView = _cameraButtonView;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer, swipeLeftHeaderGestureRecognizer=_swipeLeftHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
 @synthesize getPhotosQuery=_getPhotosQuery;
@@ -155,18 +154,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [super viewDidLoad];
     NSLog(@"%@ PhotosStripViewController viewDidLoad", self.focus == FeelingFocus ? @"Feeling" : @"User");
     
-    CGSize addPhotoButtonSize = CGSizeMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE + VC_ADD_PHOTO_BUTTON_WIDTH + VC_ADD_PHOTO_BUTTON_PADDING_RIGHT, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE + VC_ADD_PHOTO_BUTTON_HEIGHT + VC_ADD_PHOTO_BUTTON_PADDING_TOP);
-    self.addPhotoButton.frame = CGRectMake(0, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - addPhotoButtonSize.height, addPhotoButtonSize.width, addPhotoButtonSize.height);
-    self.addPhotoButton.contentEdgeInsets = UIEdgeInsetsMake(0, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, 0);
-    //    self.addPhotoButton.frame = CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, self.view.frame.size.height - VC_BOTTOM_BAR_HEIGHT - self.addPhotoButton.frame.size.height - VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_BOTTOM_EDGE, self.addPhotoButton.frame.size.width, self.addPhotoButton.frame.size.height);
-    self.addPhotoLabel.frame = CGRectMake(CGRectGetMaxX(self.addPhotoButton.frame) + PSVC_ADD_PHOTO_BUTTON_MARGIN_RIGHT, self.addPhotoButton.frame.origin.y, self.view.frame.size.width - CGRectGetMaxX(self.addPhotoButton.frame), self.addPhotoButton.frame.size.height);
-    CALayer * addPhotoButtonShadowLayer = [CALayer layer];
-    addPhotoButtonShadowLayer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(VC_ADD_PHOTO_BUTTON_DISTANCE_FROM_LEFT_EDGE, VC_ADD_PHOTO_BUTTON_PADDING_TOP, VC_ADD_PHOTO_BUTTON_WIDTH, VC_ADD_PHOTO_BUTTON_HEIGHT) cornerRadius:VC_ADD_PHOTO_BUTTON_WIDTH / 2.0].CGPath;
-    addPhotoButtonShadowLayer.shadowOpacity = 0.4;
-    addPhotoButtonShadowLayer.shadowOffset = CGSizeMake(0, 0);
-    addPhotoButtonShadowLayer.shadowColor = [UIColor colorWithWhite:120.0/255.0 alpha:1.0].CGColor;
-    [self.addPhotoButton.layer insertSublayer:addPhotoButtonShadowLayer atIndex:0];
-    
+    [self.cameraButtonView positionInSuperview:self.view];
+    [self.cameraButtonView.button addTarget:self action:@selector(cameraButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+        
     [self.topBar.buttonBranding addTarget:self action:@selector(emotishLogoTouched:) forControlEvents:UIControlEventTouchUpInside];
     //    if (self.focus == FeelingFocus) {
     //        [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
@@ -259,7 +249,6 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [self setFetchedResultsControllerUser:nil];
     [self setFetchedResultsControllerFeelings:nil];
     [self setTopBar:nil];
-    [self setAddPhotoLabel:nil];
     [self setPhotosContainer:nil];
     [self setPhotoViewLeftmost:nil];
     [self setPhotoViewLeftCenter:nil];
@@ -275,9 +264,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [self setSwipeRightHeaderGestureRecognizer:nil];
     [self setSwipeLeftHeaderGestureRecognizer:nil];
     [self setContentView:nil];
-    [self setAddPhotoButton:nil];
     [self setBottomBar:nil];
     [self setPhotoViews:nil];
+    [self setCameraButtonView:nil];
     [super viewDidUnload];
 }
 
@@ -290,7 +279,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
         self.floatingImageView.image = self.animationInPersistentImage;
         self.floatingImageView.alpha = 1.0;
-        self.addPhotoLabel.alpha = 0.0;
+        [self.cameraButtonView setButtonPromptVisible:NO];
         self.view.userInteractionEnabled = NO;
         self.photoViewLeftCenter.alpha = 0.0;
         self.photoViewRightCenter.alpha = 0.0;
@@ -327,7 +316,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             [self.topBar setViewMode:BrandingCenter animated:NO];
             [self.topBar showButtonType:BackButton inPosition:LeftNormal animated:NO];
             [self.topBar showButtonType:DoneButton inPosition:RightNormal animated:NO];
-            self.addPhotoButton.alpha = 0.0;
+            self.cameraButtonView.alpha = 0.0;
             
         }
         
@@ -365,7 +354,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         
         [UIView animateWithDuration:0.4 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             
-            self.addPhotoLabel.alpha = 1.0;
+            [self.cameraButtonView setButtonPromptVisible:YES];
             self.photoViewLeftCenter.alpha = 1.0;
             self.photoViewRightCenter.alpha = 1.0;
             
@@ -384,7 +373,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                 [self.topBar setViewMode:BrandingRight animated:NO];
                 [self.topBar hideButtonInPosition:LeftNormal animated:NO];
                 [self.topBar hideButtonInPosition:RightNormal animated:NO];
-                self.addPhotoButton.alpha = 1.0;
+                self.cameraButtonView.alpha = 1.0;
             }
             TopBarButtonType leftSpecialButtonType = 0;
             if (self.focus == FeelingFocus) {
@@ -495,7 +484,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     } else if (self.focus == UserFocus) {
         addPhotoString = @"What are you feeling?";
     }
-    self.addPhotoLabel.text = addPhotoString;
+    [self.cameraButtonView setButtonPromptText:addPhotoString];
 }
 
 - (void) updateViewsForCurrentFocus {
@@ -1101,7 +1090,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                     photoViewToAdjust.alpha = 0.0;
                 }
             }
-            self.addPhotoLabel.alpha = 0.0;
+            [self.cameraButtonView setButtonPromptVisible:NO];
             [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
         } completion:^(BOOL finished){
             // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
@@ -1136,32 +1125,12 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.finishing = YES;
         [self.photosScrollView stopScroll];
         
-////        self.galleryImageView.image = self.galleryScreenshot;
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
         self.floatingImageView.image = self.photoViewCenter.photoImageView.image;
         self.floatingImageView.alpha = 1.0;
         self.photoViewCenter.photoImageView.alpha = 0.0;
         
         [self.delegate photosStripViewControllerFinished:self withNoMorePhotos:noMorePhotos];
-        
-//        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-////
-////            [self.photoViewCenter showActionButtons:NO animated:NO];
-////            self.headerButton.alpha = 0.0;
-////            self.addPhotoLabel.alpha = 0.0;
-////            self.photosScrollView.alpha = 0.0;
-//////            self.backgroundView.alpha = 0.0;            
-//            self.floatingImageView.frame = CGRectInset(self.floatingImageView.frame, self.floatingImageView.frame.size.width * 0.1, self.floatingImageView.frame.size.height * 0.1);
-//            self.floatingImageView.alpha = 0.0;
-//////            if (self.focus == UserFocus) {
-//////                [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
-//////            }
-////            
-//        } completion:^(BOOL finished){
-////            
-//////            [self.delegate photosStripViewControllerFinished:self withNoMorePhotos:noMorePhotos];
-////            
-//        }];
         
     }
     
@@ -1211,8 +1180,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 //            feelingViewController.backgroundView.alpha = 0.0;
             feelingViewController.topBar.alpha = 0.0;
             feelingViewController.bottomBar.alpha = 0.0;
-            feelingViewController.addPhotoButton.alpha = 0.0;
-            feelingViewController.addPhotoLabel.alpha = 0.0;
+            feelingViewController.cameraButtonView.button.imageView.hidden = YES;
+            feelingViewController.cameraButtonView.buttonShadowLayer.hidden = YES;
+            [feelingViewController.cameraButtonView setButtonPromptVisible:NO];
             
             [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
             int direction = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? -1 : 1;
@@ -1223,13 +1193,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             NSLog(@"yadj = %f", originYAdjustment);
             
             [UIView animateWithDuration:0.125 animations:^{
-                self.addPhotoLabel.alpha = 0.0;
-            } completion:^(BOOL finished){
-                [UIView animateWithDuration:0.125 animations:^{
-                    feelingViewController.addPhotoLabel.alpha = 1.0;
-                }];
+                [self.cameraButtonView setButtonPromptVisible:NO];
             }];
+            [UIView animateWithDuration:0.125 delay:0.125 options:0 animations:^{
+                [feelingViewController.cameraButtonView setButtonPromptVisible:YES];
+            } completion:NULL];
             [UIView animateWithDuration:0.25 animations:^{
+                self.cameraButtonView.button.titleLabel.frame = CGRectOffset(self.cameraButtonView.button.titleLabel.frame, 0, originYAdjustment);
                 self.contentView.frame = CGRectOffset(self.contentView.frame, 0, originYAdjustment);
                 feelingViewController.view.frame = CGRectOffset(feelingViewController.view.frame, 0, originYAdjustment);
             } completion:^(BOOL finished){
@@ -1237,8 +1207,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 //                feelingViewController.backgroundView.alpha = 1.0;
                 feelingViewController.topBar.alpha = 1.0;
                 feelingViewController.bottomBar.alpha = 1.0;
-                feelingViewController.addPhotoButton.alpha = 1.0;
-                feelingViewController.addPhotoLabel.alpha = 1.0;
+                feelingViewController.cameraButtonView.button.imageView.hidden = NO;
+                feelingViewController.cameraButtonView.buttonShadowLayer.hidden = NO;
+                [feelingViewController.cameraButtonView setButtonPromptVisible:YES];
                 [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
             }];
             
@@ -1281,7 +1252,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     
 }
 
-- (IBAction)addPhotoButtonTouched:(id)sender {
+- (void)cameraButtonTouched:(id)sender {
     SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
     if (self.focus == FeelingFocus) {
         submitPhotoViewController.feelingWord = self.feelingFocus.word;
@@ -1387,7 +1358,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             
             [UIView animateWithDuration:0.25 animations:^{
                 self.contentView.alpha = 0.0;
-                self.addPhotoLabel.alpha = 0.0;
+                [self.cameraButtonView setButtonPromptVisible:NO];
                 [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
             } completion:^(BOOL finished){
                 [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
