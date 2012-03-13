@@ -289,6 +289,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 
 - (IBAction)accountOptionButtonTouched:(id)accountOptionButton {
     
+    self.workingOnAccountFromFacebook = NO;
+    self.workingOnAccountFromTwitter = NO;
     if (accountOptionButton == self.usernameButton) {
         NSLog(@"Username/Email button touched");
         [self showContainer:self.inputContainer animated:YES];
