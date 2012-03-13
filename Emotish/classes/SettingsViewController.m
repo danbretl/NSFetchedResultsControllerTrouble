@@ -13,6 +13,7 @@
 #import "PushConstants.h"
 #import "EmotishAlertViews.h"
 #import "NotificationConstants.h"
+#import "EditAccountViewController.h"
 
 @interface SettingsItem : NSObject
 @property (nonatomic, strong) NSString * titleNormal;
@@ -190,9 +191,26 @@
         // Push a VC to sign in to / create an Emotish account
         [self showAccountViewController];
     } else {
-        // Push a VC to edit account
-        [self.tempUnfinishedAlertView show];
-        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+        // Get updated info for currently logged in user
+        PFQuery * userQuery = [PFQuery queryForUser];
+        
+        PFUser * currentUser = [PFUser currentUser];
+        [userQuery getObjectInBackgroundWithId:currentUser.objectId block:^(PFObject * object, NSError * error) {
+            if (!error && object != nil) {
+                PFUser * retrievedUser = (PFUser *)object;
+                currentUser.username = retrievedUser.username;
+                currentUser.email = retrievedUser.email;
+                // Push a VC to edit account
+                EditAccountViewController * editAccountViewController = [[EditAccountViewController alloc] initWithNibName:@"EditAccountViewController" bundle:[NSBundle mainBundle]];
+                editAccountViewController.coreDataManager = self.coreDataManager;
+                [self.navigationController pushViewController:editAccountViewController animated:YES];
+                [self.coreDataManager addOrUpdateUserFromServer:currentUser];
+                [self.coreDataManager saveCoreData];
+            } else {
+                [[EmotishAlertViews generalConnectionErrorAlertView] show];
+                [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+            }
+        }];
     }
 }
 
@@ -473,7 +491,7 @@
         {
             [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"connect facebook" titleActivated:@"disconnect facebook" touchSelector:@selector(facebookTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj]];
             [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"connect twitter" titleActivated:@"disconnect twitter" touchSelector:@selector(twitterTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj]];
-            [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"invite friends" titleActivated:@"invite friends" touchSelector:@selector(inviteFriendsTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:yesObj showArrowActivated:yesObj]];
+//            [connectionsSettings addSubItem:[SettingsItem settingsItemWithTitleNormal:@"invite friends" titleActivated:@"invite friends" touchSelector:@selector(inviteFriendsTouched:) visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:yesObj showArrowActivated:yesObj]];
         }
         SettingsItem * emotishSettings = [SettingsItem settingsItemWithTitleNormal:@"emotish" titleActivated:@"emotish" touchSelector:NULL visibleNormal:yesObj visibleActivated:yesObj showArrowNormal:noObj showArrowActivated:noObj];
         {

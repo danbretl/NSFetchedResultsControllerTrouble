@@ -91,6 +91,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @property (nonatomic) BOOL controllerChangingContent;
 @property BOOL blockViewControllerFinishing;
 @property (nonatomic) BOOL scrollJumpInProgress;
+- (void) updateHeaderForCurrentFocus;
+- (void) updateAddPhotoLabelForCurrentFocus;
 @end
 
 @implementation PhotosStripViewController
@@ -344,13 +346,15 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         [self.topBar.buttonLeftSpecial removeTarget:self action:@selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
         [self.topBar.buttonLeftSpecial addTarget:self action:leftSpecialButtonType == ProfileButton ? @selector(profileButtonTouched:) : @selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
         
-        [self.photoViewCenter updateLikesCount:self.photoCenter.likesCount likedPersonally:[self.photoCenter likeExistsForUserServerID:currentUser.objectId]];
+        [self updatePhotoViewsPhotosForPhotoCenterIndex:self.photoCenterIndex];
         
     }
     
     BOOL deleteAllowed = [self deleteAllowedForCurrentUser:[PFUser currentUser] withPhoto:self.photoCenter];
     [self.photoViewCenter setActionButtonWithCode:Delete enabled:deleteAllowed visible:deleteAllowed];
     [self.photoViewCenter showActionButtons:(self.photoViewCenter.actionButtonsVisible && [PFUser currentUser] != nil) animated:NO];
+    
+    [self updateHeaderForCurrentFocus];
     
 }
 
@@ -469,24 +473,35 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [self.headerButton setTitleColor:headerColor forState:UIControlStateHighlighted];
 }
 
-- (void) updateViewsForCurrentFocus {
-    
+- (void) updateHeaderForCurrentFocus {
     NSString * headerString = nil;
     UIColor * headerColor = nil;
-    NSString * addPhotoString = nil;
     if (self.focus == FeelingFocus) {
         headerString = self.feelingFocus.word;//.lowercaseString;
         headerColor = [UIColor feelingColor];
-        addPhotoString = [NSString stringWithFormat:@"Do you feel %@?", self.feelingFocus.word];//.lowercaseString];
     } else if (self.focus == UserFocus) {
         headerString = self.userFocus.name;
         headerColor = [UIColor userColor];
-        addPhotoString = @"What are you feeling?";
     } else {
         headerString = @"";
     }
     [self setHeaderLabelText:headerString color:headerColor];
+}
+
+- (void) updateAddPhotoLabelForCurrentFocus {
+    NSString * addPhotoString = nil;
+    if (self.focus == FeelingFocus) {
+        addPhotoString = [NSString stringWithFormat:@"Do you feel %@?", self.feelingFocus.word];//.lowercaseString];
+    } else if (self.focus == UserFocus) {
+        addPhotoString = @"What are you feeling?";
+    }
     self.addPhotoLabel.text = addPhotoString;
+}
+
+- (void) updateViewsForCurrentFocus {
+    
+    [self updateHeaderForCurrentFocus];
+    [self updateAddPhotoLabelForCurrentFocus];
     
     [NSFetchedResultsController deleteCacheWithName:self.fetchedResultsControllerForCurrentFocus.cacheName];
     NSPredicate * fetchPredicate = self.focus == FeelingFocus ? [NSPredicate predicateWithFormat:@"feeling == %@ && hidden == NO", self.feelingFocus] : [NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", self.userFocus];

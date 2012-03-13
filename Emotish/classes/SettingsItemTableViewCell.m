@@ -7,6 +7,7 @@
 //
 
 #import "SettingsItemTableViewCell.h"
+#import "UIColor+Emotish.h"
 
 @implementation SettingsItemTableViewCell
 
@@ -20,7 +21,7 @@
         self.textLabelPaddingLeft = 70.0;
         self.textLabelPaddingRight = 25.0;
         self.textLabel.font = [UIFont boldSystemFontOfSize:19.0];
-        self.textLabel.textColor = [UIColor colorWithRed:130.0/255.0 green:150.0/255.0 blue:170.0/255.0 alpha:1.0];
+        self.textLabel.textColor = [UIColor emotishColor];
         self.textLabel.highlightedTextColor = self.textLabel.textColor;
         self.textLabel.textAlignment = UITextAlignmentLeft;
         self.textLabel.adjustsFontSizeToFitWidth = NO;

@@ -17,6 +17,7 @@
 #import "EmotishAlertViews.h"
 #import "SBJson.h"
 #import "NotificationConstants.h"
+#import "UIColor+Emotish.h"
 
 double const AP_NAV_BUTTONS_ANIMATION_DURATION = 0.25;
 CGFloat const AVC_NO_ACCOUNT_ASSURANCE_LABEL_MARGIN_TOP = 15.0;
@@ -56,7 +57,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @property (strong) UISwipeGestureRecognizer * swipeRightGestureRecognizer;
 // Alert views
 @property (nonatomic, strong, readonly) UIAlertView * passwordIncorrectAlertView;
-@property (nonatomic, strong, readonly) UIAlertView * emailInvalidAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * forgotPasswordConnectionErrorAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * anotherAccountWithUsernameExistsAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * anotherAccountWithEmailExistsAlertView;
@@ -120,7 +120,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @synthesize textFieldsContainer=_textFieldsContainer, usernameTextField=_usernameTextField, emailTextField=_emailTextField, passwordTextField=_passwordTextField, confirmPasswordTextField=_confirmPasswordTextField;
 @synthesize emailAccountAssuranceLabel;
 @synthesize swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightGestureRecognizer=_swipeRightGestureRecognizer, swipeDownToCancelEnabled=_swipeDownToCancelEnabled, swipeRightToCancelEnabled=_swipeRightToCancelEnabled;
-@synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, emailInvalidAlertView=_emailInvalidAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView, connectionErrorGeneralAlertView=_connectionErrorGeneralAlertView;
+@synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView, connectionErrorGeneralAlertView=_connectionErrorGeneralAlertView;
 @synthesize waitingForLikes=_waitingForLikes, waitingForFlags=_waitingForFlags, waitingToSubscribeToNotificationsChannel=_waitingToSubscribeToNotificationsChannel;
 @synthesize workingOnAccountFromFacebook=_workingOnAccountFromFacebook;
 @synthesize workingOnAccountFromTwitter=_workingOnAccountFromTwitter;
@@ -156,21 +156,19 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     [self.topBar.buttonLeftNormal addTarget:self action:@selector(cancelButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     [self.topBar.buttonRightNormal addTarget:self action:@selector(doneButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     
-    UIColor * almostGreyColor = [UIColor colorWithRed:137.0/255.0 green:135.0/255.0 blue:135.0/255.0 alpha:1.0];
-    
-    self.blurbLabel.textColor = almostGreyColor;
-    self.accountConnectionPromptLabel.textColor = almostGreyColor;
-    self.accountCreationPromptLabel.textColor = almostGreyColor;
+    self.blurbLabel.textColor = [UIColor accountInputColor];
+    self.accountConnectionPromptLabel.textColor = [UIColor accountInputColor];
+    self.accountCreationPromptLabel.textColor = [UIColor accountInputColor];
     self.emailAccountAssuranceLabel.textColor = [UIColor colorWithRed:103.0/255.0 green:186.0/255.0 blue:225.0/255.0 alpha:1.0];
 
-    self.usernameTextField.textColor = almostGreyColor;
-    self.emailTextField.textColor = almostGreyColor;
-    self.passwordTextField.textColor = almostGreyColor;
-    self.confirmPasswordTextField.textColor = almostGreyColor;
+    self.usernameTextField.textColor = [UIColor accountInputColor];
+    self.emailTextField.textColor = [UIColor accountInputColor];
+    self.passwordTextField.textColor = [UIColor accountInputColor];
+    self.confirmPasswordTextField.textColor = [UIColor accountInputColor];
     
     self.orLine = [[UILabel alloc] initWithFrame:CGRectMake(self.usernameButton.frame.origin.x, CGRectGetMaxY(self.usernameButton.frame), self.usernameButton.frame.size.width, CGRectGetMinY(self.facebookButton.frame) - CGRectGetMaxY(self.usernameButton.frame))];
     self.orLine.font = [UIFont italicSystemFontOfSize:12];
-    self.orLine.textColor = almostGreyColor;
+    self.orLine.textColor = [UIColor accountInputColor];
     self.orLine.autoresizingMask = self.usernameButton.autoresizingMask;
     self.orLine.text = @"OR";
     self.orLine.textAlignment = UITextAlignmentCenter;
@@ -607,7 +605,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 
     if (idInputEntered) {
         if (idInputIsEmail && !idInputIsEmailValid) {
-            UIAlertView * emailInvalidSpecialAlertView = [[UIAlertView alloc] initWithTitle:self.emailInvalidAlertView.title message:@"You must enter a valid email address or username." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            UIAlertView * emailInvalidSpecialAlertView = [[UIAlertView alloc] initWithTitle:[EmotishAlertViews emailInvalidAlertView].title message:@"You must enter a valid email address or username." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [emailInvalidSpecialAlertView show];
             [self.usernameTextField becomeFirstResponder];
         } else {
@@ -792,8 +790,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             // Invalid Email
             // You must enter a valid email address.
             // -> Make email first responder
-            alertTitle = self.emailInvalidAlertView.title;
-            alertMessage = self.emailInvalidAlertView.message;
+            alertTitle = [EmotishAlertViews emailInvalidAlertView].title;
+            alertMessage = [EmotishAlertViews emailInvalidAlertView].message;
             nextFirstResponder = self.emailTextField;
         } else if (!passwordsEntered) {
             // Missing Information
@@ -851,7 +849,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             } else if (userRelatedError.code == kPFErrorUserEmailTakenError) {
                 [self.anotherAccountWithEmailExistsAlertView show];
             } else if (userRelatedError.code == kPFErrorInvalidEmailAddress) {
-                [self.emailInvalidAlertView show];
+                [[EmotishAlertViews emailInvalidAlertView] show];
             } else {
                 [self.connectionErrorGeneralAlertView show];
             }
@@ -1054,13 +1052,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         _passwordIncorrectAlertView.delegate = self;
     }
     return _passwordIncorrectAlertView;
-}
-
-- (UIAlertView *)emailInvalidAlertView {
-    if (_emailInvalidAlertView == nil) {
-        _emailInvalidAlertView = [[UIAlertView alloc] initWithTitle:@"Invalid Email" message:@"You must enter a valid email address." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-    }
-    return _emailInvalidAlertView;
 }
 
 - (UIAlertView *) forgotPasswordConnectionErrorAlertView {

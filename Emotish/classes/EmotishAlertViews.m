@@ -43,4 +43,12 @@
     return [[UIAlertView alloc] initWithTitle:@"Photo Flagged" message:@"Thanks for the feedback - we'll check it out, and you won't ever see that Photo again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
 }
 
++ (UIAlertView *)emailInvalidAlertView {
+    return [[UIAlertView alloc] initWithTitle:@"Invalid Email" message:@"You must enter a valid email address." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
++ (UIAlertView *)userEditedAlertView {
+    return [[UIAlertView alloc] initWithTitle:@"User Updated" message:@"Your user account has successfully been updated." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
 @end

@@ -14,4 +14,6 @@
 + (UIColor *) userColor;
 + (UIColor *) emotishColor;
 
++ (UIColor *) accountInputColor;
+
 @end

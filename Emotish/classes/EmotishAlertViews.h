@@ -22,4 +22,8 @@
 
 + (UIAlertView *) flaggedFeedbackAlertView;
 
++ (UIAlertView *) emailInvalidAlertView;
+
++ (UIAlertView *) userEditedAlertView;
+
 @end

@@ -24,19 +24,22 @@
 }
 
 - (CGRect)textRectForBounds:(CGRect)bounds {
-    return [self rectWithInsetForBounds:bounds];
+    return [self rectWithInsetForBounds:[super textRectForBounds:bounds]];
 }
 
 - (CGRect)editingRectForBounds:(CGRect)bounds {
-    return [self rectWithInsetForBounds:bounds];
+    return [self rectWithInsetForBounds:[super editingRectForBounds:bounds]];
 }
 
 - (CGRect)placeholderRectForBounds:(CGRect)bounds {
-    return [self rectWithInsetForBounds:bounds];
+    return [self rectWithInsetForBounds:[super placeholderRectForBounds:bounds]];
 }
 
 - (CGRect)rectWithInsetForBounds:(CGRect)bounds {
-    return CGRectMake(self.textFieldInsets.left, self.textFieldInsets.top, bounds.size.width - self.textFieldInsets.left - self.textFieldInsets.right, bounds.size.height - self.textFieldInsets.top - self.textFieldInsets.bottom);
+    return CGRectMake(bounds.origin.x + self.textFieldInsets.left,
+                      bounds.origin.y + self.textFieldInsets.top,
+                      bounds.size.width - (self.textFieldInsets.left + self.textFieldInsets.right),
+                      bounds.size.height - (self.textFieldInsets.top + self.textFieldInsets.bottom));
 }
 
 @end
