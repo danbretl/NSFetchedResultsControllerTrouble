@@ -16,6 +16,7 @@
 #import "EmotishAlertViews.h"
 #import "SDImageCache.h"
 #import "FeelingWordCell.h"
+#import "CameraConstants.h"
 
 static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 const CGFloat SPVC_SHARE_CONTAINER_MARGIN_TOP = 0.0;
@@ -225,7 +226,17 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
         
         BOOL frontCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceFront];
         BOOL rearCameraAvailable = [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear];
-        self.imagePickerControllerCamera.cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
+        
+        UIImagePickerControllerCameraDevice cameraDevice;
+        NSNumber * cameraDeviceLastUsed = [[NSUserDefaults standardUserDefaults] objectForKey:CAMERA_DEVICE_LAST_USED_USER_DEFAULTS_KEY];
+        if (cameraDeviceLastUsed != nil && 
+            [UIImagePickerController isCameraDeviceAvailable:cameraDeviceLastUsed.intValue]) {
+            cameraDevice = cameraDeviceLastUsed.intValue;
+        } else {
+            cameraDevice = frontCameraAvailable ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
+        }
+        self.imagePickerControllerCamera.cameraDevice = cameraDevice;
+        [[NSUserDefaults standardUserDefaults] setInteger:cameraDevice forKey:CAMERA_DEVICE_LAST_USED_USER_DEFAULTS_KEY];
         
         self.imagePickerControllerCamera.cameraFlashMode = UIImagePickerControllerCameraFlashModeOff; // Not even going to give the option to use flash for now. People at bars might get angry...
         

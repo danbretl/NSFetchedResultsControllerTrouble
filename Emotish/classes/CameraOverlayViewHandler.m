@@ -9,6 +9,7 @@
 #import "CameraOverlayViewHandler.h"
 #import <QuartzCore/QuartzCore.h>
 #import <MobileCoreServices/UTCoreTypes.h>
+#import "CameraConstants.h"
 
 @interface CameraOverlayViewHandler()
 //- (void) linkViewAndController;
@@ -47,6 +48,7 @@
         [self.delegate cameraOverlayViewHandlerRequestedLibraryPicker:self];
     } else if (button == self.cameraOverlayView.swapCamerasButton) {
         self.imagePickerController.cameraDevice = self.imagePickerController.cameraDevice == UIImagePickerControllerCameraDeviceFront ? UIImagePickerControllerCameraDeviceRear : UIImagePickerControllerCameraDeviceFront;
+        [[NSUserDefaults standardUserDefaults] setInteger:self.imagePickerController.cameraDevice forKey:CAMERA_DEVICE_LAST_USED_USER_DEFAULTS_KEY];
     }
 }
 
