@@ -675,8 +675,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             self.waitingForLikes = NO;
             [self attemptToProceedWithSuccessfulLogin];
         } else {
+            [self.flagsQuery cancel];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
-            self.waitingForLikes = NO;
             [self enableMainViewsContainerInteractionAndRestoreUI];
         }
         
@@ -706,8 +706,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             self.waitingForFlags = NO;
             [self attemptToProceedWithSuccessfulLogin];
         } else {
+            [self.likesQuery cancel];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
-            self.waitingForFlags = NO;
             [self enableMainViewsContainerInteractionAndRestoreUI];
         }
         
@@ -1114,10 +1114,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 }
 
 - (void) deleteAndLogOutCurrentUser {
-    [self.likesQuery cancel];
-    [self.flagsQuery cancel];
-    self.waitingForLikes = NO;
-    self.waitingForFlags = NO;
     if ([PFUser currentUser] != nil) {
         NSLog(@"Deleting [PFUser currentUser]");
         [[PFUser currentUser] deleteInBackground]; // This may or may not work.
