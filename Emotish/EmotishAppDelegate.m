@@ -48,27 +48,6 @@
 
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     
-//    PFUser * oldDan = [PFUser user];
-//    oldDan.objectId = @"wZCkAaaprV";
-//    PFQuery * danFix = [PFQuery queryWithClassName:@"Photo"];
-//    [danFix whereKey:@"user" equalTo:oldDan];
-//    [danFix includeKey:@"user"];
-//    danFix.limit = [NSNumber numberWithInt:1000];
-//    [danFix findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-//        if (!error && objects != nil && objects.count > 0) {
-//            NSLog(@"%d objects, %@", objects.count, objects);
-//            for (PFObject * photo in objects) {
-//                [photo setObject:[PFUser currentUser] forKey:@"user"];
-//                [photo save];
-//            }
-//        }
-//    }];
-////    PFUser * currentUser = [PFUser currentUser];
-////    if ([currentUser.objectId isEqualToString:@"zrQ5sHmboR"]) {
-////        ((PFUser *)[PFUser currentUser]).objectId = @"wZCkAaaprV";
-////        [[PFUser currentUser] save];
-////    }
-    
     [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge|UIRemoteNotificationTypeAlert|UIRemoteNotificationTypeSound];
     
     // Cleanup...
