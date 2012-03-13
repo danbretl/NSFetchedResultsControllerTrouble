@@ -151,7 +151,7 @@ const CGFloat SEND_FEEDBACK_VIEW_PADDING_BOTTOM = 20.0;
 
 - (UIAlertView *) permissionToContactAlertView {
     if (_permissionToContactAlertView == nil) {
-        _permissionToContactAlertView = [[UIAlertView alloc] initWithTitle:@"Want to Chat?" message:@"Would it be OK if we followed up with you about this feedback?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Sure", nil];
+        _permissionToContactAlertView = [[UIAlertView alloc] initWithTitle:@"Up for a Chat?" message:@"Would it be OK if we followed up with you about this feedback?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Sure", nil];
         _permissionToContactAlertView.delegate = self;
     }
     return _permissionToContactAlertView;
