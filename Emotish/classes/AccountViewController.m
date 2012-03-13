@@ -104,6 +104,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 - (void) cancelRequested;
 // Methods - User
 - (void) deleteAndLogOutCurrentUser;
+- (void) logOutCurrentUser;
 - (void) getLikesForUserServer:(PFUser *)userServer;
 - (void) getFlagsForUserServer:(PFUser *)userServer;
 //- (void) subscribeToPushChannelForUserServerID:(NSString *)userServerID shouldTellDelegateFinishedWithConnectionAfterwards:(BOOL)shouldTellDelegate;
@@ -676,6 +677,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             [self attemptToProceedWithSuccessfulLogin];
         } else {
             [self.flagsQuery cancel];
+            [self logOutCurrentUser];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             [self enableMainViewsContainerInteractionAndRestoreUI];
         }
@@ -707,6 +709,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             [self attemptToProceedWithSuccessfulLogin];
         } else {
             [self.likesQuery cancel];
+            [self logOutCurrentUser];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             [self enableMainViewsContainerInteractionAndRestoreUI];
         }
@@ -719,6 +722,9 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     
     self.likesQuery = nil;
     self.flagsQuery = nil;
+    
+    self.waitingForLikes = shouldPullLikes;
+    self.waitingForFlags = shouldPullFlags;
     
     if (shouldPullLikes) {
         [self getLikesForUserServer:userServer];
@@ -1118,13 +1124,17 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         NSLog(@"Deleting [PFUser currentUser]");
         [[PFUser currentUser] deleteInBackground]; // This may or may not work.
         NSLog(@"Logging out [PFUser currentUser]");
-        [PFUser logOut];
-        [self.coreDataManager deleteAllLikes];
-        [self.coreDataManager clearAllFlags];
-        [self.coreDataManager saveCoreData];
-        [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
-        [[UIApplication sharedApplication] cancelAllLocalNotifications];
+        [self logOutCurrentUser];
     }
+}
+
+- (void) logOutCurrentUser {
+    [PFUser logOut];
+    [self.coreDataManager deleteAllLikes];
+    [self.coreDataManager clearAllFlags];
+    [self.coreDataManager saveCoreData];
+    [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:nil];
+    [[UIApplication sharedApplication] cancelAllLocalNotifications];
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification {
