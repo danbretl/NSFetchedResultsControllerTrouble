@@ -172,6 +172,15 @@ NSString * const EDIT_ACCOUNT_PASSWORD_PLACEHOLDER = @"••••••••"
                     if (inputType != EditAccountPassword) {
                         [originalUserValues setObject:originalData forKey:userServerKey];
                         [[PFUser currentUser] setObject:inputEdited forKey:userServerKey];
+                        // vvv HARDCODED HACK. UGH. vvv
+                        if (inputType == EditAccountUsername ||
+                            inputType == EditAccountEmail) {
+                            NSString * originalDataLowercase = originalData.lowercaseString;
+                            NSString * userServerKeyLowercase = [userServerKey stringByAppendingString:@"Lowercase"];
+                            [originalUserValues setObject:originalDataLowercase forKey:userServerKeyLowercase];
+                            [[PFUser currentUser] setObject:inputEdited.lowercaseString forKey:userServerKeyLowercase];
+                        }
+                        // ^^^ HARDCODED HACK. UGH. ^^^
                     } else {
                         ((PFUser *)[PFUser currentUser]).password = inputEdited;
                     }
