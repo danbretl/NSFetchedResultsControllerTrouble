@@ -677,7 +677,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         } else {
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             self.waitingForLikes = NO;
-            [self deleteAndLogOutCurrentUser];
             [self enableMainViewsContainerInteractionAndRestoreUI];
         }
         
@@ -709,7 +708,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         } else {
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             self.waitingForFlags = NO;
-            [self deleteAndLogOutCurrentUser];
             [self enableMainViewsContainerInteractionAndRestoreUI];
         }
         
