@@ -60,7 +60,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @property (nonatomic, strong, readonly) UIAlertView * forgotPasswordConnectionErrorAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * anotherAccountWithUsernameExistsAlertView;
 @property (nonatomic, strong, readonly) UIAlertView * anotherAccountWithEmailExistsAlertView;
-@property (nonatomic, strong, readonly) UIAlertView * connectionErrorGeneralAlertView;
 // Utility BOOLs
 @property (nonatomic) BOOL waitingForLikes;
 @property (nonatomic) BOOL waitingForFlags;
@@ -120,7 +119,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @synthesize textFieldsContainer=_textFieldsContainer, usernameTextField=_usernameTextField, emailTextField=_emailTextField, passwordTextField=_passwordTextField, confirmPasswordTextField=_confirmPasswordTextField;
 @synthesize emailAccountAssuranceLabel;
 @synthesize swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightGestureRecognizer=_swipeRightGestureRecognizer, swipeDownToCancelEnabled=_swipeDownToCancelEnabled, swipeRightToCancelEnabled=_swipeRightToCancelEnabled;
-@synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView, connectionErrorGeneralAlertView=_connectionErrorGeneralAlertView;
+@synthesize passwordIncorrectAlertView=_passwordIncorrectAlertView, forgotPasswordConnectionErrorAlertView=_forgotPasswordConnectionErrorAlertView, anotherAccountWithUsernameExistsAlertView=_anotherAccountWithUsernameExistsAlertView, anotherAccountWithEmailExistsAlertView=_anotherAccountWithEmailExistsAlertView;
 @synthesize waitingForLikes=_waitingForLikes, waitingForFlags=_waitingForFlags, waitingToSubscribeToNotificationsChannel=_waitingToSubscribeToNotificationsChannel;
 @synthesize workingOnAccountFromFacebook=_workingOnAccountFromFacebook;
 @synthesize workingOnAccountFromTwitter=_workingOnAccountFromTwitter;
@@ -632,7 +631,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
                     }
                 } else {
                     NSLog(@"Error: %@ %@", error, [error userInfo]);
-                    [self.connectionErrorGeneralAlertView show];
+                    [[EmotishAlertViews generalConnectionErrorAlertView] show];
                 }
             }];
             
@@ -671,7 +670,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             self.waitingForLikes = NO;
             [self attemptToProceedWithSuccessfulLogin];
         } else {
-            [self.connectionErrorGeneralAlertView show];
+            [[EmotishAlertViews generalConnectionErrorAlertView] show];
             self.waitingForLikes = NO;
             [self deleteAndLogOutCurrentUser];
         }
@@ -702,7 +701,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             self.waitingForFlags = NO;
             [self attemptToProceedWithSuccessfulLogin];
         } else {
-            [self.connectionErrorGeneralAlertView show];
+            [[EmotishAlertViews generalConnectionErrorAlertView] show];
             self.waitingForFlags = NO;
             [self deleteAndLogOutCurrentUser];
         }
@@ -744,7 +743,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 //        if ([*error code] == kPFErrorObjectNotFound) {
 //            [self.passwordIncorrectAlertView show];
 //        } else {
-        [self.connectionErrorGeneralAlertView show];
+        [[EmotishAlertViews generalConnectionErrorAlertView] show];
 //        }        
     }
 }
@@ -851,7 +850,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             } else if (userRelatedError.code == kPFErrorInvalidEmailAddress) {
                 [[EmotishAlertViews emailInvalidAlertView] show];
             } else {
-                [self.connectionErrorGeneralAlertView show];
+                [[EmotishAlertViews generalConnectionErrorAlertView] show];
             }
         };
         
@@ -1076,13 +1075,6 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         _anotherAccountWithEmailExistsAlertView.delegate = self;
     }
     return _anotherAccountWithEmailExistsAlertView;
-}
-
-- (UIAlertView *) connectionErrorGeneralAlertView {
-    if (_connectionErrorGeneralAlertView == nil) {
-        _connectionErrorGeneralAlertView = [[UIAlertView alloc] initWithTitle:@"Connection Error" message:@"Sorry - there was a problem connecting with Emotish. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-    }
-    return _connectionErrorGeneralAlertView;
 }
 
 - (void)swipedToCancel:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
