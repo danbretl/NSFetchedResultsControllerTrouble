@@ -148,8 +148,10 @@
 		exit(-1);  // Fail
 	}
     
-    if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0) {
+    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203130226"];
+    if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0 || !oneTimeForceReloadComplete) {
         [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203130226"];
     }
     
 //    [self animateTopBar];
