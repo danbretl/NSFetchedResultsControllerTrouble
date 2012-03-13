@@ -63,6 +63,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 // Utility BOOLs
 @property (nonatomic) BOOL waitingForLikes;
 @property (nonatomic) BOOL waitingForFlags;
+@property (nonatomic, strong) PFQuery * likesQuery;
+@property (nonatomic, strong) PFQuery * flagsQuery;
 @property (nonatomic) BOOL waitingToSubscribeToNotificationsChannel;
 // Facebook & Twitter
 @property (nonatomic, strong) PF_FBRequest * fbRequestMe;
@@ -125,6 +127,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @synthesize workingOnAccountFromTwitter=_workingOnAccountFromTwitter;
 @synthesize fbRequestMe=_fbRequestMe, twConnectionBasicInfo=_twConnectionBasicInfo, twConnectionBasicInfoData=_twConnectionBasicInfoData;
 @synthesize shouldImmediatelyAttemptFacebookConnect=_shouldImmediatelyAttemptFacebookConnect, shouldImmediatelyAttemptTwitterConnect=_shouldImmediatelyAttemptTwitterConnect;
+@synthesize likesQuery=_likesQuery, flagsQuery=_flagsQuery;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize delegate=_delegate;
 
@@ -652,11 +655,11 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     
     self.waitingForLikes = YES;
     
-    PFQuery * likesQuery = [PFQuery queryWithClassName:@"Like"];
-    [likesQuery whereKey:@"user" equalTo:userServer];
-    [likesQuery includeKey:@"photo"];
-    likesQuery.limit = [NSNumber numberWithInt:1000]; // THIS WILL EVENTUALLY BE A PROBLEM WHEN USERS HAVE MORE THAN 1000 LIKES TO PULL IN.
-    [likesQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+    self.likesQuery = [PFQuery queryWithClassName:@"Like"];
+    [self.likesQuery whereKey:@"user" equalTo:userServer];
+    [self.likesQuery includeKey:@"photo"];
+    self.likesQuery.limit = [NSNumber numberWithInt:1000]; // THIS WILL EVENTUALLY BE A PROBLEM WHEN USERS HAVE MORE THAN 1000 LIKES TO PULL IN.
+    [self.likesQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
         if (!error) {
             if (objects != nil && objects.count > 0) {
@@ -673,6 +676,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             self.waitingForLikes = NO;
             [self deleteAndLogOutCurrentUser];
+            [self enableMainViewsContainerInteractionAndRestoreUI];
         }
         
     }];
@@ -683,11 +687,11 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     
     self.waitingForFlags = YES;
     
-    PFQuery * flagsQuery = [PFQuery queryWithClassName:@"Flag"];
-    [flagsQuery whereKey:@"user" equalTo:userServer];
-    [flagsQuery includeKey:@"photo"];
-    flagsQuery.limit = [NSNumber numberWithInt:1000]; // THIS COULD EVENTUALLY BE A PROBLEM IF USERS HAVE MORE THAN 1000 FLAGS TO PULL IN. UNLIKELY, BUT STILL...
-    [flagsQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+    self.flagsQuery = [PFQuery queryWithClassName:@"Flag"];
+    [self.flagsQuery whereKey:@"user" equalTo:userServer];
+    [self.flagsQuery includeKey:@"photo"];
+    self.flagsQuery.limit = [NSNumber numberWithInt:1000]; // THIS COULD EVENTUALLY BE A PROBLEM IF USERS HAVE MORE THAN 1000 FLAGS TO PULL IN. UNLIKELY, BUT STILL...
+    [self.flagsQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
         if (!error) {
             if (objects != nil && objects.count > 0) {
@@ -704,6 +708,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             self.waitingForFlags = NO;
             [self deleteAndLogOutCurrentUser];
+            [self enableMainViewsContainerInteractionAndRestoreUI];
         }
         
     }];
@@ -711,6 +716,9 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 }
 
 - (void) accountConnectLastStepsForUserServer:(PFUser *)userServer pullLikes:(BOOL)shouldPullLikes pullFlags:(BOOL)shouldPullFlags {
+    
+    self.likesQuery = nil;
+    self.flagsQuery = nil;
     
     if (shouldPullLikes) {
         [self getLikesForUserServer:userServer];
@@ -1106,6 +1114,10 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 }
 
 - (void) deleteAndLogOutCurrentUser {
+    [self.likesQuery cancel];
+    [self.flagsQuery cancel];
+    self.waitingForLikes = NO;
+    self.waitingForFlags = NO;
     if ([PFUser currentUser] != nil) {
         NSLog(@"Deleting [PFUser currentUser]");
         [[PFUser currentUser] deleteInBackground]; // This may or may not work.
