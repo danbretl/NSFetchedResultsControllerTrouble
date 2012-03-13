@@ -47,6 +47,14 @@
     return [[UIAlertView alloc] initWithTitle:@"Invalid Email" message:@"You must enter a valid email address." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
 }
 
++ (UIAlertView *) anotherAccountWithUsernameExistsDeadEndAlertView {
+    return [[UIAlertView alloc] initWithTitle:@"Account with Username Exists" message:@"There is already an Emotish account associated with that username. Please enter a different one." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
++ (UIAlertView *) anotherAccountWithEmailExistsDeadEndAlertView {
+    return [[UIAlertView alloc] initWithTitle:@"Account with Email Exists" message:@"There is already an Emotish account associated with that email address. Please enter a different one." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
 + (UIAlertView *)userEditedAlertView {
     return [[UIAlertView alloc] initWithTitle:@"User Updated" message:@"Your user account has successfully been updated." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
 }

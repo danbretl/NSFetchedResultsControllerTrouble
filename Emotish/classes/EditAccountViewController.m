@@ -186,7 +186,18 @@ NSString * const EDIT_ACCOUNT_PASSWORD_PLACEHOLDER = @"••••••••"
                     [[EmotishAlertViews userEditedAlertView] show];
                     [self.navigationController popViewControllerAnimated:YES];
                 } else {
-                    [[EmotishAlertViews generalConnectionErrorAlertView] show];
+                    if (error.code == kPFErrorUsernameTakenError) {
+                        [[EmotishAlertViews anotherAccountWithUsernameExistsDeadEndAlertView] show];
+                        [self.usernameTextField becomeFirstResponder];
+                    } else if (error.code == kPFErrorUserEmailTakenError) {
+                        [[EmotishAlertViews anotherAccountWithEmailExistsDeadEndAlertView] show];
+                        [self.emailTextField becomeFirstResponder];
+                    } else if (error.code == kPFErrorInvalidEmailAddress) {
+                        [[EmotishAlertViews emailInvalidAlertView] show];
+                        [self.emailTextField becomeFirstResponder];
+                    } else {
+                        [[EmotishAlertViews generalConnectionErrorAlertView] show];
+                    }
                     for (NSString * userServerKey in originalUserValues) {
                         [[PFUser currentUser] setValuesForKeysWithDictionary:originalUserValues];
                     }

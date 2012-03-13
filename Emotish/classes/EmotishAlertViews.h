@@ -23,6 +23,8 @@
 + (UIAlertView *) flaggedFeedbackAlertView;
 
 + (UIAlertView *) emailInvalidAlertView;
++ (UIAlertView *) anotherAccountWithUsernameExistsDeadEndAlertView;
++ (UIAlertView *) anotherAccountWithEmailExistsDeadEndAlertView;
 
 + (UIAlertView *) userEditedAlertView;
 
