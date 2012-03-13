@@ -108,6 +108,8 @@
 - (void) showAccountViewControllerAndAttemptConnectionVia:(AccountConnectMethod)connectMethod;
 - (void) showAccountViewController;
 - (void) applicationDidBecomeActive:(NSNotification *)notification;
+@property (nonatomic) CGPoint tableViewContentOffsetPreserved;
+@property (nonatomic, strong) NSIndexPath * tableViewSelectedRowPreserved;
 @end
 
 @implementation SettingsViewController
@@ -117,11 +119,14 @@
 @synthesize tableView = _tableView;
 @synthesize delegate=_delegate;
 @synthesize tempUnfinishedAlertView=_tempUnfinishedAlertView;
+@synthesize tableViewContentOffsetPreserved=_tableViewContentOffsetPreserved, tableViewSelectedRowPreserved=_tableViewSelectedRowPreserved;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
+        self.tableViewContentOffsetPreserved = CGPointZero;
+        self.tableViewSelectedRowPreserved = nil;
     }
     return self;
 }
@@ -140,6 +145,7 @@
     self.topBar.backgroundColor = [UIColor clearColor];
     [self.topBar showButtonType:BackButton inPosition:LeftNormal animated:NO];
     [self.topBar.buttonLeftNormal addTarget:self action:@selector(backButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+    [self.tableView reloadData];
 }
 
 - (void)viewDidUnload {
@@ -151,13 +157,26 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self updateDataForUserActivity];
+    
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationNone];
+//    NSLog(@"self.tableViewContentOffsetPreserved = %@", NSStringFromCGPoint(self.tableViewContentOffsetPreserved));
+//    NSLog(@"  after MAX(0, ...) = %@", NSStringFromCGPoint(CGPointMake(self.tableViewContentOffsetPreserved.x, MAX(0, self.tableViewContentOffsetPreserved.y))));
+//    NSLog(@"  after MIN() = %@", NSStringFromCGPoint(CGPointMake(self.tableViewContentOffsetPreserved.x, MIN(MAX(0, self.tableViewContentOffsetPreserved.y), self.tableView.contentSize.height - self.tableView.frame.size.height))));
+    self.tableView.contentOffset = CGPointMake(self.tableViewContentOffsetPreserved.x, MAX(0, MIN(self.tableViewContentOffsetPreserved.y, self.tableView.contentSize.height - self.tableView.frame.size.height)));
+    if ([self tableView:self.tableView numberOfRowsInSection:self.tableViewSelectedRowPreserved.section] > self.tableViewSelectedRowPreserved.row) {
+        [self.tableView selectRowAtIndexPath:self.tableViewSelectedRowPreserved animated:NO scrollPosition:UITableViewScrollPositionNone];
+    }
 }
 
 - (void) viewDidAppear:(BOOL)animated {
     NSLog(@"SettingsViewController viewDidAppear");
     [super viewDidAppear:animated];
     [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    self.tableViewContentOffsetPreserved = self.tableView.contentOffset;
 }
 
 - (void) updateDataForUserActivity {
@@ -454,6 +473,7 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    self.tableViewSelectedRowPreserved = indexPath;
     SettingsItem * settingsItem = [self settingsItemForIndexPath:indexPath];
 //    NSLog(@"%@ - %@ - %@ - %@", settingsItem, settingsItem.titleNormal, settingsItem.titleActivated, settingsItem.touchSelector);
 //    [self performSelector:settingsItem.touchSelector withObject:settingsItem]; // This causes a warning with ARC.
@@ -475,7 +495,7 @@
 }
 
 - (SettingsItem *)settingsItemForIndexPath:(NSIndexPath *)indexPath {
-    return [((SettingsItem *)[self.settingsItems objectAtIndex:indexPath.section]).subItems objectAtIndex:indexPath.row];
+    return [((SettingsItem *)[self.settingsItems objectAtIndex:indexPath.section]).subItems objectAtIndex:indexPath.row]; // I think this should be ... .subItemsVisible objectAtIndex...
 }
 
 - (NSArray *)settingsItems {
