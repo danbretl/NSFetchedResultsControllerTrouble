@@ -32,7 +32,8 @@
 }
 
 - (CGRect)placeholderRectForBounds:(CGRect)bounds {
-    return [self rectWithInsetForBounds:[super placeholderRectForBounds:bounds]];
+    return [self textRectForBounds:bounds];
+//    return [self rectWithInsetForBounds:[super placeholderRectForBounds:bounds]]; // If a left inset was set, this was causing bad things to happen... Looked like the placeholder text was being inset twice as much as we wanted or something like that. Maybe placeholderRectForBounds is derived from textRectForBounds. For now, I'm just going to equate the two.
 }
 
 - (CGRect)rectWithInsetForBounds:(CGRect)bounds {
