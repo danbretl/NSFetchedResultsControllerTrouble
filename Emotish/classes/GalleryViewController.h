@@ -37,7 +37,7 @@
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 @property (unsafe_unretained, nonatomic) IBOutlet CameraButtonView *cameraButtonView;
-@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *activityIndicatorView;
+//@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *activityIndicatorView;
 
 - (void) getFeelingsFromServer;
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID;
