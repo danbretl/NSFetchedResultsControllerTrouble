@@ -14,9 +14,10 @@
 #import "UIColor+Emotish.h"
 #import "NotificationConstants.h"
 #import "EmotishAlertViews.h"
-#import "SDImageCache.h"
 #import "FeelingWordCell.h"
 #import "CameraConstants.h"
+#import "SDImageCache.h"
+#import "SDNetworkActivityIndicator.h"
 
 static NSString * SPVC_USER_PLACEHOLDER_TEXT = @"log in / create account";
 const CGFloat SPVC_SHARE_CONTAINER_MARGIN_TOP = 0.0;
@@ -598,7 +599,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
         [self.noUserAlertView show];
     } else {
         
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
         
         NSLog(@"setting up filename");
         NSString * nowString = [NSString stringWithFormat:@"%d", abs([[NSDate date] timeIntervalSince1970])];
@@ -715,7 +716,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
           self.waitingForTwitterPost ||
           self.submittedImage == nil ||
           self.submittedPhoto == nil)) {
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
         [self.delegate submitPhotoViewController:self didSubmitPhoto:self.submittedPhoto withImage:self.submittedImage];
     }
 }

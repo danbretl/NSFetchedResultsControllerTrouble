@@ -15,6 +15,7 @@
 #import "CameraOverlayView.h"
 #import <Parse/Parse.h>
 #import "NSDateFormatter+EmotishTimeSpans.h"
+#import "SDNetworkActivityIndicator.h"
 
 static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
@@ -758,7 +759,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 }
 
 - (void)getFeelingsFromServer {
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
     [self showActivityIndicator];
     NSLog(@"%@", NSStringFromSelector(_cmd));
     PFQuery * feelingsQuery = [PFQuery queryWithClassName:@"Feeling"];
@@ -788,12 +789,13 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         [errorAlert show];
         [self hideActivityIndicator];
     }
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
 }
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
+    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
     self.activityCount++;
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     NSLog(@"%@", NSStringFromSelector(_cmd));
     PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
     PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
@@ -826,8 +828,8 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     self.activityCount--;
     if (self.activityCount <= 0) {
         [self hideActivityIndicator];
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     }
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
 }
 
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID {
@@ -842,7 +844,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         [self showPhotosStripViewControllerFocusedOnUser:photoLocal.user photo:photoLocal updatePhotoData:YES animated:NO];
 //        self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
     } else {
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
         PFQuery * photoQuery = [PFQuery queryWithClassName:@"Photo"];
         [photoQuery includeKey:@"user"];
         [photoQuery includeKey:@"feeling"];
@@ -858,7 +860,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
                 UIAlertView * photoTroubleAlertView = [[UIAlertView alloc] initWithTitle:@"Hmmm..." message:@"Something went wrong, and we can't seem to find that particular Photo right now. Sorry! We'll work on this." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [photoTroubleAlertView show];
             }
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+            [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
 //            self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
         }];
     }

@@ -146,7 +146,6 @@
 		3248245714FC1B6500BF5E65 /* icon_like.png in Resources */ = {isa = PBXBuildFile; fileRef = 3248245314FC1B6500BF5E65 /* icon_like.png */; };
 		3248245814FC1B6500BF5E65 /* icon_like@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3248245414FC1B6500BF5E65 /* icon_like@2x.png */; };
 		3248245E14FC3F5F00BF5E65 /* Like.m in Sources */ = {isa = PBXBuildFile; fileRef = 3248245D14FC3F5F00BF5E65 /* Like.m */; };
-		324A2E3B1507F0FE002D84F9 /* PhotoWebImageManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 324A2E3A1507F0FD002D84F9 /* PhotoWebImageManager.m */; };
 		324BEE751501856600A3BB6D /* NSObject+SBJson.m in Sources */ = {isa = PBXBuildFile; fileRef = 324BEE5D1501856600A3BB6D /* NSObject+SBJson.m */; };
 		324BEE761501856600A3BB6D /* SBJsonParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 324BEE601501856600A3BB6D /* SBJsonParser.m */; };
 		324BEE771501856600A3BB6D /* SBJsonStreamParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 324BEE621501856600A3BB6D /* SBJsonStreamParser.m */; };
@@ -177,6 +176,7 @@
 		327E45F91509AA1800579A96 /* FeelingWordCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 327E45F81509AA1800579A96 /* FeelingWordCell.m */; };
 		32835D7E14ED8A3700CE66A8 /* photo_image_placeholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 32835D7C14ED8A3700CE66A8 /* photo_image_placeholder.png */; };
 		32835D7F14ED8A3700CE66A8 /* photo_image_placeholder@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 32835D7D14ED8A3700CE66A8 /* photo_image_placeholder@2x.png */; };
+		329035861512424500E2EB60 /* SDNetworkActivityIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 329035851512423500E2EB60 /* SDNetworkActivityIndicator.m */; };
 		32927EE01511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m in Sources */ = {isa = PBXBuildFile; fileRef = 32927EDF1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m */; };
 		32927EE915116EA600EABA92 /* activityIndicator_01.png in Resources */ = {isa = PBXBuildFile; fileRef = 32927EE315116EA600EABA92 /* activityIndicator_01.png */; };
 		32927EEA15116EA600EABA92 /* activityIndicator_01@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 32927EE415116EA600EABA92 /* activityIndicator_01@2x.png */; };
@@ -397,8 +397,6 @@
 		3248245414FC1B6500BF5E65 /* icon_like@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_like@2x.png"; sourceTree = "<group>"; };
 		3248245C14FC3F5F00BF5E65 /* Like.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Like.h; path = classes/Like.h; sourceTree = "<group>"; };
 		3248245D14FC3F5F00BF5E65 /* Like.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Like.m; path = classes/Like.m; sourceTree = "<group>"; };
-		324A2E391507F0FD002D84F9 /* PhotoWebImageManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PhotoWebImageManager.h; path = classes/PhotoWebImageManager.h; sourceTree = "<group>"; };
-		324A2E3A1507F0FD002D84F9 /* PhotoWebImageManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PhotoWebImageManager.m; path = classes/PhotoWebImageManager.m; sourceTree = "<group>"; };
 		324BEE5C1501856600A3BB6D /* NSObject+SBJson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSObject+SBJson.h"; path = "classes/NSObject+SBJson.h"; sourceTree = "<group>"; };
 		324BEE5D1501856600A3BB6D /* NSObject+SBJson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSObject+SBJson.m"; path = "classes/NSObject+SBJson.m"; sourceTree = "<group>"; };
 		324BEE5E1501856600A3BB6D /* SBJson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SBJson.h; path = classes/SBJson.h; sourceTree = "<group>"; };
@@ -448,6 +446,8 @@
 		327E45F81509AA1800579A96 /* FeelingWordCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FeelingWordCell.m; path = classes/FeelingWordCell.m; sourceTree = "<group>"; };
 		32835D7C14ED8A3700CE66A8 /* photo_image_placeholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = photo_image_placeholder.png; sourceTree = "<group>"; };
 		32835D7D14ED8A3700CE66A8 /* photo_image_placeholder@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "photo_image_placeholder@2x.png"; sourceTree = "<group>"; };
+		329035841512423500E2EB60 /* SDNetworkActivityIndicator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SDNetworkActivityIndicator.h; path = classes/SDNetworkActivityIndicator.h; sourceTree = "<group>"; };
+		329035851512423500E2EB60 /* SDNetworkActivityIndicator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SDNetworkActivityIndicator.m; path = classes/SDNetworkActivityIndicator.m; sourceTree = "<group>"; };
 		3290AD9D150C647D001C9E74 /* Emotish 008.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 008.xcdatamodel"; sourceTree = "<group>"; };
 		3290AD9E150C6FDA001C9E74 /* Emotish 009.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 009.xcdatamodel"; sourceTree = "<group>"; };
 		32927EDE1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDateFormatter+EmotishTimeSpans.h"; path = "classes/NSDateFormatter+EmotishTimeSpans.h"; sourceTree = "<group>"; };
@@ -775,8 +775,6 @@
 				327BE6E514D74EAE0051C549 /* PhotosStripViewController.h */,
 				327BE6E614D74EAE0051C549 /* PhotosStripViewController.m */,
 				327BE6E714D74EAE0051C549 /* PhotosStripViewController.xib */,
-				324A2E391507F0FD002D84F9 /* PhotoWebImageManager.h */,
-				324A2E3A1507F0FD002D84F9 /* PhotoWebImageManager.m */,
 				329D113014D9DBF900F69263 /* ClipView.h */,
 				329D113114D9DBF900F69263 /* ClipView.m */,
 			);
@@ -928,6 +926,8 @@
 		32B980AC14E9F45E002B351F /* SDWebImage */ = {
 			isa = PBXGroup;
 			children = (
+				329035841512423500E2EB60 /* SDNetworkActivityIndicator.h */,
+				329035851512423500E2EB60 /* SDNetworkActivityIndicator.m */,
 				3221778614EC2D9D00D48F99 /* SDImageCache.h */,
 				3221778714EC2D9D00D48F99 /* SDImageCache.m */,
 				3221778814EC2D9D00D48F99 /* SDImageCacheDelegate.h */,
@@ -1352,7 +1352,6 @@
 				324BEE7E1501856600A3BB6D /* SBJsonTokeniser.m in Sources */,
 				324BEE7F1501856600A3BB6D /* SBJsonUTF8Stream.m in Sources */,
 				324BEE801501856600A3BB6D /* SBJsonWriter.m in Sources */,
-				324A2E3B1507F0FE002D84F9 /* PhotoWebImageManager.m in Sources */,
 				3259455A15085E1000423BEC /* UIScrollView+StopScroll.m in Sources */,
 				327E45F91509AA1800579A96 /* FeelingWordCell.m in Sources */,
 				32CDE0521509F4440038EC82 /* SubmitPhotoShared.m in Sources */,
@@ -1360,6 +1359,7 @@
 				32E14FE8150ED48F00A9D0C2 /* SendFeedbackViewController.m in Sources */,
 				32A9EDC2150FDEEF00665023 /* CameraButtonView.m in Sources */,
 				32927EE01511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m in Sources */,
+				329035861512424500E2EB60 /* SDNetworkActivityIndicator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

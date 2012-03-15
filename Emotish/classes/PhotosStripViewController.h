@@ -19,6 +19,8 @@
 #import "SettingsViewController.h"
 #import "GalleryConstants.h"
 #import "SDWebImageDownloader.h"
+#import "SDImageCache.h"
+#import "SDNetworkActivityIndicator.h"
 
 typedef enum {
     NoFocus = 0,

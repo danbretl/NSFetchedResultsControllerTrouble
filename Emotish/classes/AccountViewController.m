@@ -18,6 +18,7 @@
 #import "SBJson.h"
 #import "NotificationConstants.h"
 #import "UIColor+Emotish.h"
+#import "SDNetworkActivityIndicator.h"
 
 double const AP_NAV_BUTTONS_ANIMATION_DURATION = 0.25;
 CGFloat const AVC_NO_ACCOUNT_ASSURANCE_LABEL_MARGIN_TOP = 15.0;
@@ -656,6 +657,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 
 - (void) getLikesForUserServer:(PFUser *)userServer {
     
+    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+    
     self.waitingForLikes = YES;
     
     self.likesQuery = [PFQuery queryWithClassName:@"Like"];
@@ -675,8 +678,10 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             }
             self.waitingForLikes = NO;
             [self attemptToProceedWithSuccessfulLogin];
+            [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
         } else {
             [self.flagsQuery cancel];
+            [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
             [self logOutCurrentUser];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             [self enableMainViewsContainerInteractionAndRestoreUI];
@@ -687,6 +692,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 }
 
 - (void)getFlagsForUserServer:(PFUser *)userServer {
+    
+    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
     
     self.waitingForFlags = YES;
     
@@ -707,8 +714,10 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             }
             self.waitingForFlags = NO;
             [self attemptToProceedWithSuccessfulLogin];
+            [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
         } else {
             [self.likesQuery cancel];
+            [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];            
             [self logOutCurrentUser];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             [self enableMainViewsContainerInteractionAndRestoreUI];
