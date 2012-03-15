@@ -150,10 +150,10 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 		exit(-1);  // Fail
 	}
     
-    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203130226"];
+    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203142050"];
     if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0 || !oneTimeForceReloadComplete) {
         [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203130226"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203142050"];
     }
     
 }
