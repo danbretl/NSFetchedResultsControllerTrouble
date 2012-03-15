@@ -127,6 +127,10 @@
 - (Photo *)addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer {
     Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
     photo.feeling = [self addOrUpdateFeelingFromServer:feelingServer];
+    if (photo.feeling.datetimeMostRecentPhoto == nil || [photo.feeling.datetimeMostRecentPhoto compare:photo.datetime] == NSOrderedAscending) {
+        photo.feeling.datetimeMostRecentPhoto = photo.datetime;
+        NSLog(@"photo.feeling.datetimeMostRecentPhoto updated");
+    }
     photo.user = [self addOrUpdateUserFromServer:userServer];
     return photo;
 }

@@ -26,4 +26,8 @@
     return [UIColor colorWithRed:137.0/255.0 green:135.0/255.0 blue:135.0/255.0 alpha:1.0];
 }
 
++ (UIColor *)timeLikesColor {
+    return [UIColor colorWithWhite:204.0/255.0 alpha:1.0];
+}
+
 @end

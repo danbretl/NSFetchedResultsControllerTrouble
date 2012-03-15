@@ -15,8 +15,7 @@
 @property (nonatomic, retain) NSString * word;
 @property (nonatomic, retain) NSSet * photos;
 @property (nonatomic, retain) NSString * serverID;
-//@property (nonatomic, retain) NSNumber * photosVisibleExist; // This is SO DUMB
-//@property (nonatomic, readonly) NSNumber * foo;
+@property (nonatomic, retain) NSDate * datetimeMostRecentPhoto;
 @end
 
 @interface Feeling (CoreDataGeneratedAccessors)

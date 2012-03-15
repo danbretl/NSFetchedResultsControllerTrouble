@@ -20,6 +20,7 @@
 @property (strong, nonatomic) UITableView * imagesTableView;
 @property (strong, nonatomic) UILabel * feelingLabel;
 @property (strong, nonatomic) UIButton * feelingLabelButton;
+@property (strong, nonatomic) UILabel * timestampLabel;
 @property (strong, nonatomic) FlagStretchView * flagStretchView;
 
 @property (strong, nonatomic) UIColor * feelingLabelColorNormal;

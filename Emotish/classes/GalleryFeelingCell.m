@@ -26,7 +26,7 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
 
 @synthesize photos=_photos;
 @synthesize imagesTableView=_imagesTableView;
-@synthesize feelingLabel=_feelingLabel;
+@synthesize feelingLabel=_feelingLabel, timestampLabel=_timestampLabel;
 @synthesize feelingLabelButton=_feelingLabelButton;
 @synthesize flagStretchView=_flagStretchView;
 
@@ -92,8 +92,17 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
         self.feelingLabel.font = [UIFont boldSystemFontOfSize:30.0];
         self.feelingLabel.adjustsFontSizeToFitWidth = YES;
         self.feelingLabel.backgroundColor = [UIColor clearColor];
+        self.feelingLabel.clipsToBounds = YES;
         [self highlightLabel:NO];
         [self.imagesTableView.tableHeaderView insertSubview:self.feelingLabel belowSubview:self.feelingLabelButton];
+        
+        self.timestampLabel = [[UILabel alloc] initWithFrame:CGRectOffset(self.feelingLabel.bounds, 0, 23)];
+        self.timestampLabel.textAlignment = UITextAlignmentRight;
+        self.timestampLabel.textColor = [UIColor timeLikesColor];
+        self.timestampLabel.backgroundColor = [UIColor clearColor];
+        self.timestampLabel.font = [UIFont boldSystemFontOfSize:14.0];
+        self.timestampLabel.userInteractionEnabled = NO;
+        [self.feelingLabel addSubview:self.timestampLabel];
           
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
 //        CGFloat flagStretchViewHeight = selfHeight - 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
@@ -222,7 +231,7 @@ const CGFloat GFC_FLAG_STRETCH_VIEW_HEIGHT = 48.0;
     cell.feelingIndex = self.feelingIndex;
     cell.imageIndex = indexPath.row;
     cell.feelingCell = self;
-    [cell setHighlightTabVisible:photo.shouldHighlight.boolValue animated:NO];
+//    [cell setHighlightTabVisible:photo.shouldHighlight.boolValue animated:NO];
                      
     // Return the cell
     return cell;

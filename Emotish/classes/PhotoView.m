@@ -9,6 +9,7 @@
 #import "PhotoView.h"
 #import "ViewConstants.h"
 #import "UIColor+Emotish.h"
+#import "NSDateFormatter+EmotishTimeSpans.h"
 
 const CGFloat PC_PHOTO_CELL_LABEL_FONT_SIZE =           20.0;
 const double PV_ACTION_BUTTONS_VISIBLE_ANIMATION_DURATION = 0.25;
@@ -120,7 +121,7 @@ const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
     self.timeButton.imageView.contentMode = UIViewContentModeCenter;
     self.timeButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
     self.timeButton.titleLabel.adjustsFontSizeToFitWidth = NO;
-    [self.timeButton setTitleColor:[UIColor colorWithWhite:204.0/255.0 alpha:1.0] forState:UIControlStateNormal];
+    [self.timeButton setTitleColor:[UIColor timeLikesColor] forState:UIControlStateNormal];
     [self.timeButton setImage:[UIImage imageNamed:@"icon_clock.png"] forState:UIControlStateNormal];
     self.timeButton.backgroundColor = [UIColor clearColor];
     self.timeButton.imageView.backgroundColor = [UIColor clearColor];
@@ -137,8 +138,8 @@ const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
     self.likesButton.imageView.contentMode = UIViewContentModeCenter;
     self.likesButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
     self.likesButton.titleLabel.adjustsFontSizeToFitWidth = NO;
-    [self.likesButton setTitleColor:[UIColor colorWithWhite:204.0/255.0 alpha:1.0] forState:UIControlStateNormal];
-    [self.likesButton setTitleColor:[UIColor colorWithWhite:204.0/255.0 alpha:1.0] forState:UIControlStateHighlighted];
+    [self.likesButton setTitleColor:[UIColor timeLikesColor] forState:UIControlStateNormal];
+    [self.likesButton setTitleColor:[UIColor timeLikesColor] forState:UIControlStateHighlighted];
     [self.likesButton setImage:[UIImage imageNamed:@"icon_like.png"] forState:UIControlStateNormal];
     [self.likesButton setImage:[UIImage imageNamed:@"icon_like_touch.png"] forState:UIControlStateHighlighted];
     self.likesButton.backgroundColor = [UIColor clearColor];
@@ -294,29 +295,7 @@ const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
 
 - (void) updateTime:(NSDate *)timestamp {
     NSLog(@"updateTime:%@", timestamp);
-    int timeValue = 0;
-    NSString * timeUnit = nil;
-    int seconds = abs((int)[timestamp timeIntervalSinceNow]);
-    if (seconds < 60) {
-        timeValue = seconds;
-        timeUnit = @"s";
-    } else if (seconds < (60 * 60)) {
-        timeValue = seconds / (60);
-        timeUnit = @"m";
-    } else if (seconds < (60 * 60 * 24)) {
-        timeValue = seconds / (60 * 60);
-        timeUnit = @"h";
-    } else if (seconds < (60 * 60 * 24 * 7)) {
-        timeValue = seconds / (60 * 60 * 24);
-        timeUnit = @"d";
-    } else if (seconds < (60 * 60 * 24 * 7 * 52)) {
-        timeValue = seconds / (60 * 60 * 24 * 7);
-        timeUnit = @"w";
-    } else {
-        timeValue = seconds / (60 * 60 * 24 * 7 * 52);
-        timeUnit = @"y";
-    }
-    NSString * timeString = [NSString stringWithFormat:@"%d%@", timeValue, timeUnit];
+    NSString * timeString = [NSDateFormatter emotishTimeSpanStringForDatetime:timestamp countSeconds:YES];
     NSLog(@"timeString:%@", timeString);
     
     [self.timeButton setTitle:timeString forState:UIControlStateNormal];

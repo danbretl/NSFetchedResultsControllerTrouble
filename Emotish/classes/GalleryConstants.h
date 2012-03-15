@@ -6,6 +6,11 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
+typedef enum {
+    GalleryAlphabetical = 1,
+    GalleryRecent = 2,
+} GalleryMode;
+
 #ifndef Emotish_GalleryConstants_h
 #define Emotish_GalleryConstants_h
 

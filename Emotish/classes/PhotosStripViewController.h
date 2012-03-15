@@ -18,6 +18,7 @@
 #import "FlagStretchView.h"
 #import "SettingsViewController.h"
 #import "PhotoWebImageManager.h"
+#import "GalleryConstants.h"
 
 typedef enum {
     NoFocus = 0,
@@ -42,14 +43,11 @@ typedef enum {
 
 - (void) setShouldAnimateIn:(BOOL)shouldAnimateIn fromSource:(PhotosStripAnimationInSource)source withPersistentImage:(UIImage *)image;
 
-//@property (strong, nonatomic) UIImage * galleryScreenshot;
-//@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *galleryImageView;
-//@property (unsafe_unretained, nonatomic) IBOutlet UIView *backgroundView;
-
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeeling;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerUser;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsControllerFeelings;
+@property (nonatomic) GalleryMode galleryMode; // Sort of weird.
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UIView *contentView;

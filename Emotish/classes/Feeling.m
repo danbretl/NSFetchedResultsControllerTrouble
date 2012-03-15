@@ -15,11 +15,7 @@
 @dynamic word;
 @dynamic photos;
 @dynamic serverID;
-//@dynamic photosVisibleExist;
-
-//- (NSNumber *)foo {
-//    return [NSNumber numberWithBool:YES];
-//}
+@dynamic datetimeMostRecentPhoto;
 
 - (NSSet *)photosVisible {
     return [self.photos filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"hidden == NO"]];

@@ -16,4 +16,6 @@
 
 + (UIColor *) accountInputColor;
 
++ (UIColor *) timeLikesColor;
+
 @end

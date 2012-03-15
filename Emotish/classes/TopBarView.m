@@ -31,6 +31,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) TBV_DividerLayer * dividerLayer;
 - (void) initWithFrameOrCoder;
 @property (nonatomic) TopBarViewMode viewMode;
+@property (nonatomic) TopBarBrandingStamp brandingStamp;
 - (UIButton *)buttonCurrentForPosition:(TopBarButtonPosition)buttonPosition;
 - (UIButton *)buttonSpareForPosition:(TopBarButtonPosition)buttonPosition;
 - (SEL)buttonCurrentSetterForPosition:(TopBarButtonPosition)buttonPosition;
@@ -41,14 +42,20 @@ const double  TBV_ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) UIButton * buttonLeftNormalB;
 @property (strong, nonatomic) UIButton * buttonRightNormalA;
 @property (strong, nonatomic) UIButton * buttonRightNormalB;
+//@property (strong, nonatomic) UIView * brandingContainer;
+@property (strong, nonatomic) UILabel * brandingStampLabelAlphabetical;
+@property (strong, nonatomic) UILabel * brandingStampLabelRecent;
+@property (unsafe_unretained, nonatomic) NSTimer * brandingStampFadeTimer;
+- (void) brandingStampFade:(NSTimer *)timer;
 @end
 
 @implementation TopBarView
 
 @synthesize buttonsDictionary=_buttonsDictionary;
 @synthesize buttonBranding=_buttonBranding, buttonLeftSpecial=_buttonLeftSpecial, buttonLeftSpecialA=_buttonLeftSpecialA, buttonLeftSpecialB=_buttonLeftSpecialB, buttonLeftNormal=_buttonLeftNormal, buttonLeftNormalA=_buttonLeftNormalA, buttonLeftNormalB=_buttonLeftNormalB, buttonRightNormal=_buttonRightNormal, buttonRightNormalA=_buttonRightNormalA, buttonRightNormalB=_buttonRightNormalB, dividerLayer=_dividerLayer;
-@synthesize viewMode=_viewMode;
+@synthesize viewMode=_viewMode, brandingStamp=_brandingStamp;
 @synthesize backgroundView=_backgroundView, backgroundFlagView=_backgroundFlagView;
+@synthesize /*brandingContainer=_brandingContainer, */brandingStampLabelAlphabetical=_brandingStampLabelAlphabetical, brandingStampLabelRecent=_brandingStampLabelRecent, brandingStampFadeTimer=_brandingStampFadeTimer;
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -96,8 +103,32 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     self.buttonBranding.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
     self.buttonBranding.backgroundColor = [UIColor clearColor];
 //    self.buttonBranding.backgroundColor = [UIColor yellowColor];
-    self.buttonBranding.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 10, TBV_BUTTON_BRANDING_PADDING_HORIZONTAL);
+    self.buttonBranding.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 11, TBV_BUTTON_BRANDING_PADDING_HORIZONTAL);
     [self addSubview:self.buttonBranding];
+    
+    _brandingStamp = StampNone;
+    
+    self.brandingStampLabelAlphabetical = [[UILabel alloc] init];
+    self.brandingStampLabelRecent = [[UILabel alloc] init];
+    NSDictionary * brandingStampLabels = [NSDictionary dictionaryWithObjectsAndKeys:self.brandingStampLabelAlphabetical, @"a to z", self.brandingStampLabelRecent, @"recent", nil];
+    for (NSString * brandingStampLabelText in brandingStampLabels) {
+        UILabel * brandingStampLabel = [brandingStampLabels objectForKey:brandingStampLabelText];
+        
+        brandingStampLabel.textColor = [UIColor colorWithRed:158.0/255.0 green:178.0/255.0 blue:196.0/255.0 alpha:1.0];
+        brandingStampLabel.font = [UIFont boldSystemFontOfSize:12.0];
+        brandingStampLabel.userInteractionEnabled = NO;
+        brandingStampLabel.exclusiveTouch = NO;
+        brandingStampLabel.backgroundColor = [UIColor clearColor];
+        brandingStampLabel.textAlignment = UITextAlignmentRight;
+        brandingStampLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+        brandingStampLabel.alpha = 0.0;
+        
+        brandingStampLabel.text = brandingStampLabelText;
+        [brandingStampLabel sizeToFit];
+        brandingStampLabel.frame = CGRectMake(self.buttonBranding.frame.size.width - self.buttonBranding.contentEdgeInsets.right - brandingStampLabel.frame.size.width, VC_TOP_BAR_HEIGHT - brandingStampLabel.frame.size.height - 1, brandingStampLabel.frame.size.width, brandingStampLabel.frame.size.height);
+        
+        [self.buttonBranding addSubview:brandingStampLabel];
+    }
     
     self.buttonLeftSpecialA = [UIButton buttonWithType:UIButtonTypeCustom];
     self.buttonLeftSpecialA.frame = CGRectMake(0, 0, 50.0, self.bounds.size.height);
@@ -160,6 +191,46 @@ const double  TBV_ANIMATION_DURATION = 0.25;
             self.buttonBranding.frame = buttonBrandingFrame;
         }];
     }
+}
+
+- (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp {
+    [self setBrandingStamp:brandingStamp animated:NO];
+}
+
+- (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated {
+    [self setBrandingStamp:brandingStamp animated:animated delayedFadeToNone:NO];
+}
+
+- (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated delayedFadeToNone:(BOOL)shouldFadeToNoneAfterDelay {
+//    TopBarBrandingStamp oldStamp = self.brandingStamp;
+//    TopBarBrandingStamp newStamp = brandingStamp;
+//    BOOL wasVisible    = oldStamp != StampNone;
+//    BOOL willBeVisible = newStamp != StampNone;
+//    if (_brandingStamp != brandingStamp) {
+        _brandingStamp = brandingStamp;
+        
+        if (self.brandingStampFadeTimer != nil) {
+            [self.brandingStampFadeTimer invalidate];
+            self.brandingStampFadeTimer = nil;
+        }
+    
+        [UIView animateWithDuration:animated ? TBV_ANIMATION_DURATION : 0 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            self.brandingStampLabelAlphabetical.alpha = brandingStamp == StampAlphabetical ? 1.0 : 0.0;
+            self.brandingStampLabelRecent.alpha = brandingStamp == StampRecent ? 1.0 : 0.0;
+        } completion:NULL];
+        
+        if (shouldFadeToNoneAfterDelay) {
+            
+            self.brandingStampFadeTimer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(brandingStampFade:) userInfo:nil repeats:NO];
+            
+        }
+//    }
+}
+
+- (void)brandingStampFade:(NSTimer *)timer {
+    [self.brandingStampFadeTimer invalidate];
+    self.brandingStampFadeTimer = nil;
+    [self setBrandingStamp:StampNone animated:YES delayedFadeToNone:NO];
 }
 
 - (void)showButtonType:(TopBarButtonType)buttonType inPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated {

@@ -99,16 +99,14 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize feelingFocus=_feelingFocus, userFocus=_userFocus;
 @synthesize photoCenter=_photoCenter;
 @synthesize shouldAnimateIn=_shouldAnimateIn, animationInSource=_animationInSource, animationInPersistentImage=_animationInPersistentImage;
-//@synthesize galleryScreenshot=_galleryScreenshot;
-//@synthesize galleryImageView = _galleryImageView;
-//@synthesize backgroundView = _backgroundView;
 @synthesize coreDataManager=_coreDataManager;
+@synthesize fetchedResultsControllerForCurrentFocus=_fetchedResultsControllerForCurrentFocus;
 @synthesize fetchedResultsControllerFeeling=_fetchedResultsControllerFeeling;
 @synthesize fetchedResultsControllerUser=_fetchedResultsControllerUser;
 @synthesize fetchedResultsControllerFeelings=_fetchedResultsControllerFeelings;
-@synthesize bottomBar = _bottomBar;
-@synthesize fetchedResultsControllerForCurrentFocus=_fetchedResultsControllerForCurrentFocus;
+@synthesize galleryMode=_galleryMode;
 @synthesize topBar=_topBar;
+@synthesize bottomBar = _bottomBar;
 @synthesize contentView = _contentView;
 @synthesize headerButton=_headerButton;
 @synthesize photosClipView=_photosClipView, photosScrollView=_photosScrollView, flagStretchView=_flagStretchView, photosContainer=_photosContainer, photoViews=_photoViews, photoViewLeftmost=_photoViewLeftmost, photoViewLeftCenter=_photoViewLeftCenter, photoViewCenter=_photoViewCenter, photoViewRightCenter=_photoViewRightCenter, photoViewRightmost=_photoViewRightmost;
@@ -274,6 +272,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [super viewWillAppear:animated];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
     NSLog(@"%@ PhotosStripViewController viewWillAppear", self.focus == FeelingFocus ? @"Feeling" : @"User");
+    if (self.galleryMode == GalleryRecent) {
+        [self.topBar setBrandingStamp:StampRecent animated:NO];
+    }
     if (self.shouldAnimateIn) {
         
         self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
@@ -314,6 +315,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         } else if (self.animationInSource == SubmitPhoto) {
             
             [self.topBar setViewMode:BrandingCenter animated:NO];
+            [self.topBar setBrandingStamp:StampNone animated:NO];
             [self.topBar showButtonType:BackButton inPosition:LeftNormal animated:NO];
             [self.topBar showButtonType:DoneButton inPosition:RightNormal animated:NO];
             self.cameraButtonView.alpha = 0.0;
@@ -336,6 +338,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         [self.topBar.buttonLeftSpecial addTarget:self action:leftSpecialButtonType == ProfileButton ? @selector(profileButtonTouched:) : @selector(settingsButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
         
         [self updatePhotoViewsPhotosForPhotoCenterIndex:self.photoCenterIndex];
+        [self.cameraButtonView setButtonPromptVisible:YES];
         
     }
     
@@ -371,6 +374,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                 self.photoViewCenter.photoCaptionTextField.frame = captionFrame;
             } else if (self.animationInSource == SubmitPhoto) {
                 [self.topBar setViewMode:BrandingRight animated:NO];
+                if (self.galleryMode == GalleryRecent) {
+                    [self.topBar setBrandingStamp:StampRecent animated:NO];
+                }
                 [self.topBar hideButtonInPosition:LeftNormal animated:NO];
                 [self.topBar hideButtonInPosition:RightNormal animated:NO];
                 self.cameraButtonView.alpha = 1.0;
@@ -1067,13 +1073,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         oppositeFocusStripViewController.modalTransitionStyle = self.modalTransitionStyle;
         oppositeFocusStripViewController.coreDataManager = self.coreDataManager;
         oppositeFocusStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
+        oppositeFocusStripViewController.galleryMode = self.galleryMode;
         if (self.focus == FeelingFocus) {
             [oppositeFocusStripViewController setFocusToUser:photo.user photo:photo];
         } else {
             [oppositeFocusStripViewController setFocusToFeeling:photo.feeling photo:photo];
         }
         [oppositeFocusStripViewController setShouldAnimateIn:YES fromSource:PhotosStripOpposite withPersistentImage:photoView.photoImageView.image];
-        //    oppositeFocusStripViewController.galleryScreenshot = self.galleryScreenshot;
         
         // Animate the transition
         //    CGRect headerFrame = self.headerButton.frame;
@@ -1157,64 +1163,73 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
+
+    NSLog(@"Swiped %@", swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? @"up" : @"down");
+    NSIndexPath * indexPath = [self.fetchedResultsControllerFeelings indexPathForObject:self.feelingFocus];
+    int indexAdjustment = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? 1 : -1; // Swiping up means that you are pushing the content of the view up, trying to bring up the content that is "below". That content belongs to the next alphabetical feeling. In contrast, swiping down would bring in the previous alphabetical feeling.
+    int direction = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? -1 : 1;
     
     // Test if current focus is on a Feeling
-    if (self.focus == FeelingFocus) {
+    if (self.focus == FeelingFocus &&
+        (!(indexPath.row + indexAdjustment < 0 || 
+           indexPath.row + indexAdjustment >= self.fetchedResultsControllerFeelings.fetchedObjects.count))) {
         
-        NSLog(@"Swiped %@", swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? @"up" : @"down");
-        NSIndexPath * indexPath = [self.fetchedResultsControllerFeelings indexPathForObject:self.feelingFocus];
-        int indexAdjustment = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? 1 : -1; // Swiping up means that you are pushing the content of the view up, trying to bring up the content that is "below". That content belongs to the next alphabetical feeling. In contrast, swiping down would bring in the previous alphabetical feeling.
-        if (!(indexPath.row + indexAdjustment < 0 || 
-              indexPath.row + indexAdjustment >= self.fetchedResultsControllerFeelings.fetchedObjects.count)) {
-            Feeling * nextFeeling = [self.fetchedResultsControllerFeelings objectAtIndexPath:[NSIndexPath indexPathForRow:indexPath.row + indexAdjustment inSection:indexPath.section]]; // Keep in mind that the "next" feeling might actually be the "previous" feeling alphabetically - it is "next" in the sense that it is now the "next" Feeling that will be displayed on screen.
-            
-            PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-            feelingViewController.delegate = self.delegate;
-            feelingViewController.modalTransitionStyle = self.modalTransitionStyle;
-            feelingViewController.coreDataManager = self.coreDataManager;
-            feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
-            [feelingViewController setFocusToFeeling:nextFeeling photo:[nextFeeling.mostRecentPhotos objectAtIndex:0]];
-//            feelingViewController.galleryScreenshot = self.galleryScreenshot;
-            
-//            feelingViewController.galleryImageView.alpha = 0.0;
-//            feelingViewController.backgroundView.alpha = 0.0;
-            feelingViewController.topBar.alpha = 0.0;
-            feelingViewController.bottomBar.alpha = 0.0;
-            feelingViewController.cameraButtonView.button.imageView.hidden = YES;
-            feelingViewController.cameraButtonView.buttonShadowLayer.hidden = YES;
-            [feelingViewController.cameraButtonView setButtonPromptVisible:NO];
-            
-            [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
-            int direction = swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? -1 : 1;
-            feelingViewController.view.frame = CGRectMake(0, -direction * self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);// CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
-            NSLog(@"self = %@", NSStringFromCGRect(self.view.frame));
-            NSLog(@"feel = %@", NSStringFromCGRect(feelingViewController.view.frame));
-            CGFloat originYAdjustment = direction * self.view.frame.size.height;
-            NSLog(@"yadj = %f", originYAdjustment);
-            
-            [UIView animateWithDuration:0.125 animations:^{
-                [self.cameraButtonView setButtonPromptVisible:NO];
-            }];
-            [UIView animateWithDuration:0.125 delay:0.125 options:0 animations:^{
-                [feelingViewController.cameraButtonView setButtonPromptVisible:YES];
-            } completion:NULL];
-            [UIView animateWithDuration:0.25 animations:^{
-                self.cameraButtonView.button.titleLabel.frame = CGRectOffset(self.cameraButtonView.button.titleLabel.frame, 0, originYAdjustment);
-                self.contentView.frame = CGRectOffset(self.contentView.frame, 0, originYAdjustment);
-                feelingViewController.view.frame = CGRectOffset(feelingViewController.view.frame, 0, originYAdjustment);
-            } completion:^(BOOL finished){
+        Feeling * nextFeeling = [self.fetchedResultsControllerFeelings objectAtIndexPath:[NSIndexPath indexPathForRow:indexPath.row + indexAdjustment inSection:indexPath.section]]; // Keep in mind that the "next" feeling might actually be the "previous" feeling alphabetically - it is "next" in the sense that it is now the "next" Feeling that will be displayed on screen.
+        
+        PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+        feelingViewController.delegate = self.delegate;
+        feelingViewController.modalTransitionStyle = self.modalTransitionStyle;
+        feelingViewController.coreDataManager = self.coreDataManager;
+        feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
+        feelingViewController.galleryMode = self.galleryMode;
+        [feelingViewController setFocusToFeeling:nextFeeling photo:[nextFeeling.mostRecentPhotos objectAtIndex:0]];
+        
+        feelingViewController.topBar.alpha = 0.0;
+        feelingViewController.bottomBar.alpha = 0.0;
+        feelingViewController.cameraButtonView.button.imageView.hidden = YES;
+        feelingViewController.cameraButtonView.buttonShadowLayer.hidden = YES;
+        [feelingViewController.cameraButtonView setButtonPromptVisible:NO];
+        
+        [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
+        feelingViewController.view.frame = CGRectMake(0, -direction * self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);// CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
+        NSLog(@"self = %@", NSStringFromCGRect(self.view.frame));
+        NSLog(@"feel = %@", NSStringFromCGRect(feelingViewController.view.frame));
+        CGFloat originYAdjustment = direction * self.view.frame.size.height;
+        NSLog(@"yadj = %f", originYAdjustment);
+        
+        [UIView animateWithDuration:0.125 animations:^{
+            [self.cameraButtonView setButtonPromptVisible:NO];
+        }];
+        [UIView animateWithDuration:0.125 delay:0.125 options:0 animations:^{
+            [feelingViewController.cameraButtonView setButtonPromptVisible:YES];
+        } completion:NULL];
+        [UIView animateWithDuration:0.25 animations:^{
+            self.cameraButtonView.button.titleLabel.frame = CGRectOffset(self.cameraButtonView.button.titleLabel.frame, 0, originYAdjustment);
+            self.contentView.frame = CGRectOffset(self.contentView.frame, 0, originYAdjustment);
+            feelingViewController.view.frame = CGRectOffset(feelingViewController.view.frame, 0, originYAdjustment);
+        } completion:^(BOOL finished){
 //                feelingViewController.galleryImageView.alpha = 1.0;
 //                feelingViewController.backgroundView.alpha = 1.0;
-                feelingViewController.topBar.alpha = 1.0;
-                feelingViewController.bottomBar.alpha = 1.0;
-                feelingViewController.cameraButtonView.button.imageView.hidden = NO;
-                feelingViewController.cameraButtonView.buttonShadowLayer.hidden = NO;
-                [feelingViewController.cameraButtonView setButtonPromptVisible:YES];
-                [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
-            }];
-            
-        }
+            feelingViewController.topBar.alpha = 1.0;
+            feelingViewController.bottomBar.alpha = 1.0;
+            feelingViewController.cameraButtonView.button.imageView.hidden = NO;
+            feelingViewController.cameraButtonView.buttonShadowLayer.hidden = NO;
+            [feelingViewController.cameraButtonView setButtonPromptVisible:YES];
+            [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
+        }];
+                    
+    } else {
         
+        CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
+        animation.autoreverses = YES;
+        animation.repeatCount = 1; // Play it just once, and then reverse it
+        CGFloat nudgeDistance = 20.0;
+        animation.duration = 0.1;//0.25 * (nudgeDistance / self.view.frame.size.height);
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        
+        animation.toValue = [NSValue valueWithCGPoint:CGPointMake(self.contentView.layer.position.x, self.contentView.layer.position.y + (direction * nudgeDistance))];
+        [self.contentView.layer addAnimation:animation forKey:nil];
+                
     }
     
 }
@@ -1346,22 +1361,22 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             [self showSettingsViewControllerForUserLocal:currentUserLocal userServer:currentUser];
         } else {
             
-            PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-            feelingViewController.delegate = self.delegate;
-            feelingViewController.modalTransitionStyle = self.modalTransitionStyle;
-            feelingViewController.coreDataManager = self.coreDataManager;
-            feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
+            PhotosStripViewController * userViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
+            userViewController.delegate = self.delegate;
+            userViewController.modalTransitionStyle = self.modalTransitionStyle;
+            userViewController.coreDataManager = self.coreDataManager;
+            userViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
+            userViewController.galleryMode = self.galleryMode;
             Photo * firstPhotoForUser = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", currentUserLocal] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
-            [feelingViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
-            [feelingViewController setShouldAnimateIn:YES fromSource:PhotosStripUnrelated withPersistentImage:nil];
-//            feelingViewController.galleryScreenshot = self.galleryScreenshot;
+            [userViewController setFocusToUser:currentUserLocal photo:firstPhotoForUser];
+            [userViewController setShouldAnimateIn:YES fromSource:PhotosStripUnrelated withPersistentImage:nil];
             
             [UIView animateWithDuration:0.25 animations:^{
                 self.contentView.alpha = 0.0;
                 [self.cameraButtonView setButtonPromptVisible:NO];
                 [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
             } completion:^(BOOL finished){
-                [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
+                [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:userViewController];
             }];
             
         }
@@ -1424,7 +1439,6 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     settingsViewController.coreDataManager = self.coreDataManager;
     UINavigationController * settingsNavController = [[UINavigationController alloc] initWithRootViewController:settingsViewController];
     settingsNavController.navigationBarHidden = YES;
-    //    settingsNavController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     [self presentModalViewController:settingsNavController animated:YES];
 }
 

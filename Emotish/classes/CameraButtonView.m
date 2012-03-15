@@ -65,7 +65,7 @@ const double CAMERA_BUTTON_VISIBILITY_ANIMATION_DURATION = 0.25;
     [self.button setImage:[UIImage imageNamed:@"btn_camera.png"] forState:UIControlStateNormal];
     [self.button setImage:[UIImage imageNamed:@"btn_camera_touch.png"] forState:UIControlStateHighlighted];
     [self.button setTitleColor:[UIColor colorWithWhite:184.0/255.0 alpha:1.0] forState:UIControlStateNormal];
-    [self.button setTitleColor:[UIColor colorWithWhite:159.0/255.0 alpha:1.0] forState:UIControlStateHighlighted];
+    [self.button setTitleColor:[UIColor colorWithWhite:161.0/255.0 alpha:1.0] forState:UIControlStateHighlighted];
     [self addSubview:self.button];
     
     self.buttonShadowLayer = [CALayer layer];

@@ -15,6 +15,12 @@ typedef enum {
 } TopBarViewMode;
 
 typedef enum {
+    StampNone = 0,
+    StampAlphabetical = 1,
+    StampRecent = 2,
+} TopBarBrandingStamp;
+
+typedef enum {
     ProfileButton = 1,
     SettingsButton = 2,
     BackButton = 3,
@@ -31,6 +37,10 @@ typedef enum {
 
 @interface TopBarView : UIView
 
+@property (nonatomic, readonly) TopBarViewMode viewMode;
+@property (nonatomic, readonly) TopBarBrandingStamp brandingStamp;
+@property (unsafe_unretained, nonatomic, readonly) NSTimer * brandingStampFadeTimer;
+
 @property (strong, nonatomic) UIButton * buttonBranding;
 @property (strong, nonatomic) UIButton * buttonLeftSpecial;
 @property (strong, nonatomic) UIButton * buttonLeftNormal;
@@ -39,6 +49,8 @@ typedef enum {
 @property (strong, nonatomic) FlagStretchView * backgroundFlagView;
 
 - (void) setViewMode:(TopBarViewMode)viewMode animated:(BOOL)animated;
+- (void) setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated;
+- (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated delayedFadeToNone:(BOOL)shouldFadeToNoneAfterDelay;
 - (void) showButtonType:(TopBarButtonType)buttonType inPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;
 - (void) hideButtonInPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;
 - (void) addTarget:(id)target selector:(SEL)selector forButtonPosition:(TopBarButtonPosition)buttonPosition;
