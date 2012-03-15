@@ -771,7 +771,6 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 }
 
 - (void)getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error {
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     NSLog(@"%@", NSStringFromSelector(_cmd));
     if (!error) {
         NSLog(@"Success - %d results", results.count);
@@ -809,7 +808,6 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error {
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     if (!error) {
         NSLog(@"getPhotosFromServerForFeelingCallback - Success - %d results", results.count);
         for (PFObject * photoServer in results) {
@@ -826,6 +824,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     self.activityCount--;
     if (self.activityCount <= 0) {
         [self hideActivityIndicator];
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     }
 }
 
@@ -857,6 +856,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
                 UIAlertView * photoTroubleAlertView = [[UIAlertView alloc] initWithTitle:@"Hmmm..." message:@"Something went wrong, and we can't seem to find that particular Photo right now. Sorry! We'll work on this." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [photoTroubleAlertView show];
             }
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 //            self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
         }];
     }
