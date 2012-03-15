@@ -36,6 +36,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 @property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorAlphabetical;
 @property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorRecent;
 - (NSSortDescriptor *) sortDescriptorForGalleryMode:(GalleryMode)galleryMode;
+- (void) showActivityIndicator;
+- (void) hideActivityIndicator;
+@property int activityCount;
 @end
 
 @implementation GalleryViewController
@@ -52,6 +55,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 @synthesize topBar=_topBar;
 @synthesize bottomBar = _bottomBar;
 @synthesize cameraButtonView = _cameraButtonView;
+@synthesize activityIndicatorView = _activityIndicatorView, activityCount=_activityCount;
 @synthesize galleryMode=_galleryMode;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -126,6 +130,15 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     self.floatingImageView.backgroundColor = [UIColor clearColor];
     self.floatingImageView.clipsToBounds = YES;
     
+    self.activityIndicatorView.contentMode = UIViewContentModeCenter;
+    self.activityIndicatorView.animationImages = [NSArray arrayWithObjects:[UIImage imageNamed:@"activityIndicator_01.png"], [UIImage imageNamed:@"activityIndicator_02.png"], [UIImage imageNamed:@"activityIndicator_03.png"], nil];
+    self.activityIndicatorView.animationDuration = 0.5;
+    self.activityIndicatorView.alpha = 0.0;
+    self.activityIndicatorView.userInteractionEnabled = NO;
+    if (self.activityCount > 0) {
+        [self showActivityIndicator];
+    }
+    
     if (debugging) {
         self.feelingsTableView.backgroundColor = [UIColor greenColor];
     }
@@ -149,6 +162,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     [self setFlagStretchView:nil];
     [self setBottomBar:nil];
     [self setCameraButtonView:nil];
+    [self setActivityIndicatorView:nil];
     [super viewDidUnload];
     self.feelingsTableView = nil;
     self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
@@ -722,10 +736,28 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     
 }
 
+- (void) showActivityIndicator {
+    self.activityIndicatorView.userInteractionEnabled = YES;
+    self.topBar.userInteractionEnabled = NO;
+    [self.activityIndicatorView startAnimating];
+    [UIView animateWithDuration:0.25 animations:^{
+        self.activityIndicatorView.alpha = 1.0;
+    }];
+}
 
+- (void) hideActivityIndicator {
+    self.activityIndicatorView.userInteractionEnabled = NO;
+    self.topBar.userInteractionEnabled = YES;
+    [UIView animateWithDuration:0.25 animations:^{
+        self.activityIndicatorView.alpha = 1.0;
+    } completion:^(BOOL finished) {
+        [self.activityIndicatorView stopAnimating];
+    }];
+}
 
 - (void)getFeelingsFromServer {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [self showActivityIndicator];
     NSLog(@"%@", NSStringFromSelector(_cmd));
     PFQuery * feelingsQuery = [PFQuery queryWithClassName:@"Feeling"];
     if (self.galleryMode == GalleryAlphabetical) {
@@ -743,6 +775,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     NSLog(@"%@", NSStringFromSelector(_cmd));
     if (!error) {
         NSLog(@"Success - %d results", results.count);
+        self.activityCount = 0;
         for (PFObject * feelingServer in results) {
             Feeling * feeling = [self.coreDataManager addOrUpdateFeelingFromServer:feelingServer];
             [self getPhotosFromServerForFeeling:feeling];
@@ -752,11 +785,13 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
         UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [errorAlert show];
+        [self hideActivityIndicator];
     }
 }
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
+    self.activityCount++;
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     NSLog(@"%@", NSStringFromSelector(_cmd));
     PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
@@ -787,6 +822,10 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         NSLog(@"getPhotosFromServerForFeelingCallback - Network Connection Error: %@ %@", error, error.userInfo);
         UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [errorAlert show];
+    }
+    self.activityCount--;
+    if (self.activityCount <= 0) {
+        [self hideActivityIndicator];
     }
 }
 
