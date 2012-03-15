@@ -68,6 +68,12 @@
     self.galleryViewController = [[GalleryViewController alloc] initWithNibName:@"GalleryViewController" bundle:[NSBundle mainBundle]];
     self.galleryViewController.coreDataManager = self.coreDataManager;
     
+//    BOOL allTimeCacheFlush = YES;
+//    if (allTimeCacheFlush) {
+//        [[SDImageCache sharedImageCache] clearMemory];
+//        [[SDImageCache sharedImageCache] clearDisk];        
+//    }
+    
     BOOL oneTimeImagesRefreshComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeImagesRefreshComplete"];
     if (!oneTimeImagesRefreshComplete) {
         [[SDImageCache sharedImageCache] clearMemory];
