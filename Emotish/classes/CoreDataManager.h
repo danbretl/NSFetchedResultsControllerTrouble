@@ -28,6 +28,7 @@
 - (void) deleteAllLikesNotAssociatedWithUserLocal:(User *)user;
 - (void) deleteAllLikesNotAssociatedWithUserServer:(PFUser *)userServer;
 - (void) clearAllFlags;
+- (void) updateAllFeelingDatetimes;
 
 //- (NSArray *) getFeelings;
 //- (Feeling *) getFeelingAlphabeticallyBeforeFeeling:(Feeling *)feeling;

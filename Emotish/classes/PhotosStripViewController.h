@@ -17,8 +17,8 @@
 #import "SubmitPhotoViewController.h"
 #import "FlagStretchView.h"
 #import "SettingsViewController.h"
-#import "PhotoWebImageManager.h"
 #import "GalleryConstants.h"
+#import "SDWebImageDownloader.h"
 
 typedef enum {
     NoFocus = 0,
@@ -36,7 +36,7 @@ typedef enum {
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate, PhotoViewDelegate, SettingsViewControllerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, PhotoWebImageManagerDelegate>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate, PhotoViewDelegate, SettingsViewControllerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, SDWebImageDownloaderDelegate>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;
@@ -80,6 +80,8 @@ typedef enum {
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling;
 - (void)getPhotosFromServerForUser:(User *)user;
 //- (void)getUpdateFromServerForPhoto:(Photo *)photo;
+
+@property (nonatomic) BOOL swipingInVertically; // This is to fix the bug that is occurring due to the fact that viewWillDisappear is being called on the new PhotosStripViewController that comes in when swiping vertically. It is called because the new PhotosStripViewController view is animated on screen, then the view controller (the old PhotosStripViewController) that essentially contains it is popped (thus also "popping" the new) and then the new is placed back on screen immediately. Bad explanation, but this makes sense. Anyway, I am dealing with the situation by disabling the web image downloader cancels that occur on viewWillDisappear when this property is set to true. This is hackish, for sure, but it is OK for now.
 
 @end
 

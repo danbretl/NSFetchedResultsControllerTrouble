@@ -283,7 +283,7 @@ const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
 }
 
 - (void) show:(BOOL)shouldShow infoButton:(UIButton *)infoButton animated:(BOOL)animated {
-    if (shouldShow) { NSLog(@"DEBUGDEBUGDEBUGDEBUGDEBUGDEBUG"); }
+//    if (shouldShow) { NSLog(@"DEBUGDEBUGDEBUGDEBUGDEBUGDEBUG"); }
     if (animated) {
         [UIView animateWithDuration:PV_INFO_VISIBLE_ANIMATION_DURATION delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             infoButton.alpha = shouldShow ? 1.0 : 0.0;
@@ -294,14 +294,14 @@ const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
 }
 
 - (void) updateTime:(NSDate *)timestamp {
-    NSLog(@"updateTime:%@", timestamp);
+//    NSLog(@"updateTime:%@", timestamp);
     NSString * timeString = [NSDateFormatter emotishTimeSpanStringForDatetime:timestamp countSeconds:YES];
-    NSLog(@"timeString:%@", timeString);
+//    NSLog(@"timeString:%@", timeString);
     
     [self.timeButton setTitle:timeString forState:UIControlStateNormal];
     
     CGSize timeSize = [timeString sizeWithFont:self.timeButton.titleLabel.font];
-    NSLog(@"timeStringWidth = %f", timeSize.width);
+//    NSLog(@"timeStringWidth = %f", timeSize.width);
     CGRect timeButtonFrame = self.timeButton.frame;
     timeButtonFrame.size.width = self.timeButton.titleLabel.frame.origin.x + timeSize.width;
     self.timeButton.frame = timeButtonFrame;
@@ -389,9 +389,9 @@ const CGFloat PV_TIME_BUTTON_MARGIN_RIGHT = 8.0;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if (gestureRecognizer == self.tapSingleGestureRecognizer) {
-        NSLog(@"gestureRecognizerShouldReceiveTouch - gestureRecognizer (%@) for %d touches", [[gestureRecognizer class] description], gestureRecognizer.numberOfTouches);
-    }
+//    if (gestureRecognizer == self.tapSingleGestureRecognizer) {
+//        NSLog(@"gestureRecognizerShouldReceiveTouch - gestureRecognizer (%@) for %d touches", [[gestureRecognizer class] description], gestureRecognizer.numberOfTouches);
+//    }
     BOOL shouldReceiveTouch = YES;
 //    if ([touch.view isDescendantOfView:self.actionButtonsContainer]) {
 //        shouldReceiveTouch = NO;

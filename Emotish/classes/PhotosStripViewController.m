@@ -83,7 +83,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void) updatePhotoView:(PhotoView *)photoView atPhotoViewIndex:(int)photoViewIndex withPhotoAtIndex:(int)photoIndex;
 @property (strong, nonatomic) NSArray * photoViews;
 @property (strong, nonatomic) NSMutableArray * photoViewsPhotoServerIDs;
-@property (strong, nonatomic) NSMutableDictionary * photoWebImageManagersForPhotoServerIDs;
+@property (strong, nonatomic) NSMutableDictionary * webImageDownloaders;
+//@property (strong, nonatomic) NSMutableDictionary * photoWebImageManagersForPhotoServerIDs;
 @property (nonatomic) BOOL refreshAllRequested;
 @property (nonatomic) BOOL refreshAllInProgress;
 @property (nonatomic) int refreshAllNetChangeBeforePreviousPhotoCenterIndex;
@@ -119,10 +120,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize photoToDelete=_photoToDelete;
 @synthesize photoUpdateQueries=_photoUpdateQueries;
 @synthesize photoCenterIndex=_photoCenterIndex;
-@synthesize photoViewsPhotoServerIDs=_photoViewsPhotoServerIDs, photoWebImageManagersForPhotoServerIDs=_photoWebImageManagersForPhotoServerIDs;
+@synthesize photoViewsPhotoServerIDs=_photoViewsPhotoServerIDs, webImageDownloaders=_webImageDownloaders;//, photoWebImageManagersForPhotoServerIDs=_photoWebImageManagersForPhotoServerIDs;
 @synthesize refreshAllRequested=_refreshAllRequested, refreshAllInProgress=_refreshAllInProgress, refreshAllNetChangeBeforePreviousPhotoCenterIndex=_refreshAllNetChangeBeforePreviousPhotoCenterIndex, controllerChangingContent=_controllerChangingContent;
 @synthesize blockViewControllerFinishing=_blockViewControllerFinishing;
 @synthesize scrollJumpInProgress=_scrollJumpInProgress;
+@synthesize swipingInVertically=_swipingInVertically;
 @synthesize delegate=_delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -133,7 +135,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.focus = NoFocus;
         self.photoUpdateQueries = [NSMutableArray array];
         self.photoViewsPhotoServerIDs = [NSMutableArray array];
-        self.photoWebImageManagersForPhotoServerIDs = [NSMutableDictionary dictionary];
+        self.webImageDownloaders = [NSMutableDictionary dictionary];
+//        self.photoWebImageManagersForPhotoServerIDs = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -404,17 +407,26 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         
     }
     NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
+    self.swipingInVertically = NO;
     
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
+    NSLog(@"PhotosStripViewController (%@ %@) viewWillDisappear", self.focus == FeelingFocus ? @"Feeling" : @"User", self.focus == FeelingFocus ? self.feelingFocus.word : self.userFocus.name);
     [super viewWillDisappear:animated];
     [self.coreDataManager saveCoreData];
     [self.getPhotosQuery cancel];
-    for (NSString * photoServerID in self.photoWebImageManagersForPhotoServerIDs) {
-        PhotoWebImageManager * manager = [self.photoWebImageManagersForPhotoServerIDs objectForKey:photoServerID];
-        [[SDWebImageManager sharedManager] cancelForDelegate:manager];
+//    [[SDWebImageManager sharedManager] cancelForDelegate:self];
+    if (!self.swipingInVertically) {
+        for (NSString * photoServerID in self.webImageDownloaders) {
+            [((SDWebImageDownloader *)[self.webImageDownloaders objectForKey:photoServerID]) cancel];
+        }
+        [self.webImageDownloaders removeAllObjects];
     }
+//    for (NSString * photoServerID in self.photoWebImageManagersForPhotoServerIDs) {
+//        PhotoWebImageManager * manager = [self.photoWebImageManagersForPhotoServerIDs objectForKey:photoServerID];
+//        [[SDWebImageManager sharedManager] cancelForDelegate:manager];
+//    }
 }
 
 - (void) setPhotoCenterIndex:(NSUInteger)photoCenterIndex {
@@ -423,7 +435,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void) setPhotoCenterIndex:(NSUInteger)photoCenterIndex forcePhotoViewsUpdate:(BOOL)forcePhotoViewsUpdate {
     if (_photoCenterIndex != photoCenterIndex) {
-        NSLog(@"Change in photoCenterIndex (%d -> %d)", _photoCenterIndex, photoCenterIndex);
+//        NSLog(@"Change in photoCenterIndex (%d -> %d)", _photoCenterIndex, photoCenterIndex);
         _photoCenterIndex = photoCenterIndex;
         forcePhotoViewsUpdate = YES;
     }
@@ -435,7 +447,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)setPhotoCenter:(Photo *)photoCenter {
     if (_photoCenter != photoCenter) {
-        NSLog(@"Change in photoCenter (%@, %@'s %@ -> %@, %@'s %@)", _photoCenter.serverID, _photoCenter.user.name, _photoCenter.feeling.word, photoCenter.serverID, photoCenter.user.name, photoCenter.feeling.word);
+//        NSLog(@"Change in photoCenter (%@, %@'s %@ -> %@, %@'s %@)", _photoCenter.serverID, _photoCenter.user.name, _photoCenter.feeling.word, photoCenter.serverID, photoCenter.user.name, photoCenter.feeling.word);
         _photoCenter = photoCenter;
         if (self.photoCenter.shouldHighlight.boolValue && !self.scrollJumpInProgress) {
             self.photoCenter.shouldHighlight = [NSNumber numberWithBool:NO];
@@ -540,6 +552,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void) updatePhotoView:(PhotoView *)photoView atPhotoViewIndex:(int)photoViewIndex withPhotoAtIndex:(int)photoIndex {
     
     Photo * photo = [self photoAtIndex:photoIndex];
+    NSLog(@"Updating photo view with photo %@ %@ %@", photo.serverID, photo.feeling.word, photo.user.name);
     if (photo == nil) {
         [self.photoViewsPhotoServerIDs replaceObjectAtIndex:photoViewIndex withObject:[NSNull null]];
         photoView.photoImageView.image = nil;
@@ -547,24 +560,41 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         [self.photoViewsPhotoServerIDs replaceObjectAtIndex:photoViewIndex withObject:photo.serverID];
         UIImage * cachedImageFull = [[SDImageCache sharedImageCache] imageFromKey:photo.imageURL];
         if (cachedImageFull != nil) {
+            NSLog(@"  cachedImageFull != nil");
             photoView.photoImageView.image = cachedImageFull;
         } else {
+            NSLog(@"  cachedImageFull == nil");
             UIImage * cachedImageThumb = [[SDImageCache sharedImageCache] imageFromKey:photo.thumbURL];
             if (cachedImageThumb != nil) {
                 photoView.photoImageView.image = cachedImageThumb;
             } else {
                 photoView.photoImageView.image = [UIImage imageNamed:@"photo_image_placeholder.png"];
             }
+            NSLog(@"    %d >= %d ?: %d", photoViewIndex, self.photoViewCenterIndex - 1, photoViewIndex >= self.photoViewCenterIndex - 1);
+            NSLog(@"    %d <= %d ?: %d", photoViewIndex, self.photoViewCenterIndex + 1, photoViewIndex <= self.photoViewCenterIndex + 1);
+            NSLog(@"    [self.webImageDownloaders objectForKey:photo.serverID] == nil ?: %d", [self.webImageDownloaders objectForKey:photo.serverID] == nil);
+            NSLog(@"    composite bool ?: %d", photoViewIndex >= self.photoViewCenterIndex - 1 && 
+                  photoViewIndex <= self.photoViewCenterIndex + 1 &&
+                  [self.webImageDownloaders objectForKey:photo.serverID] == nil);
             if (!self.scrollJumpInProgress) {
                 if (photoViewIndex >= self.photoViewCenterIndex - 1 && 
-                    photoViewIndex <= self.photoViewCenterIndex + 1 &&
-                    [self.photoWebImageManagersForPhotoServerIDs objectForKey:photo.serverID] == nil) {
-                    NSLog(@"Download image with server id %@ and url %@", photo.serverID, photo.imageURL);
-                    PhotoWebImageManager * photoWebImageManager = [PhotoWebImageManager photoWebImageManagerForPhotoServerID:photo.serverID withDelegate:self];
-                    [self.photoWebImageManagersForPhotoServerIDs setObject:photoWebImageManager forKey:photo.serverID];
-                    [[SDWebImageManager sharedManager] downloadWithURL:[NSURL URLWithString:photo.imageURL] delegate:photoWebImageManager];
+                    photoViewIndex <= self.photoViewCenterIndex + 1) {
+                    if ([self.webImageDownloaders objectForKey:photo.serverID] == nil/* && [self.photoWebImageManagersForPhotoServerIDs objectForKey:photo.serverID] == nil*/) {
+//                    NSLog(@"      Download image with server id %@ and url %@", photo.serverID, photo.imageURL);
+//                    PhotoWebImageManager * photoWebImageManager = [PhotoWebImageManager photoWebImageManagerForPhotoServerID:photo.serverID withDelegate:self];
+//                    [self.photoWebImageManagersForPhotoServerIDs setObject:photoWebImageManager forKey:photo.serverID];
+//                    NSLog(@"self.photoWebImageManagersForPhotoServerIDs = %@", self.photoWebImageManagersForPhotoServerIDs);
+//                    NSLog(@"[self.photoWebImageManagersForPhotoServerIDs objectForKey:%@] = %@", photo.serverID, [self.photoWebImageManagersForPhotoServerIDs objectForKey:photo.serverID]);
+//                    NSLog(@"[[SDWebImageManager sharedManager] downloadWithURL:%@ delegate:%@];", [NSURL URLWithString:photo.imageURL], photoWebImageManager);
+//                    [[SDWebImageManager sharedManager] downloadWithURL:[NSURL URLWithString:photo.imageURL] delegate:self];
+                        NSLog(@"      Downloading image with url %@", photo.imageURL);
+                        SDWebImageDownloader * downloader = [SDWebImageDownloader downloaderWithURL:[NSURL URLWithString:photo.imageURL] delegate:self userInfo:[NSDictionary dictionaryWithObject:photo.serverID forKey:@"serverID"]];
+                        [self.webImageDownloaders setObject:downloader forKey:photo.serverID];
+                    } else {
+                        NSLog(@"      Already downloading image with server id %@ and url %@", photo.serverID, photo.imageURL);
+                    }
                 } else {
-                    NSLog(@"Already downloading image with server id %@ and url %@", photo.serverID, photo.imageURL);
+                    NSLog(@"      Not downloading image because it is not located in one of the middle three photo view slots");
                 }
             } else {
                 NSLog(@"Not downloading image with server id %@ and url %@ because we are scrolling so quickly. Maybe later.", photo.serverID, photo.imageURL);
@@ -582,6 +612,38 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     [self updatePhotoViewCaption:photoView withDataFromPhoto:photo oppositeOfFocus:self.focus];
     
 }
+
+- (void)imageDownloader:(SDWebImageDownloader *)downloader didFinishWithImage:(UIImage *)image {
+    [[SDImageCache sharedImageCache] storeImage:image forKey:downloader.url.absoluteString];
+    NSString * photoServerID = [downloader.userInfo objectForKey:@"serverID"];
+    NSUInteger photoViewIndexOfPhotoServerID = [self.photoViewsPhotoServerIDs indexOfObject:photoServerID];
+    if (photoViewIndexOfPhotoServerID != NSNotFound) {
+        ((PhotoView *)[self.photoViews objectAtIndex:photoViewIndexOfPhotoServerID]).photoImageView.image = image;
+    }
+    [self.webImageDownloaders removeObjectForKey:photoServerID];
+    NSLog(@"imageDownloader didFinishWithImage forPhotoWithServerID %@", photoServerID);
+}
+
+- (void)imageDownloader:(SDWebImageDownloader *)downloader didFailWithError:(NSError *)error {
+    NSString * photoServerID = [downloader.userInfo objectForKey:@"serverID"];
+    [self.webImageDownloaders removeObjectForKey:photoServerID];
+    NSLog(@"imageDownloader didFailWithError forPhotoWithServerID %@", photoServerID);
+}
+
+//- (void)photoWebImageManager:(PhotoWebImageManager *)photoWebImangeManager withWebImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image {
+//    NSLog(@"photoWebImageManager:withWebImageManager:didFinishWithImage:%@forPhotoWithServerID:%@", image, photoWebImangeManager.photoServerID);
+//    NSUInteger photoViewIndexOfPhotoServerID = [self.photoViewsPhotoServerIDs indexOfObject:photoWebImangeManager.photoServerID];
+//    if (photoViewIndexOfPhotoServerID != NSNotFound) {
+//        ((PhotoView *)[self.photoViews objectAtIndex:photoViewIndexOfPhotoServerID]).photoImageView.image = image;
+//    }
+//    [self.photoWebImageManagersForPhotoServerIDs removeObjectForKey:photoWebImangeManager.photoServerID];
+//}
+
+//- (void)photoWebImageManager:(PhotoWebImageManager *)photoWebImangeManager withWebImageManager:(SDWebImageManager *)imageManager didFailWithError:(NSError *)error {
+//    NSLog(@"photoWebImageManager:withWebImageManager:didFailWithError:%@forPhotoWithServerID:%@", error, photoWebImangeManager.photoServerID);
+//    // Not sure what to do really... Hope that a future download will succeed, I suppose?
+//    [self.photoWebImageManagersForPhotoServerIDs removeObjectForKey:photoWebImangeManager.photoServerID];
+//}
 
 - (Photo *) photoAtIndex:(int)index {
     Photo * photo = nil;
@@ -928,6 +990,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     
     photoDeleted.hiddenServer = [NSNumber numberWithBool:YES];
     photoDeleted.hidden = photoDeleted.hiddenServer;
+    [photoDeleted.feeling updateDatetimeMostRecentPhoto];
     [self.coreDataManager saveCoreData];
     
     PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
@@ -949,6 +1012,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
     photoFlagged.hiddenLocal = [NSNumber numberWithBool:YES];
     photoFlagged.hidden = [NSNumber numberWithBool:YES];
+    [photoFlagged.feeling updateDatetimeMostRecentPhoto];
     [self.coreDataManager saveCoreData];
 
     NSString * photoCenterServerID = photoFlagged.serverID;
@@ -1100,6 +1164,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             [self.topBar hideButtonInPosition:LeftSpecial animated:NO];
         } completion:^(BOOL finished){
             // Actually request for (instantaneous, imperceptible) the pop & push -ing of view controllers
+            NSLog(@"About to [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];");
             [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:oppositeFocusStripViewController];
         }];
     }
@@ -1178,11 +1243,10 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         
         PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
         feelingViewController.delegate = self.delegate;
-        feelingViewController.modalTransitionStyle = self.modalTransitionStyle;
         feelingViewController.coreDataManager = self.coreDataManager;
         feelingViewController.fetchedResultsControllerFeelings = self.fetchedResultsControllerFeelings;
         feelingViewController.galleryMode = self.galleryMode;
-        [feelingViewController setFocusToFeeling:nextFeeling photo:[nextFeeling.mostRecentPhotos objectAtIndex:0]];
+        [feelingViewController setFocusToFeeling:nextFeeling photo:[nextFeeling.mostRecentPhotosVisible objectAtIndex:0]];
         
         feelingViewController.topBar.alpha = 0.0;
         feelingViewController.bottomBar.alpha = 0.0;
@@ -1192,10 +1256,10 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         
         [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
         feelingViewController.view.frame = CGRectMake(0, -direction * self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);// CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
-        NSLog(@"self = %@", NSStringFromCGRect(self.view.frame));
-        NSLog(@"feel = %@", NSStringFromCGRect(feelingViewController.view.frame));
+//        NSLog(@"self = %@", NSStringFromCGRect(self.view.frame));
+//        NSLog(@"feel = %@", NSStringFromCGRect(feelingViewController.view.frame));
         CGFloat originYAdjustment = direction * self.view.frame.size.height;
-        NSLog(@"yadj = %f", originYAdjustment);
+//        NSLog(@"yadj = %f", originYAdjustment);
         
         [UIView animateWithDuration:0.125 animations:^{
             [self.cameraButtonView setButtonPromptVisible:NO];
@@ -1215,6 +1279,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             feelingViewController.cameraButtonView.button.imageView.hidden = NO;
             feelingViewController.cameraButtonView.buttonShadowLayer.hidden = NO;
             [feelingViewController.cameraButtonView setButtonPromptVisible:YES];
+            feelingViewController.swipingInVertically = YES;
             [self.delegate photosStripViewController:self requestedReplacementWithPhotosStripViewController:feelingViewController];
         }];
                     
@@ -1468,21 +1533,6 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (BOOL) deleteAllowedForCurrentUser:(PFUser *)currentUser withPhoto:(Photo *)photo {
     return currentUser != nil && [currentUser.objectId isEqualToString:photo.user.serverID];
-}
-
-- (void)photoWebImageManager:(PhotoWebImageManager *)photoWebImangeManager withWebImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image {
-    NSLog(@"photoWebImageManager:withWebImageManager:didFinishWithImage:%@forPhotoWithServerID:%@", image, photoWebImangeManager.photoServerID);
-    NSUInteger photoViewIndexOfPhotoServerID = [self.photoViewsPhotoServerIDs indexOfObject:photoWebImangeManager.photoServerID];
-    if (photoViewIndexOfPhotoServerID != NSNotFound) {
-        ((PhotoView *)[self.photoViews objectAtIndex:photoViewIndexOfPhotoServerID]).photoImageView.image = image;
-    }
-    [self.photoWebImageManagersForPhotoServerIDs removeObjectForKey:photoWebImangeManager.photoServerID];
-}
-
-- (void)photoWebImageManager:(PhotoWebImageManager *)photoWebImangeManager withWebImageManager:(SDWebImageManager *)imageManager didFailWithError:(NSError *)error {
-    NSLog(@"photoWebImageManager:withWebImageManager:didFailWithError:%@forPhotoWithServerID:%@", error, photoWebImangeManager.photoServerID);
-    // Not sure what to do really... Hope that a future download will succeed, I suppose?
-    [self.photoWebImageManagersForPhotoServerIDs removeObjectForKey:photoWebImangeManager.photoServerID];
 }
                  
 - (NSUInteger) photoViewCenterIndex {

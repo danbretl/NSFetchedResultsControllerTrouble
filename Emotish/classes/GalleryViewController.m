@@ -150,10 +150,10 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 		exit(-1);  // Fail
 	}
     
-    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203142050"];
+    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203150012"];
     if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0 || !oneTimeForceReloadComplete) {
         [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203142050"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203150012"];
     }
     
 }
@@ -272,7 +272,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
     feelingCell.feelingLabel.text = feeling.word;//.lowercaseString;
     feelingCell.feelingIndex = indexPath.row;
-    feelingCell.photos = feeling.mostRecentPhotos;
+    feelingCell.photos = feeling.mostRecentPhotosVisible;
     [feelingCell.imagesTableView reloadData];
     feelingCell.timestampLabel.text = self.galleryMode == GalleryRecent ? [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES] : nil;
     
@@ -474,7 +474,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 - (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
     NSLog(@"photosStripViewController:requestedReplacementWithPhotosStripViewController:");
+    NSLog(@"GalleryViewController [self.navigationController popToRootViewControllerAnimated:NO];");
     [self.navigationController popToRootViewControllerAnimated:NO];
+    NSLog(@"GalleryViewController [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];");
     [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];
 }
 

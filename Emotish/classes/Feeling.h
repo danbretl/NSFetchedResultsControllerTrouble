@@ -28,5 +28,7 @@
 @interface Feeling (Convenience)
 @property (nonatomic, strong, readonly) NSSet * photosVisible;
 @property (nonatomic, readonly) NSNumber * photosVisibleExist;
-@property (nonatomic, strong, readonly) NSArray * mostRecentPhotos;
+@property (nonatomic, strong, readonly) NSArray * mostRecentPhotosVisible;
+@property (nonatomic, strong, readonly) Photo * mostRecentPhotoVisible;
+- (void) updateDatetimeMostRecentPhoto;
 @end

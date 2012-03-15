@@ -81,6 +81,13 @@
         photo.hidden = photo.hiddenServer;
         photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
     }
+    [self updateAllFeelingDatetimes];
+}
+
+- (void) updateAllFeelingDatetimes {
+    for (Feeling * feeling in [self getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
+        [feeling updateDatetimeMostRecentPhoto];
+    }
 }
 
 //- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors {
@@ -121,16 +128,18 @@
     photo.hiddenServer = [NSNumber numberWithBool:[[photoServer objectForKey:@"deleted"] boolValue] || [[photoServer objectForKey:@"flagged"] boolValue]];
     photo.hidden = [NSNumber numberWithBool:(photo.hiddenServer.boolValue || photo.hiddenLocal.boolValue)];
 //    photo.shouldHighlight = [NSNumber numberWithBool:newObjectMadeIndicator]; // This is unnecessary, for now. This value defaults to YES, which is what we want. Otherwise, it is set to NO when an image is viewed.
+    [photo.feeling updateDatetimeMostRecentPhoto];
     return photo;
 }
 
 - (Photo *)addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer {
     Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
     photo.feeling = [self addOrUpdateFeelingFromServer:feelingServer];
-    if (photo.feeling.datetimeMostRecentPhoto == nil || [photo.feeling.datetimeMostRecentPhoto compare:photo.datetime] == NSOrderedAscending) {
-        photo.feeling.datetimeMostRecentPhoto = photo.datetime;
-        NSLog(@"photo.feeling.datetimeMostRecentPhoto updated");
-    }
+    [photo.feeling updateDatetimeMostRecentPhoto];
+//    if (!photo.hidden.boolValue && (photo.feeling.datetimeMostRecentPhoto == nil || [photo.feeling.datetimeMostRecentPhoto compare:photo.datetime] == NSOrderedAscending)) {
+//        photo.feeling.datetimeMostRecentPhoto = photo.datetime;
+//        NSLog(@"photo.feeling.datetimeMostRecentPhoto updated");
+//    }
     photo.user = [self addOrUpdateUserFromServer:userServer];
     return photo;
 }
@@ -139,7 +148,8 @@
     Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
     photo.hiddenLocal = [NSNumber numberWithBool:YES];
     photo.hidden = [NSNumber numberWithBool:YES];
-    photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
+    [photo.feeling updateDatetimeMostRecentPhoto]; // This is touching the Feeling now. This is such a stupid stupid stupid way to do things.
+    //photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
     return photo;
 }
 

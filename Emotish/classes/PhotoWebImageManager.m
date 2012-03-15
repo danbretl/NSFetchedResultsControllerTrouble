@@ -7,6 +7,7 @@
 //
 
 #import "PhotoWebImageManager.h"
+#import "SDImageCache.h"
 
 @implementation PhotoWebImageManager
 
@@ -21,10 +22,12 @@
 }
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image {
+    NSLog(@"PhotoWebImageManager %@ - webImageManager:%@ didFinishWithImage:%@ - forwarding to delegate %@", self, imageManager, image, self.delegate);
     [self.delegate photoWebImageManager:self withWebImageManager:imageManager didFinishWithImage:image];
 }
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFailWithError:(NSError *)error {
+    NSLog(@"PhotoWebImageManager %@ - webImageManager:%@ didFailWithError:%@ - forwarding to delegate %@", self, imageManager, error, self.delegate);
     [self.delegate photoWebImageManager:self withWebImageManager:imageManager didFailWithError:error];
 }
 
