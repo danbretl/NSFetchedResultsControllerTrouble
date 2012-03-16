@@ -46,9 +46,9 @@
     </entity>
     <elements>
         <element name="Feeling" positionX="-261" positionY="111" width="153" height="120"/>
-        <element name="Like" positionX="160" positionY="360" width="128" height="120"/>
+        <element name="Like" positionX="151" positionY="6" width="128" height="120"/>
         <element name="Photo" positionX="-29" positionY="93" width="128" height="255"/>
-        <element name="User" positionX="205" positionY="72" width="128" height="120"/>
+        <element name="User" positionX="340" positionY="90" width="128" height="120"/>
         <element name="WebFetch" positionX="-38" positionY="-111" width="128" height="120"/>
     </elements>
 </model>
