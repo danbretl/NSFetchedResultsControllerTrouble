@@ -222,7 +222,6 @@
 		32F1F45314F7F28F005A4803 /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45114F7F28F005A4803 /* SettingsViewController.m */; };
 		32F1F45414F7F28F005A4803 /* SettingsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32F1F45214F7F28F005A4803 /* SettingsViewController.xib */; };
 		32F1F45714F8826F005A4803 /* SettingsItemTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */; };
-		32FBDF3A14FEA6E100C9C4DE /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32FBDF3914FEA6E100C9C4DE /* Parse.framework */; };
 		32FF146014FCA6E500829FB0 /* PushConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 32FF145F14FCA6E500829FB0 /* PushConstants.m */; };
 /* End PBXBuildFile section */
 
@@ -425,6 +424,9 @@
 		3253338E151137C5000B1127 /* Emotish 010.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 010.xcdatamodel"; sourceTree = "<group>"; };
 		3254DF0E14FFF7200089CDF9 /* WebManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebManager.h; path = classes/WebManager.h; sourceTree = "<group>"; };
 		3254DF0F14FFF7200089CDF9 /* WebManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebManager.m; path = classes/WebManager.m; sourceTree = "<group>"; };
+		3256D17115139F20008313A7 /* Emotish 011.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 011.xcdatamodel"; sourceTree = "<group>"; };
+		3256D1721513A086008313A7 /* WebFetch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WebFetch.h; path = classes/WebFetch.h; sourceTree = "<group>"; };
+		3256D1731513A086008313A7 /* WebFetch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = WebFetch.m; path = classes/WebFetch.m; sourceTree = "<group>"; };
 		3259455815085E1000423BEC /* UIScrollView+StopScroll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIScrollView+StopScroll.h"; path = "classes/UIScrollView+StopScroll.h"; sourceTree = "<group>"; };
 		3259455915085E1000423BEC /* UIScrollView+StopScroll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIScrollView+StopScroll.m"; path = "classes/UIScrollView+StopScroll.m"; sourceTree = "<group>"; };
 		325C286D14E9843500019977 /* btn_back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_back.png; sourceTree = "<group>"; };
@@ -519,7 +521,6 @@
 		32F1F45514F8826F005A4803 /* SettingsItemTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SettingsItemTableViewCell.h; path = classes/SettingsItemTableViewCell.h; sourceTree = "<group>"; };
 		32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SettingsItemTableViewCell.m; path = classes/SettingsItemTableViewCell.m; sourceTree = "<group>"; };
 		32F7221514FD6D930092278F /* Emotish 006.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 006.xcdatamodel"; sourceTree = "<group>"; };
-		32FBDF3914FEA6E100C9C4DE /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		32FF145E14FCA6E500829FB0 /* PushConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PushConstants.h; path = classes/PushConstants.h; sourceTree = "<group>"; };
 		32FF145F14FCA6E500829FB0 /* PushConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PushConstants.m; path = classes/PushConstants.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -540,7 +541,6 @@
 				32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */,
 				32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */,
 				32E2F1F214D0929F00191C6F /* CoreData.framework in Frameworks */,
-				32FBDF3A14FEA6E100C9C4DE /* Parse.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -978,7 +978,6 @@
 		32E2F1EA14D0929F00191C6F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				32FBDF3914FEA6E100C9C4DE /* Parse.framework */,
 				32EB6C0814E43534003D7105 /* MobileCoreServices.framework */,
 				326127C914DCC25E001FD065 /* QuartzCore.framework */,
 				32E2F1EB14D0929F00191C6F /* UIKit.framework */,
@@ -1035,6 +1034,8 @@
 				323B2FDF14D77C4A0035BF74 /* User.m */,
 				3248245C14FC3F5F00BF5E65 /* Like.h */,
 				3248245D14FC3F5F00BF5E65 /* Like.m */,
+				3256D1721513A086008313A7 /* WebFetch.h */,
+				3256D1731513A086008313A7 /* WebFetch.m */,
 				323B2FDB14D77B0E0035BF74 /* CoreDataManager.h */,
 				323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */,
 			);
@@ -1573,6 +1574,7 @@
 		32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				3256D17115139F20008313A7 /* Emotish 011.xcdatamodel */,
 				3253338E151137C5000B1127 /* Emotish 010.xcdatamodel */,
 				3290AD9E150C6FDA001C9E74 /* Emotish 009.xcdatamodel */,
 				3290AD9D150C647D001C9E74 /* Emotish 008.xcdatamodel */,
@@ -1585,7 +1587,7 @@
 				323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */,
 				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
 			);
-			currentVersion = 3253338E151137C5000B1127 /* Emotish 010.xcdatamodel */;
+			currentVersion = 3256D17115139F20008313A7 /* Emotish 011.xcdatamodel */;
 			path = Emotish.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

@@ -16,6 +16,7 @@
 @dynamic photos;
 @dynamic serverID;
 @dynamic datetimeMostRecentPhoto;
+@dynamic webFetches;
 
 - (NSSet *)photosVisible {
     return [self.photos filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"hidden == NO"]];

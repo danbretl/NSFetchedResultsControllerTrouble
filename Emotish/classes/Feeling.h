@@ -9,13 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Photo;
+@class Photo, WebFetch;
 
 @interface Feeling : NSManagedObject
 @property (nonatomic, retain) NSString * word;
 @property (nonatomic, retain) NSSet * photos;
 @property (nonatomic, retain) NSString * serverID;
 @property (nonatomic, retain) NSDate * datetimeMostRecentPhoto;
+@property (nonatomic, retain) NSSet *webFetches;
 @end
 
 @interface Feeling (CoreDataGeneratedAccessors)
@@ -23,6 +24,10 @@
 - (void)removePhotosObject:(Photo *)value;
 - (void)addPhotos:(NSSet *)values;
 - (void)removePhotos:(NSSet *)values;
+- (void)addWebFetchesObject:(WebFetch *)value;
+- (void)removeWebFetchesObject:(WebFetch *)value;
+- (void)addWebFetches:(NSSet *)values;
+- (void)removeWebFetches:(NSSet *)values;
 @end
 
 @interface Feeling (Convenience)
