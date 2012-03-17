@@ -290,6 +290,7 @@
         if (!settingsItem.activated.boolValue) {
             // Connect Facebook
             if (![PFFacebookUtils isLinkedWithUser:[PFUser currentUser]]) { // Why do we make this check?
+                [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
                 [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
                 [[PFFacebookUtils facebook].sessionDelegate fbDidNotLogin:YES];
                 [PFFacebookUtils linkUser:[PFUser currentUser] permissions:[NSArray arrayWithObjects:@"email", @"offline_access", @"publish_stream", nil] block:^(BOOL succeeded, NSError *error) {
@@ -309,11 +310,13 @@
                         }
                     }
                     self.tableView.userInteractionEnabled = YES;
+                    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
                     [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
                 }];
             }
         } else {
             // Disconnect Facebook
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
             [PFFacebookUtils unlinkUserInBackground:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
                 [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
                 if (!error && succeeded) {
@@ -323,6 +326,7 @@
                     [[EmotishAlertViews facebookConnectionErrorAlertView] show];
                 }
                 self.tableView.userInteractionEnabled = YES;
+                [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
             }];
         }
     } else {
@@ -336,6 +340,7 @@
     if (!applicationOpenedURL) {
         self.tableView.userInteractionEnabled = YES;
         [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
     }
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:nil];
 }
@@ -353,6 +358,7 @@
             NSLog(@"Should connect Twitter");
             // Connect Twitter
             if (![PFTwitterUtils isLinkedWithUser:[PFUser currentUser]]) { // Why do we make this check?
+                [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
                 [PFTwitterUtils linkUser:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
                     [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
                     if (!error) {
@@ -370,11 +376,13 @@
                         }
                     }
                     self.tableView.userInteractionEnabled = YES;
+                    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
                 }];
             }
         } else {
             // Disconnect Twitter
             NSLog(@"Should disconnect Twitter");
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
             [PFTwitterUtils unlinkUserInBackground:[PFUser currentUser] block:^(BOOL succeeded, NSError *error) {
                 [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
                 if (!error && succeeded) {
@@ -384,6 +392,7 @@
                     [[EmotishAlertViews twitterConnectionErrorAlertView] show];
                 }
                 self.tableView.userInteractionEnabled = YES;
+                [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
             }];
         }
     } else {
