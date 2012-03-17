@@ -18,6 +18,5 @@
 @dynamic endDatetime;
 @dynamic feeling;
 @dynamic user;
-@dynamic photos;
 
 @end

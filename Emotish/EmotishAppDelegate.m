@@ -12,13 +12,13 @@
 #import "NotificationConstants.h"
 #import "SDImageCache.h"
 
-#ifdef DEBUG
-#define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
-#define emotish_parse_app_client_key @"14YPpATSB63ZrouAqkNfqOIxwdq5e6fjSTUk21Gr"
-#else
+//#ifdef DEBUG
+//#define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
+//#define emotish_parse_app_client_key @"14YPpATSB63ZrouAqkNfqOIxwdq5e6fjSTUk21Gr"
+//#else
 #define emotish_parse_app_id @"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC"
 #define emotish_parse_app_client_key @"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"
-#endif
+//#endif
 
 @interface EmotishAppDelegate()
 @property (nonatomic) BOOL appOpenedURLFlag;
@@ -74,13 +74,12 @@
 //        [[SDImageCache sharedImageCache] clearDisk];        
 //    }
     
-    BOOL oneTimeImagesRefreshComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeImagesRefreshComplete"];
-    if (!oneTimeImagesRefreshComplete) {
-        [[SDImageCache sharedImageCache] clearMemory];
-        [[SDImageCache sharedImageCache] clearDisk];
-        [self.galleryViewController getFeelingsFromServer];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeImagesRefreshComplete"];
-    }
+//    BOOL oneTimeImagesRefreshComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeImagesRefreshComplete"];
+//    if (!oneTimeImagesRefreshComplete) {
+//        [[SDImageCache sharedImageCache] clearMemory];
+//        [[SDImageCache sharedImageCache] clearDisk];
+//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeImagesRefreshComplete"];
+//    }
     
     self.rootNavController = [[UINavigationController alloc] initWithRootViewController:self.galleryViewController];
     self.rootNavController.navigationBarHidden = YES;
@@ -241,6 +240,7 @@
     {
         __managedObjectContext = [[NSManagedObjectContext alloc] init];
         [__managedObjectContext setPersistentStoreCoordinator:coordinator];
+//        [__managedObjectContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
     }
     return __managedObjectContext;
 }

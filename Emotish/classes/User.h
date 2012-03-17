@@ -9,14 +9,15 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Photo, Like, WebFetch;
+@class Photo, Like;//, WebFetch;
 
 @interface User : NSManagedObject
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSSet * photos;
 @property (nonatomic, retain) NSString * serverID;
 @property (nonatomic, retain) NSSet * likes;
-@property (nonatomic, retain) NSSet *webFetches;
+@property (nonatomic, retain) NSDate * webLoadDate;
+//@property (nonatomic, retain) NSSet *webFetches;
 @end
 
 @interface User (CoreDataGeneratedAccessors)
@@ -28,10 +29,10 @@
 - (void)removePhotosObject:(Photo *)value;
 - (void)addPhotos:(NSSet *)values;
 - (void)removePhotos:(NSSet *)values;
-- (void)addWebFetchesObject:(WebFetch *)value;
-- (void)removeWebFetchesObject:(WebFetch *)value;
-- (void)addWebFetches:(NSSet *)values;
-- (void)removeWebFetches:(NSSet *)values;
+//- (void)addWebFetchesObject:(WebFetch *)value;
+//- (void)removeWebFetchesObject:(WebFetch *)value;
+//- (void)addWebFetches:(NSSet *)values;
+//- (void)removeWebFetches:(NSSet *)values;
 @end
 
 @interface User (Convenience)

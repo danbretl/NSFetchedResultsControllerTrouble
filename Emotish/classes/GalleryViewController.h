@@ -17,8 +17,9 @@
 #import "AccountViewController.h"
 #import "SettingsViewController.h"
 #import "CameraButtonView.h"
+#import "WebManager.h"
 
-@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate, AccountViewControllerDelegate, SettingsViewControllerDelegate> {
+@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate, AccountViewControllerDelegate, SettingsViewControllerDelegate, WebTaskDelegate> {
     
     BOOL debugging;
     
@@ -39,7 +40,7 @@
 @property (unsafe_unretained, nonatomic) IBOutlet CameraButtonView *cameraButtonView;
 //@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *activityIndicatorView;
 
-- (void) getFeelingsFromServer;
+//- (void) getFeelingsFromServer;
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID;
 
 @end

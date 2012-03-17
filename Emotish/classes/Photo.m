@@ -26,7 +26,7 @@
 @dynamic thumbURL;
 @dynamic hiddenLocal;
 @dynamic hiddenServer;
-@dynamic webFetch;
+@dynamic showInPhotosStrip;
 
 - (BOOL)likeExistsForUserServerID:(NSString *)userServerID {
     BOOL likeExists = NO;

@@ -21,6 +21,7 @@
 #import "SDWebImageDownloader.h"
 #import "SDImageCache.h"
 #import "SDNetworkActivityIndicator.h"
+#import "WebManager.h"
 
 typedef enum {
     NoFocus = 0,
@@ -38,7 +39,7 @@ typedef enum {
 
 @protocol PhotosStripViewControllerDelegate;
 
-@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate, PhotoViewDelegate, SettingsViewControllerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, SDWebImageDownloaderDelegate>
+@interface PhotosStripViewController : UIViewController <UIScrollViewDelegate, NSFetchedResultsControllerDelegate, PhotoViewDelegate, SettingsViewControllerDelegate, AccountViewControllerDelegate, UIAlertViewDelegate, SDWebImageDownloaderDelegate, WebTaskDelegate>
 
 - (void) setFocusToFeeling:(Feeling *)feeling photo:(Photo *)photo;
 - (void) setFocusToUser:(User *)user photo:(Photo *)photo;

@@ -23,6 +23,12 @@
     NSError * error;
     if (![self.managedObjectContext save:&error]) {
         NSLog(@"Error saving core data: %@", [error localizedDescription]);
+        NSLog(@"%@", [error userInfo]);
+        if ([[error userInfo] objectForKey:@"conflictList"]) {
+            for (NSMergeConflict * mergeConflict in [[error userInfo] objectForKey:@"conflictList"]) {
+                NSLog(@"\n\n%@\n%@\n%@\n%@\n\n", mergeConflict.sourceObject, mergeConflict.cachedSnapshot, mergeConflict.objectSnapshot, mergeConflict.persistedSnapshot);
+            }
+        }
     }
 }
 
@@ -82,6 +88,20 @@
         photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
     }
     [self updateAllFeelingDatetimes];
+}
+
+- (void)clearAllShowInPhotosStripForFeeling:(Feeling *)feeling {
+    NSArray * allShowInPhotoStrip = [self getAllObjectsForEntityName:@"Photo" predicate:[NSPredicate predicateWithFormat:@"feeling == %@ && showInPhotosStrip == YES", feeling] sortDescriptors:nil];
+    for (Photo * photo in allShowInPhotoStrip) {
+        photo.showInPhotosStrip = [NSNumber numberWithBool:NO];
+    }
+}
+
+- (void)clearAllShowInPhotosStripForUser:(User *)user {
+    NSArray * allShowInPhotoStrip = [self getAllObjectsForEntityName:@"Photo" predicate:[NSPredicate predicateWithFormat:@"user == %@ && showInPhotosStrip == YES", user] sortDescriptors:nil];
+    for (Photo * photo in allShowInPhotoStrip) {
+        photo.showInPhotosStrip = [NSNumber numberWithBool:NO];
+    }
 }
 
 - (void) updateAllFeelingDatetimes {

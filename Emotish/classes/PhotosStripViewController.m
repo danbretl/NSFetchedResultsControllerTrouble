@@ -56,8 +56,10 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView;
 - (void)emotishLogoTouched:(UIButton *)button;
 - (void)cameraButtonTouched:(id)sender;
-- (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
-@property (strong, nonatomic) PFQuery * getPhotosQuery;
+//- (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
+//@property (strong, nonatomic) PFQuery * getPhotosQuery;
+@property (strong, nonatomic) WebTask * getPhotosWebTask;
+@property (strong, nonatomic) NSDate * getPhotosDate;
 @property (strong, nonatomic) NSMutableArray * photoUpdateQueries;
 - (void) profileButtonTouched:(UIButton *)button;
 - (void) settingsButtonTouched:(UIButton *)button;
@@ -113,7 +115,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize cameraButtonView = _cameraButtonView;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer, swipeLeftHeaderGestureRecognizer=_swipeLeftHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
-@synthesize getPhotosQuery=_getPhotosQuery;
+@synthesize getPhotosWebTask=_getPhotosWebTask, getPhotosDate=_getPhotosDate;//, getPhotosQuery=_getPhotosQuery;
 @synthesize signInAlertView=_signInAlertView, confirmDeleteAlertView=_confirmDeleteAlertView, confirmFlagAlertView=_confirmFlagAlertView;
 @synthesize photoToDelete=_photoToDelete;
 @synthesize photoUpdateQueries=_photoUpdateQueries;
@@ -406,14 +408,23 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
     self.swipingInVertically = NO;
     
+    if (self.focus == FeelingFocus) {
+        [self getPhotosFromServerForFeeling:self.feelingFocus];
+    } else {
+        [self getPhotosFromServerForUser:self.userFocus];
+    }
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     NSLog(@"PhotosStripViewController (%@ %@) viewWillDisappear", self.focus == FeelingFocus ? @"Feeling" : @"User", self.focus == FeelingFocus ? self.feelingFocus.word : self.userFocus.name);
     [super viewWillDisappear:animated];
     [self.coreDataManager saveCoreData];
-    [self.getPhotosQuery cancel];
     if (!self.swipingInVertically) {
+//        if (self.getPhotosWebTask) {
+            [[WebManager sharedManager] cancelWebTask:self.getPhotosWebTask];
+//        }
+//        [self.getPhotosQuery cancel];
         for (NSString * photoServerID in self.webImageDownloaders) {
             [((SDWebImageDownloader *)[self.webImageDownloaders objectForKey:photoServerID]) cancel];
         }
@@ -441,9 +452,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     if (_photoCenter != photoCenter) {
 //        NSLog(@"Change in photoCenter (%@, %@'s %@ -> %@, %@'s %@)", _photoCenter.serverID, _photoCenter.user.name, _photoCenter.feeling.word, photoCenter.serverID, photoCenter.user.name, photoCenter.feeling.word);
         _photoCenter = photoCenter;
-        if (self.photoCenter.shouldHighlight.boolValue && !self.scrollJumpInProgress) {
-            self.photoCenter.shouldHighlight = [NSNumber numberWithBool:NO];
-        }
+//        if (self.photoCenter.shouldHighlight.boolValue && !self.scrollJumpInProgress) {
+//            self.photoCenter.shouldHighlight = [NSNumber numberWithBool:NO];
+//        }
     }
 }
 
@@ -883,60 +894,42 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void) userCurrent:(PFUser *)userCurrent likedPhoto:(Photo *)photoLiked {
+    
+    // Local data updates...
+    Like * likeObjectLocal = [NSEntityDescription insertNewObjectForEntityForName:@"Like" inManagedObjectContext:self.coreDataManager.managedObjectContext];
+    likeObjectLocal.photo = photoLiked;
+    likeObjectLocal.user = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"SELF.serverID == %@", userCurrent.objectId] usingSortDescriptors:nil];
+    
+    // More Local data updates...
+    photoLiked.likesCount = [NSNumber numberWithInt:photoLiked.likesCount.intValue+1];
+    
+    // Local data save...
+    [self.coreDataManager saveCoreData];
+    
+    // Remote updates
     NSString * photoCenterServerID = photoLiked.serverID;
     PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
     photoServer.objectId = photoCenterServerID;
     [photoServer incrementKey:@"likesCount"];
-    [photoServer saveInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
-        if (succeeded) {
-            
-            // Local data updates...
-            Like * likeObjectLocal = [NSEntityDescription insertNewObjectForEntityForName:@"Like" inManagedObjectContext:self.coreDataManager.managedObjectContext];
-            likeObjectLocal.photo = photoLiked;
-            likeObjectLocal.user = (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"SELF.serverID == %@", userCurrent.objectId] usingSortDescriptors:nil];
-            // Local data save...
-            [self.coreDataManager saveCoreData];
-            
-//            // View update // Taken care of now in controller:didChangeObject:...
-//            if (photoLiked == self.photoCenter) {
-//                [self.photoViewCenter showLikes:YES likesCount:self.photoCenter.likesCount likedPersonally:YES animated:YES];
-//            }
-            
-            // More server calls...
-            PFObject * likeObject = [PFObject objectWithClassName:@"Like"];
-            [likeObject setObject:userCurrent forKey:@"user"];
-            [likeObject setObject:photoServer forKey:@"photo"];
-            [likeObject saveInBackground];
-            
-            // More server calls...
-            PFQuery * photoUpdatedQuery = [PFQuery queryWithClassName:@"Photo"];
-            [photoUpdatedQuery getObjectInBackgroundWithId:photoCenterServerID block:^(PFObject * object, NSError * error){
-                if (!error && object != nil) {
-                    [self.coreDataManager addOrUpdatePhotoFromServer:object];
-                } else {
-                    // Local data updates...
-                    photoLiked.likesCount = [NSNumber numberWithInt:photoLiked.likesCount.intValue + 1];
-                }
-                [self.coreDataManager saveCoreData];
-            }];
-            
-            // Client push notification
-            BOOL testingWithOnlyOneDeviceAvailable = NO;
-            if (![userCurrent.objectId isEqualToString:photoLiked.user.serverID] ||
-                testingWithOnlyOneDeviceAvailable) {
-                NSMutableDictionary * pushNotificationData = [NSMutableDictionary dictionary];
-                [pushNotificationData setObject:[NSString stringWithFormat:@"%@ liked your %@ photo!", userCurrent.username, photoLiked.feeling.word] forKey:@"alert"];
-                //                [pushNotificationData setObject:userCurrent.objectId forKey:PUSH_LIKER_USER_SERVER_ID];
-                [pushNotificationData setObject:photoLiked.serverID forKey:PUSH_LIKED_PHOTO_SERVER_ID];
-                //                [pushNotificationData setObject:photoLiked.feeling.serverID forKey:PUSH_LIKED_FEELING_SERVER_ID];
-                //                [pushNotificationData setObject:photoLiked.user.serverID forKey:PUSH_LIKED_USER_SERVER_ID];
-                [PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, photoLiked.user.serverID] withData:pushNotificationData];
-            }
-            
-        } else {
-            [[EmotishAlertViews generalConnectionErrorAlertView] show];
-        }
-    }];
+    [photoServer saveEventually];
+    
+    // More Remote updates
+    PFObject * likeObject = [PFObject objectWithClassName:@"Like"];
+    [likeObject setObject:userCurrent forKey:@"user"];
+    [likeObject setObject:photoServer forKey:@"photo"];
+    [likeObject saveEventually];
+    
+    // Client push notification
+    if (![userCurrent.objectId isEqualToString:photoLiked.user.serverID]) {
+        NSMutableDictionary * pushNotificationData = [NSMutableDictionary dictionary];
+        [pushNotificationData setObject:[NSString stringWithFormat:@"%@ liked your %@ photo!", userCurrent.username, photoLiked.feeling.word] forKey:@"alert"];
+        [pushNotificationData setObject:photoLiked.serverID forKey:PUSH_LIKED_PHOTO_SERVER_ID];
+//        [pushNotificationData setObject:userCurrent.objectId forKey:PUSH_LIKER_USER_SERVER_ID];
+//        [pushNotificationData setObject:photoLiked.feeling.serverID forKey:PUSH_LIKED_FEELING_SERVER_ID];
+//        [pushNotificationData setObject:photoLiked.user.serverID forKey:PUSH_LIKED_USER_SERVER_ID];
+        [PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"%@%@", PUSH_USER_CHANNEL_PREFIX, photoLiked.user.serverID] withData:pushNotificationData];
+    }
+    
 }
 
 - (void) userCurrent:(PFUser *)userCurrent deletedPhotoAttempt:(Photo *)photoDeleted {
@@ -998,15 +991,19 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)photoView:(PhotoView *)photoView tapSingleGestureDidBegin:(UITapGestureRecognizer *)gestureRecognizer {
     if (photoView == self.photoViewCenter && !self.photoViewCenter.actionButtonsVisible) {
+        NSLog(@"photoView:tapSingleGestureDidbegin");
         self.blockViewControllerFinishing = YES;
     }
 }
 
 - (void)photoView:(PhotoView *)photoView tapSingleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
     if (photoView == self.photoViewCenter) {
+        NSLog(@"photoView:tapSingleGestureRecognized");
         if (self.photoViewCenter.actionButtonsVisible) {
+            NSLog(@"  hide action buttons");
             [self.photoViewCenter showActionButtons:NO animated:YES];
         } else {
+            NSLog(@"  photo view selected");
             [self photoViewSelected:self.photoViewCenter withPhoto:self.photoCenter];
         }
         self.blockViewControllerFinishing = NO;
@@ -1188,6 +1185,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)swipedVertically:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
+    
+    [[WebManager sharedManager] cancelWebTask:self.getPhotosWebTask];
 
     NSLog(@"Swiped %@", swipeGestureRecognizer.direction == UISwipeGestureRecognizerDirectionUp ? @"up" : @"down");
     NSIndexPath * indexPath = [self.fetchedResultsControllerFeelings indexPathForObject:self.feelingFocus];
@@ -1305,58 +1304,106 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
-    self.refreshAllInProgress = YES;
-    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
-    PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
-    feelingServer.objectId = feeling.serverID;
-    [self.getPhotosQuery whereKey:@"feeling" equalTo:feelingServer];
-    //    [self.getPhotosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
-    //    [self.getPhotosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
-    self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
-    [self.getPhotosQuery orderByDescending:@"createdAt"];
-    [self.getPhotosQuery includeKey:@"feeling"];
-    [self.getPhotosQuery includeKey:@"user"];
-    [self.getPhotosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
+    
+    if (!self.refreshAllInProgress) {
+        
+//        self.view.userInteractionEnabled = NO;
+    
+        self.refreshAllInProgress = YES;
+        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
+        
+        NSLog(@"lastReloadDate was %@", feeling.webLoadDate);
+        self.getPhotosDate = [NSDate date];
+        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:@"Feeling" matchingGroupServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000] delegate:self];
+        
+    }
+    
+    
+//    NSLog(@"%@", NSStringFromSelector(_cmd));
+//    self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
+//    PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
+//    feelingServer.objectId = feeling.serverID;
+//    [self.getPhotosQuery whereKey:@"feeling" equalTo:feelingServer];
+//    //    [self.getPhotosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
+//    //    [self.getPhotosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
+//    self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
+//    [self.getPhotosQuery orderByDescending:@"createdAt"];
+//    [self.getPhotosQuery includeKey:@"feeling"];
+//    [self.getPhotosQuery includeKey:@"user"];
+//    [self.getPhotosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
 }
 
 - (void)getPhotosFromServerForUser:(User *)user {
-    self.refreshAllInProgress = YES;
-    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
-    PFUser * userServer = [PFUser user];
-    userServer.objectId = user.serverID;
-    [userServer setObject:user.name forKey:@"username"];
-    [self.getPhotosQuery whereKey:@"user" equalTo:userServer];
-    //    [self.getPhotosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
-    //    [self.getPhotosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
-    self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be revisited.
-    [self.getPhotosQuery orderByDescending:@"createdAt"];
-    [self.getPhotosQuery includeKey:@"feeling"];
-    [self.getPhotosQuery includeKey:@"user"];
-    [self.getPhotosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
+    
+    if (!self.refreshAllInProgress) {
+        
+//        self.view.userInteractionEnabled = NO;
+    
+        self.refreshAllInProgress = YES;
+        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
+        
+        NSLog(@"lastReloadDate was %@", user.webLoadDate);
+        self.getPhotosDate = [NSDate date];
+        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:@"User" matchingGroupServerID:user.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:user.webLoadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000] delegate:self];
+        
+    }
+    
+//    self.refreshAllInProgress = YES;
+//    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+//    NSLog(@"%@", NSStringFromSelector(_cmd));
+//    self.getPhotosQuery = [PFQuery queryWithClassName:@"Photo"];
+//    PFUser * userServer = [PFUser user];
+//    userServer.objectId = user.serverID;
+//    [userServer setObject:user.name forKey:@"username"];
+//    [self.getPhotosQuery whereKey:@"user" equalTo:userServer];
+//    //    [self.getPhotosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
+//    //    [self.getPhotosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
+//    self.getPhotosQuery.limit = [NSNumber numberWithInt:100]; // This should be revisited.
+//    [self.getPhotosQuery orderByDescending:@"createdAt"];
+//    [self.getPhotosQuery includeKey:@"feeling"];
+//    [self.getPhotosQuery includeKey:@"user"];
+//    [self.getPhotosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerCallback:error:)];
+}
+
+- (void)webTask:(WebTask *)webTask finishedWithSuccess:(BOOL)success {
+    NSLog(@"webTask:%@ finishedWithSuccess:%d", webTask, success);
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+//    if (webTask == self.getPhotosWebTask) {
+        self.getPhotosWebTask = nil;
+        if (success) {
+            if (self.focus == FeelingFocus) {
+                self.feelingFocus.webLoadDate = self.getPhotosDate;
+            } else {
+                self.userFocus.webLoadDate = self.getPhotosDate;
+            }
+        }
+        self.getPhotosDate = nil;
+        self.refreshAllInProgress = NO;
+//    }
+    self.view.userInteractionEnabled = YES;
 }
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES
-- (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    if (!error) {
-        NSLog(@"Success - %d results", results.count);
-        for (PFObject * photoServer in results) {
-            PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
-            PFObject * userServer = [photoServer objectForKey:@"user"];
-            [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
-        }
-        [self.coreDataManager saveCoreData];
-    } else {
-        NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
-        UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [errorAlert show];
-    }
-    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-}
+//- (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error {
+//    NSLog(@"%@", NSStringFromSelector(_cmd));
+//    if (!error) {
+//        NSLog(@"Success - %d results", results.count);
+//        for (PFObject * photoServer in results) {
+//            PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
+//            PFObject * userServer = [photoServer objectForKey:@"user"];
+//            [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
+//        }
+//        [self.coreDataManager saveCoreData];
+//    } else {
+//        NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
+//        UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+//        [errorAlert show];
+//    }
+//    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+//}
 
 //- (void)getUpdateFromServerForPhoto:(Photo *)photo {
 //    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];

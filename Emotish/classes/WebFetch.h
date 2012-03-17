@@ -15,16 +15,6 @@
 
 @property (nonatomic, retain) NSDate * endDatetime;
 @property (nonatomic, retain) NSDate * startDatetime;
-@property (nonatomic, retain) Feeling *feeling;
-@property (nonatomic, retain) User *user;
-@property (nonatomic, retain) NSSet *photos;
-@end
-
-@interface WebFetch (CoreDataGeneratedAccessors)
-
-- (void)addPhotosObject:(Photo *)value;
-- (void)removePhotosObject:(Photo *)value;
-- (void)addPhotos:(NSSet *)values;
-- (void)removePhotos:(NSSet *)values;
-
+@property (nonatomic, retain) Feeling * feeling;
+@property (nonatomic, retain) User * user;
 @end

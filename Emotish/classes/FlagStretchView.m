@@ -162,6 +162,7 @@ typedef enum {
 @property (strong, nonatomic) FSV_SideLayer * stripeLeftLayer;
 @property (strong, nonatomic) FSV_SideLayer * stripeRightLayer;
 - (void) updateStripesAlpha;
+@property (strong, nonatomic) UIImageView * overlayImageView;
 @end
 
 @implementation FlagStretchView
@@ -172,7 +173,7 @@ typedef enum {
 
 @synthesize angledShapes=_angledShapes, pullOutSides=_pullOutSides, pullOutMiddle=_pullOutMiddle;
 @synthesize pulledOutDistance=_pulledOutDistance, pullOutDistanceAllowedForAll=_pullOutDistanceAllowedForAll;
-@synthesize stripeMiddleLayer=_stripeMiddleLayer, stripeLeftLayer=_stripeLeftLayer, stripeRightLayer=_stripeRightLayer;
+@synthesize stripeMiddleLayer=_stripeMiddleLayer, stripeLeftLayer=_stripeLeftLayer, stripeRightLayer=_stripeRightLayer, overlayImageView=_overlayImageView;
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -236,6 +237,17 @@ typedef enum {
     self.icon.contents = (__bridge id)iconImage.CGImage;
     self.icon.contentsScale = [UIScreen mainScreen].scale;
     [self.layer addSublayer:self.icon];
+    
+    self.overlayImageView = [[UIImageView alloc] initWithFrame:self.bounds];
+    self.overlayImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.overlayImageView.contentMode = UIViewContentModeBottom;
+    self.overlayImageView.animationImages = [NSArray arrayWithObjects:
+                                             [UIImage imageNamed:@"activity_indicator_small_01.png"],
+                                             [UIImage imageNamed:@"activity_indicator_small_02.png"],
+                                             [UIImage imageNamed:@"activity_indicator_small_03.png"], nil];
+    self.overlayImageView.animationDuration = 0.5;
+    self.overlayImageView.alpha = 0.0;
+    [self addSubview:self.overlayImageView];
    
     self.angledShapes = YES;
     self.activated = NO;
@@ -257,6 +269,28 @@ typedef enum {
 - (void)setIconDistanceFromBottom:(CGFloat)iconDistanceFromBottom {
     _iconDistanceFromBottom=iconDistanceFromBottom;
     [self setNeedsLayout];
+}
+
+- (void)setOverlayImageViewVisible:(BOOL)visible animated:(BOOL)animated {
+    if (visible) {
+        [self.overlayImageView startAnimating];
+    }
+    if (animated) {
+        [UIView animateWithDuration:0.25 animations:^{
+            self.overlayImageView.alpha = visible ? 1.0 : 0.0;
+        } completion:^(BOOL finished) {
+            if (!visible) {
+                [self.overlayImageView stopAnimating];
+            }
+        }];
+    } else {
+        self.overlayImageView.alpha = visible ? 1.0 : 0.0;
+        if (visible) {
+            [self.overlayImageView startAnimating];
+        } else {
+            [self.overlayImageView stopAnimating];
+        }
+    }
 }
 
 - (void)startAnimatingStripes {

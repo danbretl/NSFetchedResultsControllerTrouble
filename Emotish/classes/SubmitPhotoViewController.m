@@ -669,7 +669,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
         NSLog(@"  photo retrieved = %@", photoServer);
         
         self.submittedPhoto = [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:currentUser];
-        self.submittedPhoto.shouldHighlight = [NSNumber numberWithBool:NO];
+//        self.submittedPhoto.shouldHighlight = [NSNumber numberWithBool:NO];
         [self.coreDataManager saveCoreData];
         
         // Facebook?

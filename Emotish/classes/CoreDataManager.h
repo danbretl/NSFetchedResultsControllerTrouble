@@ -11,6 +11,7 @@
 #import "Feeling.h"
 #import "User.h"
 #import "Like.h"
+//#import "WebFetch.h"
 #import <Parse/Parse.h>
 
 @interface CoreDataManager : NSObject
@@ -29,6 +30,8 @@
 - (void) deleteAllLikesNotAssociatedWithUserServer:(PFUser *)userServer;
 - (void) clearAllFlags;
 - (void) updateAllFeelingDatetimes;
+- (void) clearAllShowInPhotosStripForFeeling:(Feeling *)feeling;
+- (void) clearAllShowInPhotosStripForUser:(User *)user;
 
 //- (NSArray *) getFeelings;
 //- (Feeling *) getFeelingAlphabeticallyBeforeFeeling:(Feeling *)feeling;

@@ -41,6 +41,7 @@ typedef enum {
 @property (nonatomic) CGFloat pullOutDistanceAllowedForAll;
 
 - (void) setActivated:(BOOL)flipped animated:(BOOL)animated;
+- (void) setOverlayImageViewVisible:(BOOL)visible animated:(BOOL)animated;
 
 //- (void) resetStripePositions;
 - (void) startAnimatingStripes;

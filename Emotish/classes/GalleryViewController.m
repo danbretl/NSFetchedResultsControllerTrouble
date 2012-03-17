@@ -26,9 +26,10 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 - (IBAction)cameraButtonTouched:(id)sender;
 - (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 - (void)tableView:(UITableView *)tableView updateTimestampLabelForCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
-- (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
+//- (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
+- (void) getPhotos;
 - (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
-- (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
+//- (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
 - (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
 //- (void) updateConfigureVisibleCells;
 - (void) showPhotosStripViewControllerFocusedOnUser:(User *)user photo:(Photo *)photo updatePhotoData:(BOOL)updatePhotoData animated:(BOOL)animated; // The parameter updatePhotoData is currently ignored. Need to come up with a better solution later.
@@ -40,6 +41,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 //- (void) showActivityIndicator;
 //- (void) hideActivityIndicator;
 //@property int activityCount;
+@property (nonatomic, strong) WebTask * getPhotosWebTask;
+@property (nonatomic, strong) NSDate * getPhotosDate;
+@property (nonatomic, strong) Feeling * getPhotosFeeling;
 @end
 
 @implementation GalleryViewController
@@ -58,6 +62,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 @synthesize cameraButtonView = _cameraButtonView;
 //@synthesize activityIndicatorView = _activityIndicatorView, activityCount=_activityCount;
 @synthesize galleryMode=_galleryMode;
+@synthesize getPhotosWebTask=_getPhotosWebTask, getPhotosDate=_getPhotosDate, getPhotosFeeling=_getPhotosFeeling;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -153,7 +158,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     
     BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203150012"];
     if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0 || !oneTimeForceReloadComplete) {
-        [self getFeelingsFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
+        [self getPhotos]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203150012"];
     }
     
@@ -176,6 +181,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     [super viewWillDisappear:animated];
     self.feelingsTableViewContentOffsetPreserved = self.feelingsTableView.contentOffset;
     self.activeFeelingCellContentOffsetPreserved = self.activeFeelingCell != nil ? self.activeFeelingCell.imagesTableView.contentOffset : CGPointZero;
+    if (self.getPhotosWebTask) {
+        [[WebManager sharedManager] cancelWebTask:self.getPhotosWebTask];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -504,7 +512,10 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         }
     } else {
         if (self.flagStretchView.activated) {
-            [self getFeelingsFromServer];
+//            UIEdgeInsets contentInset = self.feelingsTableView.contentInset;
+//            contentInset.top = VC_TOP_BAR_HEIGHT + 8.0;
+//            self.feelingsTableView.contentInset = contentInset;
+            [self getPhotos];
         }
     }
 }
@@ -537,7 +548,12 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
             }
         }
     } else {
-        [self.flagStretchView setActivated:scrollView.isTracking && -scrollView.contentOffset.y >= scrollView.contentInset.top + self.flagStretchView.activationDistanceEnd animated:YES];
+//        if (self.getPhotosWebTask) {
+//
+//        } else {
+            BOOL pastActivationPoint = -scrollView.contentOffset.y >= VC_TOP_BAR_HEIGHT + self.flagStretchView.activationDistanceEnd;
+            [self.flagStretchView setActivated:scrollView.isTracking && pastActivationPoint animated:YES];
+//        }
     }
 }
 
@@ -758,78 +774,51 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 //    }];
 //}
 
-- (void)getFeelingsFromServer {
+- (void)webTask:(WebTask *)webTask finishedWithSuccess:(BOOL)success {
+    NSLog(@"webTask:%@ finishedWithSuccess:%d", webTask, success);
     [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-//    [self showActivityIndicator];
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    PFQuery * feelingsQuery = [PFQuery queryWithClassName:@"Feeling"];
-    if (self.galleryMode == GalleryAlphabetical) {
-        [feelingsQuery orderByAscending:@"word"];
-    } else {
-//        [feelingsQuery orderByDescending:@"...time updated..."]; // This type of information is not currently being stored on the server.
-        [feelingsQuery orderByAscending:@"word"]; // Temporary
-    }
-    feelingsQuery.limit = [NSNumber numberWithInt:500];
-    [feelingsQuery findObjectsInBackgroundWithTarget:self selector:@selector(getFeelingsFromServerCallback:error:)];
-}
-
-- (void)getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    if (!error) {
-        NSLog(@"Success - %d results", results.count);
-//        self.activityCount = 0;
-        for (PFObject * feelingServer in results) {
-            Feeling * feeling = [self.coreDataManager addOrUpdateFeelingFromServer:feelingServer];
-            [self getPhotosFromServerForFeeling:feeling];
+    [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
+    if (webTask == self.getPhotosWebTask) {
+//        [CATransaction begin];
+//        [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+//        self.flagStretchView.icon.opacity = 1.0;
+//        [CATransaction commit];
+        self.getPhotosWebTask = nil;
+        if (success) {
+            if (self.getPhotosFeeling) {
+                self.getPhotosFeeling.webLoadDate = self.getPhotosDate;
+            } else {
+                [[NSUserDefaults standardUserDefaults] setObject:self.getPhotosDate forKey:WEB_RELOAD_ALL_DATE_KEY];
+            }
         }
-        [self.coreDataManager saveCoreData];
-    } else {
-        NSLog(@"Network Connection Error: %@ %@", error, error.userInfo);
-        UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [errorAlert show];
-//        [self hideActivityIndicator];
+        self.getPhotosDate = nil;
+        self.getPhotosFeeling = nil;
     }
-    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
 }
 
-// THIS METHOD IS DUPLICATED IN VARIOUS PLACES
+- (void)getPhotos {
+    if (self.getPhotosWebTask == nil) {
+        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+        [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
+
+        NSDate * lastReloadDate = [[NSUserDefaults standardUserDefaults] objectForKey:    WEB_RELOAD_ALL_DATE_KEY];
+        NSLog(@"lastReloadDate was %@", lastReloadDate);
+        self.getPhotosDate = [NSDate date];
+        self.getPhotosFeeling = nil;
+        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:nil matchingGroupServerID:nil visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000] delegate:self];
+    }
+}
+
 - (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
-    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-//    self.activityCount++;
-    NSLog(@"%@", NSStringFromSelector(_cmd));
-    PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
-    PFObject * feelingServer = [PFObject objectWithClassName:@"Feeling"];
-    feelingServer.objectId = feeling.serverID;
-    [photosQuery whereKey:@"feeling" equalTo:feelingServer];
-//    [photosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
-//    [photosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
-    photosQuery.limit = [NSNumber numberWithInt:100]; // This should be much smaller eventually. But currently this is the only place where we are loading Photos, so, gotta keep it big! Just testing.
-    [photosQuery orderByDescending:@"createdAt"];
-    [photosQuery includeKey:@"feeling"];
-    [photosQuery includeKey:@"user"];
-    [photosQuery findObjectsInBackgroundWithTarget:self selector:@selector(getPhotosFromServerForFeelingCallback:error:)];
-}
-
-// THIS METHOD IS DUPLICATED IN VARIOUS PLACES
-- (void)getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error {
-    if (!error) {
-        NSLog(@"getPhotosFromServerForFeelingCallback - Success - %d results", results.count);
-        for (PFObject * photoServer in results) {
-            PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
-            PFObject * userServer = [photoServer objectForKey:@"user"];
-            [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
-        }
-        [self.coreDataManager saveCoreData];
-    } else {
-        NSLog(@"getPhotosFromServerForFeelingCallback - Network Connection Error: %@ %@", error, error.userInfo);
-        UIAlertView * errorAlert = [[UIAlertView alloc] initWithTitle:@"Network Error" message:@"There was an error contacting the server. This is not yet being handled." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [errorAlert show];
+    if (self.getPhotosWebTask == nil) {
+        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+        [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
+        
+        NSLog(@"lastReloadDate was %@", feeling.webLoadDate);
+        self.getPhotosDate = [NSDate date];
+        self.getPhotosFeeling = feeling;
+        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:@"Feeling" matchingGroupServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000] delegate:self];
     }
-//    self.activityCount--;
-//    if (self.activityCount <= 0) {
-//        [self hideActivityIndicator];
-//    }
-    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
 }
 
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID {
