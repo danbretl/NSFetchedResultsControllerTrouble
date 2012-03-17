@@ -415,12 +415,15 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     self.swipingInVertically = NO;
     
     NSDate * lastReloadDate = self.focus == FeelingFocus ? self.feelingFocus.webLoadDate : self.userFocus.webLoadDate;
-    if (abs([lastReloadDate timeIntervalSinceNow]) > 60) {
+    if (lastReloadDate == nil || abs([lastReloadDate timeIntervalSinceNow]) > 60) {
+        NSLog(@"Should auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
         if (self.focus == FeelingFocus) {
             [self getPhotosFromServerForFeeling:self.feelingFocus];
         } else {
             [self getPhotosFromServerForUser:self.userFocus];
         }        
+    } else {
+        NSLog(@"Should not auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
     }
     
 }
