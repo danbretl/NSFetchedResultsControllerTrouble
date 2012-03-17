@@ -42,6 +42,7 @@ typedef enum {
 
 - (void) setActivated:(BOOL)flipped animated:(BOOL)animated;
 - (void) setOverlayImageViewVisible:(BOOL)visible animated:(BOOL)animated;
+@property (nonatomic) CGFloat overlayImageViewVisibleHangOutDistance;
 
 //- (void) resetStripePositions;
 - (void) startAnimatingStripes;

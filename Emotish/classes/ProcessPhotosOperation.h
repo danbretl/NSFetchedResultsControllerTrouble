@@ -18,5 +18,5 @@
 @end
 
 @protocol ProcessPhotosOperationDelegate <NSObject>
-- (void)operationFinishedWithSuccess:(BOOL)success;
+- (void)operationFinishedWithSuccess:(NSNumber *)success;
 @end

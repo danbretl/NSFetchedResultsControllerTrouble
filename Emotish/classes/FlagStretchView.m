@@ -154,6 +154,8 @@ typedef enum {
 }
 @end
 
+const CGFloat FSV_OVERLAY_IMAGEVIEW_VISIBLE_HANG_OUT_DISTANCE_DEFAULT = 0.0;
+
 @interface FlagStretchView()
 - (void) initWithFrameOrCoder;
 @property (nonatomic, readonly) CGFloat stripeWidth;
@@ -173,7 +175,8 @@ typedef enum {
 
 @synthesize angledShapes=_angledShapes, pullOutSides=_pullOutSides, pullOutMiddle=_pullOutMiddle;
 @synthesize pulledOutDistance=_pulledOutDistance, pullOutDistanceAllowedForAll=_pullOutDistanceAllowedForAll;
-@synthesize stripeMiddleLayer=_stripeMiddleLayer, stripeLeftLayer=_stripeLeftLayer, stripeRightLayer=_stripeRightLayer, overlayImageView=_overlayImageView;
+@synthesize stripeMiddleLayer=_stripeMiddleLayer, stripeLeftLayer=_stripeLeftLayer, stripeRightLayer=_stripeRightLayer;
+@synthesize overlayImageView=_overlayImageView, overlayImageViewVisibleHangOutDistance=_overlayImageViewVisibleHangOutDistance;
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -248,6 +251,7 @@ typedef enum {
     self.overlayImageView.animationDuration = 0.5;
     self.overlayImageView.alpha = 0.0;
     [self addSubview:self.overlayImageView];
+    self.overlayImageViewVisibleHangOutDistance = FSV_OVERLAY_IMAGEVIEW_VISIBLE_HANG_OUT_DISTANCE_DEFAULT;
    
     self.angledShapes = YES;
     self.activated = NO;
@@ -276,8 +280,9 @@ typedef enum {
         [self.overlayImageView startAnimating];
     }
     if (animated) {
-        [UIView animateWithDuration:0.25 animations:^{
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             self.overlayImageView.alpha = visible ? 1.0 : 0.0;
+            self.overlayImageView.frame = visible ? CGRectOffset(self.bounds, 0, self.overlayImageViewVisibleHangOutDistance) : self.bounds;
         } completion:^(BOOL finished) {
             if (!visible) {
                 [self.overlayImageView stopAnimating];

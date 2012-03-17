@@ -121,6 +121,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     self.flagStretchView.activationAffectsIcon = YES;
     self.flagStretchView.activationAffectsAlpha = NO;
     [tableHeaderView addSubview:self.flagStretchView];
+    self.flagStretchView.overlayImageViewVisibleHangOutDistance = 4.0;
     
     self.flagStretchViewTransitions = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, VC_TOP_BAR_HEIGHT + GC_TABLE_HEADER_VIEW_FLAG_VISIBLE_HEIGHT)];
     self.flagStretchViewTransitions.userInteractionEnabled = NO;
@@ -612,6 +613,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     [UIView animateWithDuration:0.25 animations:^{
         self.feelingsTableView.alpha = 0.0;
     } completion:^(BOOL finished) {
+        self.activeFeelingCell = nil;
+        self.activeFeelingCellIndexRow = -1;
+        self.activeFeelingCellContentOffsetPreserved = CGPointZero;
         [NSFetchedResultsController deleteCacheWithName:@"Gallery"];
         self.fetchedResultsController.fetchRequest.sortDescriptors = [NSArray arrayWithObject:[self sortDescriptorForGalleryMode:galleryMode]];
         NSError * error;

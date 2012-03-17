@@ -163,6 +163,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     //    } else if (self.focus == UserFocus) {
     //        [self.topBar showButtonType:SettingsButton inPosition:LeftSpecial animated:NO];
     //    }
+    self.topBar.backgroundFlagView.overlayImageViewVisibleHangOutDistance = 4.0;
     
     self.headerButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     

@@ -30,9 +30,9 @@
     NSLog(@"[self.delegate webTask:%@ finishedWithSuccess:NO];", self);
     [self.delegate webTask:self finishedWithSuccess:NO];
 }
-- (void)operationFinishedWithSuccess:(BOOL)success {
-    NSLog(@"[self.delegate webTask:%@ finishedWithSuccess:%d];", self, success);
-    [self.delegate webTask:self finishedWithSuccess:success];
+- (void)operationFinishedWithSuccess:(NSNumber *)success {
+    NSLog(@"[self.delegate webTask:%@ finishedWithSuccess:%d];", self, success.boolValue);
+    [self.delegate webTask:self finishedWithSuccess:success.boolValue];
 }
 @end
 

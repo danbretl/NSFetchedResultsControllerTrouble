@@ -112,6 +112,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
     
 //    self.feelingTextField.frame = CGRectMake(self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, CGRectGetMaxY(self.topBar.frame), PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, CGRectGetMinY(self.photoView.frame) - CGRectGetMaxY(self.topBar.frame));
 //    self.feelingTextField.textFieldInsets = UIEdgeInsetsMake(0, 0, PC_PHOTO_CELL_MARGIN_TOP, 0);
+    self.topBar.backgroundFlagView.overlayImageViewVisibleHangOutDistance = 4.0;
 
     // The following is still not matching up perfectly with PhotosStripViewController headerButton when font size is being adjusted for a long string.
     self.feelingTextField.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photoView.frame));
@@ -590,7 +591,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
     NSLog(@"doneButtonTouched");
         
     [self.feelingTextField resignFirstResponder];
-    
+        
     PFUser * currentUser = [PFUser currentUser];
     
     if ([self.feelingWord isEqualToString:SUBMIT_PHOTO_FEELING_PLACEHOLDER_TEXT]) {
@@ -600,6 +601,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
     } else {
         
         [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
         
         NSLog(@"setting up filename");
         NSString * nowString = [NSString stringWithFormat:@"%d", abs([[NSDate date] timeIntervalSince1970])];
@@ -717,6 +719,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
           self.submittedImage == nil ||
           self.submittedPhoto == nil)) {
         [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         [self.delegate submitPhotoViewController:self didSubmitPhoto:self.submittedPhoto withImage:self.submittedImage];
     }
 }
