@@ -13,10 +13,6 @@
 @interface ProcessPhotosOperation : NSOperation
 
 @property (strong, nonatomic) NSArray * photos;
-//@property (strong, nonatomic) NSDate * dateRangeOld;
-//@property (strong, nonatomic) NSDate * dateRangeRecent;
-//@property (strong, nonatomic) NSString * groupLocalClassName;
-//@property (strong, nonatomic) NSString * groupLocalServerID;
 @property (unsafe_unretained, nonatomic) id<ProcessPhotosOperationDelegate> delegate;
 
 @end
