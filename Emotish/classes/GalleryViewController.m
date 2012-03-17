@@ -23,7 +23,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 @property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
 - (void) emotishLogoTouched:(UIButton *)button;
 - (void) profileButtonTouched:(UIButton *)button;
-- (IBAction)cameraButtonTouched:(id)sender;
+- (void)cameraButtonTouched:(id)sender;
 - (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 - (void)tableView:(UITableView *)tableView updateTimestampLabelForCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 //- (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
@@ -729,7 +729,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     }
 }
 
-- (IBAction)cameraButtonTouched:(id)sender {
+- (void)cameraButtonTouched:(id)sender {
     SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
     submitPhotoViewController.shouldPushImagePicker = YES;
     submitPhotoViewController.delegate = self;
