@@ -65,6 +65,7 @@ NSString * const EDIT_ACCOUNT_PASSWORD_PLACEHOLDER = @"••••••••"
     [self.topBar showButtonType:DoneButton inPosition:RightNormal animated:NO];
     [self.topBar.buttonLeftNormal addTarget:self action:@selector(cancelButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     [self.topBar.buttonRightNormal addTarget:self action:@selector(doneButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+    self.topBar.backgroundFlagView.overlayImageViewVisibleHangOutDistance = 4.0;
     
     self.headerLabel.textColor = [UIColor userColor];
     
@@ -160,6 +161,8 @@ NSString * const EDIT_ACCOUNT_PASSWORD_PLACEHOLDER = @"••••••••"
         
         if ([self isCurrentDataModifiedFromOriginal]) {
             
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
+            
             NSMutableDictionary * originalUserValues = [NSMutableDictionary dictionary];
             
             // Update the userServer object
@@ -192,6 +195,7 @@ NSString * const EDIT_ACCOUNT_PASSWORD_PLACEHOLDER = @"••••••••"
                 if (!error && succeeded) {
                     [self.coreDataManager addOrUpdateUserFromServer:[PFUser currentUser]];
                     [self.coreDataManager saveCoreData];
+                    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
                     [[EmotishAlertViews userEditedAlertView] show];
                     [self.navigationController popViewControllerAnimated:YES];
                 } else {
@@ -210,6 +214,7 @@ NSString * const EDIT_ACCOUNT_PASSWORD_PLACEHOLDER = @"••••••••"
                     for (NSString * userServerKey in originalUserValues) {
                         [[PFUser currentUser] setValuesForKeysWithDictionary:originalUserValues];
                     }
+                    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
                 }
             }];
             

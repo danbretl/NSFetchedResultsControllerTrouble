@@ -516,6 +516,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 //            UIEdgeInsets contentInset = self.feelingsTableView.contentInset;
 //            contentInset.top = VC_TOP_BAR_HEIGHT + 8.0;
 //            self.feelingsTableView.contentInset = contentInset;
+            if (self.activeFeelingCell) {
+                [self.activeFeelingCell scrollToOriginAnimated:YES];
+            }
             [self getPhotos];
         }
     }

@@ -93,6 +93,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @property (nonatomic) BOOL scrollJumpInProgress;
 - (void) updateHeaderForCurrentFocus;
 - (void) updateAddPhotoLabelForCurrentFocus;
+- (void) cancelAllImageDownloads;
 @end
 
 @implementation PhotosStripViewController
@@ -285,6 +286,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.floatingImageView.alpha = 1.0;
         [self.cameraButtonView setButtonPromptVisible:NO];
         self.view.userInteractionEnabled = NO;
+        self.swipeUpGestureRecognizer.enabled = NO;
+        self.swipeDownGestureRecognizer.enabled = NO;
         self.photoViewLeftCenter.alpha = 0.0;
         self.photoViewRightCenter.alpha = 0.0;
         
@@ -399,6 +402,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         } completion:^(BOOL finished){
             self.floatingImageView.alpha = 0.0;
             self.view.userInteractionEnabled = YES;
+            self.swipeUpGestureRecognizer.enabled = YES;
+            self.swipeDownGestureRecognizer.enabled = YES;
         }];
         
         self.shouldAnimateIn = NO;
@@ -409,10 +414,13 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
     self.swipingInVertically = NO;
     
-    if (self.focus == FeelingFocus) {
-        [self getPhotosFromServerForFeeling:self.feelingFocus];
-    } else {
-        [self getPhotosFromServerForUser:self.userFocus];
+    NSDate * lastReloadDate = self.focus == FeelingFocus ? self.feelingFocus.webLoadDate : self.userFocus.webLoadDate;
+    if (abs([lastReloadDate timeIntervalSinceNow]) > 60) {
+        if (self.focus == FeelingFocus) {
+            [self getPhotosFromServerForFeeling:self.feelingFocus];
+        } else {
+            [self getPhotosFromServerForUser:self.userFocus];
+        }        
     }
     
 }
@@ -426,10 +434,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             [[WebManager sharedManager] cancelWebTask:self.getPhotosWebTask];
 //        }
 //        [self.getPhotosQuery cancel];
-        for (NSString * photoServerID in self.webImageDownloaders) {
-            [((SDWebImageDownloader *)[self.webImageDownloaders objectForKey:photoServerID]) cancel];
-        }
-        [self.webImageDownloaders removeAllObjects];
+        [self cancelAllImageDownloads];
     }
 }
 
@@ -582,6 +587,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                     }
                 } else {
                     // Image not located in one of three middle photo view slots, not downloading for now
+                    // In fact, we should probably cancel any download that was in progress for the photo in one of these uncentered slots
+                    if (photo.serverID) {
+                        [((SDWebImageDownloader *)[self.webImageDownloaders objectForKey:photo.serverID]) cancel];
+                        [self.webImageDownloaders removeObjectForKey:photo.serverID];
+                    }
                 }
             } else {
                 // Scrolling too quickly, no point in downloading image right now.
@@ -1199,6 +1209,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         (!(indexPath.row + indexAdjustment < 0 || 
            indexPath.row + indexAdjustment >= self.fetchedResultsControllerFeelings.fetchedObjects.count))) {
         
+        self.swipeUpGestureRecognizer.enabled = NO;
+        self.swipeDownGestureRecognizer.enabled = NO;
+        
         Feeling * nextFeeling = [self.fetchedResultsControllerFeelings objectAtIndexPath:[NSIndexPath indexPathForRow:indexPath.row + indexAdjustment inSection:indexPath.section]]; // Keep in mind that the "next" feeling might actually be the "previous" feeling alphabetically - it is "next" in the sense that it is now the "next" Feeling that will be displayed on screen.
         
         PhotosStripViewController * feelingViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
@@ -1283,13 +1296,24 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
             contentOffsetAdjusted = CGPointMake(MAX(0, self.photosScrollView.contentSize.width - self.photosScrollView.frame.size.width), 0);
         }
         if (!CGPointEqualToPoint(self.photosScrollView.contentOffset, contentOffsetAdjusted)) {
-            [self.photoViewCenter showInfo:NO animated:NO];            
+            [self cancelAllImageDownloads];
+            // Hide photo view center info
+            [self.photoViewCenter showInfo:NO animated:NO];
+            // Scroll
             self.scrollJumpInProgress = YES;
             [self.photosScrollView setContentOffset:contentOffsetAdjusted animated:YES];
         }
         
     }
     
+}
+
+- (void) cancelAllImageDownloads {
+    // Cancel all image downloads currently in progress
+    for (NSString * photoServerID in self.webImageDownloaders) {
+        [((SDWebImageDownloader *)[self.webImageDownloaders objectForKey:photoServerID]) cancel];
+    }
+    [self.webImageDownloaders removeAllObjects];
 }
 
 - (void)cameraButtonTouched:(id)sender {

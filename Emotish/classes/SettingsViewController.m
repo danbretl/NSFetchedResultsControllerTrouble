@@ -145,6 +145,7 @@
     self.topBar.backgroundColor = [UIColor clearColor];
     [self.topBar showButtonType:BackButton inPosition:LeftNormal animated:NO];
     [self.topBar.buttonLeftNormal addTarget:self action:@selector(backButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+    self.topBar.backgroundFlagView.overlayImageViewVisibleHangOutDistance = 4.0;
     [self.tableView reloadData];
 }
 
@@ -157,6 +158,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self updateDataForUserActivity];
+    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:NO];
     
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationNone];
 //    NSLog(@"self.tableViewContentOffsetPreserved = %@", NSStringFromCGPoint(self.tableViewContentOffsetPreserved));
@@ -211,6 +213,8 @@
         // Push a VC to sign in to / create an Emotish account
         [self showAccountViewController];
     } else {
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
+
         // Get updated info for currently logged in user
         PFQuery * userQuery = [PFQuery queryForUser];
         
@@ -230,6 +234,7 @@
                 [[EmotishAlertViews generalConnectionErrorAlertView] show];
                 [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
             }
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         }];
     }
 }

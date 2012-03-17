@@ -159,6 +159,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     [self.topBar showButtonType:DoneButton inPosition:RightNormal animated:NO];
     [self.topBar.buttonLeftNormal addTarget:self action:@selector(cancelButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     [self.topBar.buttonRightNormal addTarget:self action:@selector(doneButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
+    self.topBar.backgroundFlagView.overlayImageViewVisibleHangOutDistance = 4.0;
     
     self.blurbLabel.textColor = [UIColor accountInputColor];
     self.accountConnectionPromptLabel.textColor = [UIColor accountInputColor];
@@ -330,6 +331,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     self.twitterButton.alpha  = button == self.twitterButton  ? 1.0 : 0.5;
     self.blurbLabel.alpha = 0.5;
     self.orLine.alpha = 0.5;
+    [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
 }
 
 - (void) enableMainViewsContainerInteractionAndRestoreUI {
@@ -339,6 +341,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     self.twitterButton.alpha = AVC_TWITTER_ENABLED ? 1.0 : 0.5;
     self.blurbLabel.alpha = 1.0;
     self.orLine.alpha = 1.0;
+    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
 }
 
 // Moved this to a block temporarily
@@ -615,6 +618,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             [emailInvalidSpecialAlertView show];
             [self.usernameTextField becomeFirstResponder];
         } else {
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
             self.passwordInputString = self.passwordTextField.text;
             NSString * queryKey = nil;
             if (idInputIsEmail) {
@@ -635,10 +639,12 @@ BOOL const AVC_TWITTER_ENABLED = YES;
                         [PFUser logInWithUsernameInBackground:userObject.username password:self.passwordInputString target:self selector:@selector(logInWithUsernameCallback:error:)];
                     } else {
                         [self showAccountCreationInputViews:YES showPasswordConfirmation:YES activateAppropriateFirstResponder:YES animated:YES];
+                        [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
                     }
                 } else {
                     NSLog(@"Error: %@ %@", error, [error userInfo]);
                     [[EmotishAlertViews generalConnectionErrorAlertView] show];
+                    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
                 }
             }];
             
@@ -679,9 +685,11 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             self.waitingForLikes = NO;
             [self attemptToProceedWithSuccessfulLogin];
             [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         } else {
             [self.flagsQuery cancel];
             [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
             [self logOutCurrentUser];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             [self enableMainViewsContainerInteractionAndRestoreUI];
@@ -715,9 +723,11 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             self.waitingForFlags = NO;
             [self attemptToProceedWithSuccessfulLogin];
             [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         } else {
             [self.likesQuery cancel];
             [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];            
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
             [self logOutCurrentUser];
             [[EmotishAlertViews generalConnectionErrorAlertView] show];
             [self enableMainViewsContainerInteractionAndRestoreUI];
@@ -759,6 +769,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
             [self.passwordIncorrectAlertView show];
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         }
     } else {
         NSLog(@"%@", *error);
@@ -767,7 +778,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 //            [self.passwordIncorrectAlertView show];
 //        } else {
         [[EmotishAlertViews generalConnectionErrorAlertView] show];
-//        }        
+//        }
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
     }
 }
 
@@ -779,6 +791,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         } else if (self.workingOnAccountFromTwitter) {
             method = TwitterAccountConnect;
         }
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         [self.delegate accountViewController:self didFinishWithConnection:YES viaConnectMethod:method];
     } else {
         NSLog(@"waiting to proceed with successful login, self.waitingForLikes=%d, self.waitingToSubscribeToNotificationsChannel=%d", self.waitingForLikes, self.waitingToSubscribeToNotificationsChannel);
@@ -852,6 +865,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         
         [self resignFirstResponderForAllTextFields];
         
+        [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
+        
         PFUser * userToWorkWith = self.workingOnAccountFromSocialNetwork ? [PFUser currentUser] : [PFUser user];
         userToWorkWith.username = self.usernameInputString;
         userToWorkWith.email = self.emailInputString;
@@ -875,6 +890,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             } else {
                 [[EmotishAlertViews generalConnectionErrorAlertView] show];
             }
+            [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         };
         
         if (self.workingOnAccountFromSocialNetwork) {

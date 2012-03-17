@@ -21,18 +21,24 @@
     if (self.query) {
         NSLog(@"Cancelling query");
         [self.query cancel];
+        self.query = nil;
     }
     if (self.operationQueue) {
         NSLog(@"Cancelling all operations");
         [self.operationQueue cancelAllOperations];
         [self.operationQueue waitUntilAllOperationsAreFinished];
+        self.operationQueue = nil;
     }
     NSLog(@"[self.delegate webTask:%@ finishedWithSuccess:NO];", self);
     [self.delegate webTask:self finishedWithSuccess:NO];
+    self.delegate = nil;
 }
 - (void)operationFinishedWithSuccess:(NSNumber *)success {
     NSLog(@"[self.delegate webTask:%@ finishedWithSuccess:%d];", self, success.boolValue);
     [self.delegate webTask:self finishedWithSuccess:success.boolValue];
+    self.query = nil;
+    self.operationQueue = nil;
+    self.delegate = nil;
 }
 @end
 
