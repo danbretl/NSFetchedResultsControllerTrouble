@@ -211,6 +211,7 @@
 		32E2F20114D0929F00191C6F /* Emotish.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */; };
 		32E2F20E14D0931400191C6F /* GalleryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E2F20C14D0931400191C6F /* GalleryViewController.m */; };
 		32E2F20F14D0931400191C6F /* GalleryViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32E2F20D14D0931400191C6F /* GalleryViewController.xib */; };
+		32E524DF1516818D00698CB2 /* GetAndProcessPhotosOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E524DE1516818D00698CB2 /* GetAndProcessPhotosOperation.m */; };
 		32EB6C0714E42B43003D7105 /* CameraOverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32EB6C0614E42B43003D7105 /* CameraOverlayView.m */; };
 		32EB6C0914E43534003D7105 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32EB6C0814E43534003D7105 /* MobileCoreServices.framework */; };
 		32EB6C0C14E43C0A003D7105 /* CameraOverlayViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 32EB6C0B14E43C0A003D7105 /* CameraOverlayViewHandler.m */; };
@@ -507,6 +508,8 @@
 		32E2F20B14D0931400191C6F /* GalleryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryViewController.h; path = classes/GalleryViewController.h; sourceTree = "<group>"; };
 		32E2F20C14D0931400191C6F /* GalleryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GalleryViewController.m; path = classes/GalleryViewController.m; sourceTree = "<group>"; };
 		32E2F20D14D0931400191C6F /* GalleryViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = GalleryViewController.xib; path = classes/GalleryViewController.xib; sourceTree = "<group>"; };
+		32E524DD1516818D00698CB2 /* GetAndProcessPhotosOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GetAndProcessPhotosOperation.h; path = classes/GetAndProcessPhotosOperation.h; sourceTree = "<group>"; };
+		32E524DE1516818D00698CB2 /* GetAndProcessPhotosOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GetAndProcessPhotosOperation.m; path = classes/GetAndProcessPhotosOperation.m; sourceTree = "<group>"; };
 		32EB6C0514E42B43003D7105 /* CameraOverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CameraOverlayView.h; path = classes/CameraOverlayView.h; sourceTree = "<group>"; };
 		32EB6C0614E42B43003D7105 /* CameraOverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CameraOverlayView.m; path = classes/CameraOverlayView.m; sourceTree = "<group>"; };
 		32EB6C0814E43534003D7105 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
@@ -851,6 +854,8 @@
 				3254DF0F14FFF7200089CDF9 /* WebManager.m */,
 				3256D17E1513EF7B008313A7 /* ProcessPhotosOperation.h */,
 				3256D17F1513EF7B008313A7 /* ProcessPhotosOperation.m */,
+				32E524DD1516818D00698CB2 /* GetAndProcessPhotosOperation.h */,
+				32E524DE1516818D00698CB2 /* GetAndProcessPhotosOperation.m */,
 			);
 			name = Web;
 			sourceTree = "<group>";
@@ -1371,6 +1376,7 @@
 				32927EE01511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m in Sources */,
 				329035861512424500E2EB60 /* SDNetworkActivityIndicator.m in Sources */,
 				3256D1801513EF7B008313A7 /* ProcessPhotosOperation.m in Sources */,
+				32E524DF1516818D00698CB2 /* GetAndProcessPhotosOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

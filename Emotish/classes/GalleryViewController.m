@@ -386,60 +386,56 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
-    [self.feelingsTableView beginUpdates];
+    if (controller == self.fetchedResultsController) {
+        [self.feelingsTableView beginUpdates];
+    }
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
     
-    NSLog(@"GalleryViewController controller:didChangeObject:");
+    if (controller == self.fetchedResultsController) {
     
-    switch(type) {
-            
-        case NSFetchedResultsChangeInsert:
-            [self.feelingsTableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-            // Need to update feelingIndex for visible cells
-//            [self updateConfigureVisibleCells];
-            break;
-            
-        case NSFetchedResultsChangeDelete:
-            [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-            // Need to update feelingIndex for visible cells
-//            [self updateConfigureVisibleCells];
-            break;
-            
-        case NSFetchedResultsChangeUpdate:
-            [self tableView:self.feelingsTableView configureCell:(GalleryFeelingCell *)[self.feelingsTableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
-            break;
-            
-        case NSFetchedResultsChangeMove:
-            NSLog(@"GalleryViewController feelingsFetchedResultsController NSFetchedResultsChangeMove");
-            [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray
-                                               arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-            [self.feelingsTableView insertRowsAtIndexPaths:[NSArray
-                                               arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-            break;
+        NSLog(@"GalleryViewController.fetchedResultsController:didChangeObject: (of type %@) %@", [anObject class], anObject);
+        
+        switch(type) {
+                
+            case NSFetchedResultsChangeInsert:
+                NSLog(@"NSFetchedResultsChangeInsert");
+                [self.feelingsTableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+                // Need to update feelingIndex for visible cells
+    //            [self updateConfigureVisibleCells];
+                break;
+                
+            case NSFetchedResultsChangeDelete:
+                NSLog(@"NSFetchedResultsChangeDelete");
+                [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+                // Need to update feelingIndex for visible cells
+    //            [self updateConfigureVisibleCells];
+                break;
+                
+            case NSFetchedResultsChangeUpdate:
+                NSLog(@"NSFetchedResultsChangeUpdate");
+                [self tableView:self.feelingsTableView configureCell:(GalleryFeelingCell *)[self.feelingsTableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
+                break;
+                
+            case NSFetchedResultsChangeMove:
+                NSLog(@"NSFetchedResultsChangeMove %d to %d", indexPath.row, newIndexPath.row);
+                [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray
+                                                   arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+                [self.feelingsTableView insertRowsAtIndexPaths:[NSArray
+                                                   arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+                break;
+        }
+        
     }
-}
-
-
-- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <NSFetchedResultsSectionInfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
     
-    switch(type) {
-            
-        case NSFetchedResultsChangeInsert:
-            [self.feelingsTableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-            break;
-            
-        case NSFetchedResultsChangeDelete:
-            [self.feelingsTableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-            break;
-    }
 }
-
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    // The fetch controller has sent all current change notifications, so tell the table view to process all updates.
-    [self.feelingsTableView endUpdates];
+    if (controller == self.fetchedResultsController) {
+        // The fetch controller has sent all current change notifications, so tell the table view to process all updates.
+        [self.feelingsTableView endUpdates];
+    }
 }
 
 - (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController withNoMorePhotos:(BOOL)noMorePhotos {
@@ -587,7 +583,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[self sortDescriptorForGalleryMode:self.galleryMode]];
     fetchRequest.fetchBatchSize = 20;
     
-    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:@"Gallery"];
+    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:nil/*@"Gallery"*/]; // Not using a cache anymore
     _fetchedResultsController.delegate = self;
     
     return _fetchedResultsController;
@@ -619,7 +615,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         self.activeFeelingCell = nil;
         self.activeFeelingCellIndexRow = -1;
         self.activeFeelingCellContentOffsetPreserved = CGPointZero;
-        [NSFetchedResultsController deleteCacheWithName:@"Gallery"];
+//        [NSFetchedResultsController deleteCacheWithName:@"Gallery"]; // Not using a cache anymore
         self.fetchedResultsController.fetchRequest.sortDescriptors = [NSArray arrayWithObject:[self sortDescriptorForGalleryMode:galleryMode]];
         NSError * error;
         if (![self.fetchedResultsController performFetch:&error]) {
@@ -793,7 +789,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         self.getPhotosWebTask = nil;
         if (success) {
             if (self.getPhotosFeeling) {
-                self.getPhotosFeeling.webLoadDate = self.getPhotosDate;
+//                self.getPhotosFeeling.webLoadDate = self.getPhotosDate; // Have changed to only pulling in the most recent 20 for a feeling in the gallery view, so we shouldn't mark that feeling as propertly updated
             } else {
                 [[NSUserDefaults standardUserDefaults] setObject:self.getPhotosDate forKey:WEB_RELOAD_ALL_DATE_KEY];
             }
@@ -812,7 +808,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         NSLog(@"lastReloadDate was %@", lastReloadDate);
         self.getPhotosDate = [NSDate date];
         self.getPhotosFeeling = nil;
-        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:nil matchingGroupServerID:nil visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000] delegate:self];
+        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:nil matchingGroupServerID:nil visibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"createdAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000] delegate:self];
     }
 }
 
@@ -821,10 +817,10 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
         [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
         
-        NSLog(@"lastReloadDate was %@", feeling.webLoadDate);
+//        NSLog(@"lastReloadDate was %@", feeling.webLoadDate);
         self.getPhotosDate = [NSDate date];
         self.getPhotosFeeling = feeling;
-        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:@"Feeling" matchingGroupServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000] delegate:self];
+        self.getPhotosWebTask = [[WebManager sharedManager] getPhotosForGroupClassName:@"Feeling" matchingGroupServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"createdAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:20] delegate:self];
     }
 }
 

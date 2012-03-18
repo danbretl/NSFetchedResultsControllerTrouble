@@ -411,20 +411,23 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.animationInPersistentImage = nil;
         
     }
+    
+    if (!self.swipingInVertically) {
+        NSDate * lastReloadDate = self.focus == FeelingFocus ? self.feelingFocus.webLoadDate : self.userFocus.webLoadDate;
+        if (lastReloadDate == nil || abs([lastReloadDate timeIntervalSinceNow]) > 60) {
+            NSLog(@"Should auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
+            if (self.focus == FeelingFocus) {
+                [self getPhotosFromServerForFeeling:self.feelingFocus];
+            } else {
+                [self getPhotosFromServerForUser:self.userFocus];
+            }        
+        } else {
+            NSLog(@"Should not auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
+        }
+    }
+    
     NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
     self.swipingInVertically = NO;
-    
-    NSDate * lastReloadDate = self.focus == FeelingFocus ? self.feelingFocus.webLoadDate : self.userFocus.webLoadDate;
-    if (lastReloadDate == nil || abs([lastReloadDate timeIntervalSinceNow]) > 60) {
-        NSLog(@"Should auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
-        if (self.focus == FeelingFocus) {
-            [self getPhotosFromServerForFeeling:self.feelingFocus];
-        } else {
-            [self getPhotosFromServerForUser:self.userFocus];
-        }        
-    } else {
-        NSLog(@"Should not auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
-    }
     
 }
 
@@ -776,7 +779,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 }
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    if (controller == self.fetchedResultsControllerForCurrentFocus) {
+    if (controller == self.fetchedResultsControllerForCurrentFocus &&
+        self.view.window) {
         NSLog(@"self.fetchedResultsControllerForCurrentFocus willChangeContent");
         self.refreshAllNetChangeBeforePreviousPhotoCenterIndex = 0;
         NSLog(@"self.refreshAllNetChangeBeforePreviousPhotoCenterIndex reset to 0");
@@ -790,7 +794,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 //NSFetchedResultsChangeUpdate = 4
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
 //    NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeObject:%@ atIndexPath:%d-%d forChangeType:%d newIndexPath:%d-%d", anObject, indexPath.section, indexPath.row, type, newIndexPath.section, newIndexPath.row);
-    if (controller == self.fetchedResultsControllerForCurrentFocus) {
+    if (controller == self.fetchedResultsControllerForCurrentFocus && 
+        self.view.window) {
         if (type == NSFetchedResultsChangeDelete && self.focus == UserFocus) {
             Photo * photo = (Photo *)anObject;
             photo.feeling.word = photo.feeling.word;
@@ -858,7 +863,8 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 //}
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    if (controller == self.fetchedResultsControllerForCurrentFocus) {
+    if (controller == self.fetchedResultsControllerForCurrentFocus && 
+        self.view.window) {
         NSLog(@"self.fetchedResultsControllerForCurrentFocus didChangeContent");
         if (self.refreshAllInProgress) {
             

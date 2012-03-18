@@ -25,8 +25,10 @@
     }
     if (self.operationQueue) {
         NSLog(@"Cancelling all operations");
+        for (ProcessPhotosOperation * operation in self.operationQueue.operations) {
+            operation.delegate = nil;
+        }
         [self.operationQueue cancelAllOperations];
-        [self.operationQueue waitUntilAllOperationsAreFinished];
         self.operationQueue = nil;
     }
     NSLog(@"[self.delegate webTask:%@ finishedWithSuccess:NO];", self);
@@ -72,18 +74,21 @@ NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
 }
 
 - (WebTask *) getPhotosForGroupClassName:(NSString *)groupClassName matchingGroupServerID:(NSString *)groupServerID visibleOnly:(NSNumber *)visibleOnly beforeEndDate:(NSDate *)endDate afterStartDate:(NSDate *)startDate dateKey:(NSString *)dateKey chronologicalSortIsAscending:(NSNumber *)ascending limit:(NSNumber *)limit delegate:(id<WebTaskDelegate>)delegate {
-
-    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+    
+    NSLog(@"Setting up photosQuery");
 
     PFQuery * photosQuery = [PFQuery queryWithClassName:@"Photo"];
     
     if (groupClassName != nil && groupServerID != nil) {
         [photosQuery whereKey:groupClassName.lowercaseString equalTo:[PFPointer pointerWithClassName:groupClassName objectId:groupServerID]];
+        NSLog(@"  whereKey:%@ equalTo:%@", groupClassName.lowercaseString, groupServerID);
     }
     
     if (visibleOnly != nil && visibleOnly.boolValue) {
-        [photosQuery whereKey:@"deleted" equalTo:[NSNumber numberWithBool:NO]];
-        [photosQuery whereKey:@"flagged" equalTo:[NSNumber numberWithBool:NO]];
+        [photosQuery whereKey:@"deleted" notEqualTo:[NSNumber numberWithBool:YES]];
+        [photosQuery whereKey:@"flagged" notEqualTo:[NSNumber numberWithBool:YES]];
+        NSLog(@"  whereKey:deleted notEqualTo:YES");
+        NSLog(@"  whereKey:flagged notEqualTo:YES");
     }
     
     if (dateKey == nil) {
@@ -92,9 +97,11 @@ NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
     
     if (endDate != nil) {
         [photosQuery whereKey:dateKey lessThanOrEqualTo:endDate];
+        NSLog(@"  whereKey:%@ lessThanOrEqualTo:%@", dateKey, endDate);
     }
     if (startDate != nil) {
         [photosQuery whereKey:dateKey greaterThanOrEqualTo:startDate];
+        NSLog(@"  whereKey:%@ greaterThanOrEqualTo:%@", dateKey, startDate);
     }
     
     BOOL ascendingValue = WEB_GET_PHOTOS_CHRONOLOGICAL_SORT_IS_ASCENDING_DEFAULT;
@@ -103,8 +110,10 @@ NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
     }
     if (ascendingValue) {
         [photosQuery orderByAscending:dateKey];
+        NSLog(@"  orderByAscending:%@", dateKey);
     } else {
         [photosQuery orderByDescending:dateKey];
+        NSLog(@"  orderByDescending:%@", dateKey);
     }
     
     int limitValue = WEB_GET_PHOTOS_LIMIT_DEFAULT;
@@ -112,9 +121,12 @@ NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
         limitValue = limit.intValue;
     }
     [photosQuery setLimit:[NSNumber numberWithInt:limitValue]];
+    NSLog(@"  setLimit:%d", limitValue);
     
     [photosQuery includeKey:@"feeling"];
+    NSLog(@"  includeKey:feeling");
     [photosQuery includeKey:@"user"];
+    NSLog(@"  includeKey:user");
     
     NSOperationQueue * operationQueue = [[NSOperationQueue alloc] init];
     WebTask * webTask = [[WebTask alloc] init];
@@ -123,10 +135,14 @@ NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
     webTask.delegate = delegate;
     [self.webTasks addObject:webTask];
     
-    NSLog(@"photosQuery - %@", photosQuery);
-    
+    NSLog(@"Executing photosQuery in background");
     [photosQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        NSLog(@"Found objects in background, error:%@, objects(%d):%@", error, objects.count, objects);
+        NSLog(@"  Found objects");
+        NSLog(@"    Error: %@ %@ %@", error, error.description, error.userInfo);
+        NSLog(@"    Objects: (%d)", objects.count);
+        for (PFObject * object in objects) {
+            NSLog(@"      %@ %@ %@", object.objectId, [[object objectForKey:@"feeling"] objectForKey:@"word"], [[object objectForKey:@"user"] objectForKey:@"username"]);
+        }
         if (!error) {
             if (objects && objects.count > 0) {
                 ProcessPhotosOperation * processPhotosOperation = [[ProcessPhotosOperation alloc] init];
@@ -148,9 +164,9 @@ NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
 }
 
 - (void)cancelWebTask:(WebTask *)webTaskToCancel {
-    NSLog(@"Attempt to cancel web task");
+    NSLog(@"Attempting to cancel web task");
     if ([self.webTasks containsObject:webTaskToCancel]) {
-        NSLog(@"Cancel web task");
+        NSLog(@"Cancelling web task");
         [webTaskToCancel cancelWebTask];
         [self.webTasks removeObject:webTaskToCancel];
     }
