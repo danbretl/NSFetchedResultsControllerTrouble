@@ -203,11 +203,12 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     [super viewWillAppear:animated];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
     self.feelingsTableView.contentOffset = self.feelingsTableViewContentOffsetPreserved;
-    for (int i=0; i<self.feelingsTableView.visibleCells.count; i++) {
-        GalleryFeelingCell * galleryFeelingCell = [self.feelingsTableView.visibleCells objectAtIndex:i];
-        NSIndexPath * indexPath = [self.feelingsTableView.indexPathsForVisibleRows objectAtIndex:i];
-        [self tableView:self.feelingsTableView updateTimestampLabelForCell:galleryFeelingCell atIndexPath:indexPath];
-    }
+    [self.feelingsTableView reloadData]; // I CAN NOT FIGURE OUT WHY UPDATES IN THIS TABLE BASED ON THINGS HAPPENING IN THE PHOTOS STRIP VIEW STOPPED WORKING. FOR EXAMPLE, IF A USER DELETES A PHOTO IN THE PHOTOS STRIP, THAT SHOULD POTENTIALLY (PROBABLY) MOVE ROWS IN THE GALLERY VIEW IN RECENT MODE BECAUSE THEIR DATE-UPDATED VALUES CHANGED. BUT THIS ISN'T WORKING! IT'S ANNOYING.
+//    for (int i=0; i<self.feelingsTableView.visibleCells.count; i++) { // This is no longer necessary since we are reloading the entire table up above. Blahhh lame.
+//        GalleryFeelingCell * galleryFeelingCell = [self.feelingsTableView.visibleCells objectAtIndex:i];
+//        NSIndexPath * indexPath = [self.feelingsTableView.indexPathsForVisibleRows objectAtIndex:i];
+//        [self tableView:self.feelingsTableView updateTimestampLabelForCell:galleryFeelingCell atIndexPath:indexPath];
+//    }
     BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203150012"];
     int photosCount = [self tableView:self.feelingsTableView numberOfRowsInSection:0];
     NSLog(@"photosCount = %d", photosCount);

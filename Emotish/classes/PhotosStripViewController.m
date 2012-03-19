@@ -906,8 +906,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
                 
             }
             
+//            self.refreshAllInProgress = NO; This is done elsewhere now...
+            
         }
-        self.refreshAllInProgress = NO;
     }
     self.controllerChangingContent = NO;
 }
@@ -1376,7 +1377,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 
 - (void)webGetPhotos:(WebGetPhotos *)webGetPhotos succeededWithPhotos:(NSArray *)photosFromWeb {
     self.getPhotosRequest = nil;
-    self.refreshAllInProgress = NO;
+//    self.refreshAllInProgress = NO; // This is taken care of in didChangeContent. No... Trying to take care of this at the end of this method.
     NSLog(@"PhotosStripViewController got photos: %@", photosFromWeb);
     NSLog(@"Should process them now!");
     [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
@@ -1390,6 +1391,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         [ProcessPhotosOperation processPhotos:photosFromWeb withCoreDataManager:self.coreDataManager];
         //        [[ProcessManager sharedManager] addOperationToProcessPhotos:photosFromWeb];
     }
+    self.refreshAllInProgress = NO;
 }
 
 - (void)webGetPhotos:(WebGetPhotos *)webGetPhotos failedWithError:(NSError *)error {
