@@ -858,7 +858,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
         [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
         
-        NSDate * lastReloadDate = [[NSUserDefaults standardUserDefaults] objectForKey:    WEB_RELOAD_ALL_DATE_KEY]; lastReloadDate = nil;
+        NSDate * lastReloadDate = [[NSUserDefaults standardUserDefaults] objectForKey:    WEB_RELOAD_ALL_DATE_KEY];
         
         self.getPhotosAllDate = [NSDate date];
         self.getPhotosAllGroupIdentifier = [WebUtil getPhotosGroupIdentifierForGroupClassName:nil groupServerID:nil];
