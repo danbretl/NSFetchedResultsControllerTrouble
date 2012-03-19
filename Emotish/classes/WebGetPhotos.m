@@ -54,7 +54,13 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
         self.isGeneral = (groupServerID == nil);
         
         if (groupClassName != nil && groupServerID != nil) {
-            [self.query whereKey:groupClassName.lowercaseString equalTo:[PFPointer pointerWithClassName:groupClassName objectId:groupServerID]];
+            if ([groupClassName.lowercaseString isEqualToString:@"feeling"]) {
+                [self.query whereKey:groupClassName.lowercaseString equalTo:[PFPointer pointerWithClassName:groupClassName objectId:groupServerID]];    
+            } else {
+                PFUser * user = [PFUser user];
+                user.objectId = groupServerID;
+                [self.query whereKey:groupClassName.lowercaseString equalTo:user];
+            }
             NSLog(@"  whereKey:%@ equalTo:%@", groupClassName.lowercaseString, groupServerID);
         }
         

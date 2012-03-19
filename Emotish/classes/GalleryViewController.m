@@ -855,11 +855,11 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 - (void)webGetPhotos:(WebGetPhotos *)webGetPhotos succeededWithPhotos:(NSArray *)photosFromWeb {
     [self.getPhotosRequests removeObject:webGetPhotos];
-    NSLog(@"GalleryViewController got photos: %@", photosFromWeb);
+    NSLog(@"GalleryViewController got %d photos: %@", photosFromWeb.count, photosFromWeb);
     NSLog(@"Should process them now!");
     [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
     [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
-    if (webGetPhotos.isGeneral && webGetPhotos.limit.intValue == 1000) {
+    if (webGetPhotos.isGeneral && webGetPhotos.limit.intValue == 1000 && photosFromWeb.count > 0) {
         [[NSUserDefaults standardUserDefaults] setObject:webGetPhotos.datetimeExecuted forKey:WEB_RELOAD_ALL_DATE_KEY];
     }
     if (photosFromWeb && photosFromWeb.count > 0) {

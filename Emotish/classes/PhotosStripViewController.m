@@ -1378,14 +1378,16 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)webGetPhotos:(WebGetPhotos *)webGetPhotos succeededWithPhotos:(NSArray *)photosFromWeb {
     self.getPhotosRequest = nil;
 //    self.refreshAllInProgress = NO; // This is taken care of in didChangeContent. No... Trying to take care of this at the end of this method.
-    NSLog(@"PhotosStripViewController got photos: %@", photosFromWeb);
+    NSLog(@"PhotosStripViewController got %d photos: %@", photosFromWeb.count, photosFromWeb);
     NSLog(@"Should process them now!");
     [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
     [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
-    if (self.focus == FeelingFocus) {
-        self.feelingFocus.webLoadDate = webGetPhotos.datetimeExecuted;
-    } else {
-        self.userFocus.webLoadDate = webGetPhotos.datetimeExecuted;
+    if (photosFromWeb.count > 0) {
+        if (self.focus == FeelingFocus) {
+            self.feelingFocus.webLoadDate = webGetPhotos.datetimeExecuted;
+        } else {
+            self.userFocus.webLoadDate = webGetPhotos.datetimeExecuted;
+        }
     }
     if (photosFromWeb && photosFromWeb.count > 0) {
         [ProcessPhotosOperation processPhotos:photosFromWeb withCoreDataManager:self.coreDataManager];
