@@ -22,6 +22,7 @@ extern NSString * const WEB_RELOAD_ALL_DATE_KEY;
 @property (strong, nonatomic, readonly) NSDate * datetimeExecuted;
 @property (nonatomic, readonly) BOOL isExecuting;
 @property (nonatomic, readonly) BOOL isGeneral;
+@property (nonatomic, strong, readonly) NSNumber * limit;
 
 - (void) startWebGetPhotos;
 - (void) cancelWebGetPhotos; // Does not produce a delegate callback

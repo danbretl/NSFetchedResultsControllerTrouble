@@ -29,6 +29,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 - (void)tableView:(UITableView *)tableView updateTimestampLabelForCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 //- (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
 - (void) getPhotosFromServer;
+- (void) getPhotosFromServerWithLimit:(NSNumber *)limit;
 - (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
 //- (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
 - (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
@@ -170,12 +171,6 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 		exit(-1);  // Fail
 	}
     
-    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203150012"];
-    if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0 || !oneTimeForceReloadComplete) {
-        [self getPhotosFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203150012"];
-    }
-    
 }
 
 - (void)viewDidUnload {
@@ -212,6 +207,16 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         GalleryFeelingCell * galleryFeelingCell = [self.feelingsTableView.visibleCells objectAtIndex:i];
         NSIndexPath * indexPath = [self.feelingsTableView.indexPathsForVisibleRows objectAtIndex:i];
         [self tableView:self.feelingsTableView updateTimestampLabelForCell:galleryFeelingCell atIndexPath:indexPath];
+    }
+    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203150012"];
+    int photosCount = [self tableView:self.feelingsTableView numberOfRowsInSection:0];
+    NSLog(@"photosCount = %d", photosCount);
+    int photosCountGoal = photosCount == 0 ? 100 : 1000;// MIN(1000, ((photosCount / 100) + 1) * 100);
+    NSLog(@"photosCountGoal = %d", photosCountGoal);
+    if (photosCount == 0 || !oneTimeForceReloadComplete) {
+        [self getPhotosFromServerWithLimit:[NSNumber numberWithInt:photosCountGoal]];
+        //        [self getPhotosFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203150012"];
     }
 }
 
@@ -808,6 +813,12 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 - (void) getPhotosFromServer {
     
+    [self getPhotosFromServerWithLimit:[NSNumber numberWithInt:1000]];
+    
+}
+
+- (void) getPhotosFromServerWithLimit:(NSNumber *)limit {
+    
     BOOL ignore = NO;
     for (WebGetPhotos * request in self.getPhotosRequests) {
         ignore = request.isGeneral;
@@ -820,9 +831,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
         
         NSDate * lastReloadDate = [[NSUserDefaults standardUserDefaults] objectForKey:    WEB_RELOAD_ALL_DATE_KEY];
-    //    lastReloadDate = nil; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING 
+        //    lastReloadDate = nil; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING 
         
-        WebGetPhotos * request = [[WebGetPhotos alloc] initForPhotosAllWithOptionsVisibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"createdAt" limit:[NSNumber numberWithInt:1000] delegate:self];
+        WebGetPhotos * request = [[WebGetPhotos alloc] initForPhotosAllWithOptionsVisibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"createdAt" limit:limit delegate:self];
         [self.getPhotosRequests addObject:request];
         [request startWebGetPhotos];
         
@@ -847,7 +858,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     NSLog(@"Should process them now!");
     [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
     [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
-    if (webGetPhotos.isGeneral) {
+    if (webGetPhotos.isGeneral && webGetPhotos.limit.intValue == 1000) {
         [[NSUserDefaults standardUserDefaults] setObject:webGetPhotos.datetimeExecuted forKey:WEB_RELOAD_ALL_DATE_KEY];
     }
     if (photosFromWeb && photosFromWeb.count > 0) {

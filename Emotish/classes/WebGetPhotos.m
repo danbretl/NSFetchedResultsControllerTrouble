@@ -21,6 +21,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
 @property (strong, nonatomic) NSDate * datetimeExecuted;
 @property (nonatomic) BOOL isExecuting;
 @property (nonatomic) BOOL isGeneral;
+@property (nonatomic, strong) NSNumber * limit;
 @end
 
 @implementation WebGetPhotos
@@ -29,6 +30,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
 @synthesize query=_query;
 @synthesize datetimeExecuted=_datetimeExecuted, isExecuting=_isExecuting;
 @synthesize isGeneral=_isGeneral;
+@synthesize limit=_limit;
 
 - (id)initForPhotosAllWithOptionsVisibleOnly:(NSNumber *)visibleOnly beforeEndDate:(NSDate *)endDate afterStartDate:(NSDate *)startDate dateKey:(NSString *)dateKey limit:(NSNumber *)limit delegate:(id<WebGetPhotosDelegate>)delegate {
     return [self initWithGroupClassName:nil matchingGroupServerID:nil visibleOnly:visibleOnly beforeEndDate:endDate afterStartDate:startDate dateKey:dateKey limit:limit delegate:delegate];
@@ -84,6 +86,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
         }
         [self.query setLimit:[NSNumber numberWithInt:limitValue]];
         NSLog(@"  setLimit:%d", limitValue);
+        self.limit = [NSNumber numberWithInt:limitValue];
         
         [self.query includeKey:@"feeling"];
         NSLog(@"  includeKey:feeling");
