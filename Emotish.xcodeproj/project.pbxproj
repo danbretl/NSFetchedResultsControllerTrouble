@@ -126,6 +126,7 @@
 		322C4E7114E334300012FA78 /* icon_settings_touch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 322C4E6914E334300012FA78 /* icon_settings_touch@2x.png */; };
 		322C4E7214E334300012FA78 /* icon_settings.png in Resources */ = {isa = PBXBuildFile; fileRef = 322C4E6A14E334300012FA78 /* icon_settings.png */; };
 		322C4E7314E334300012FA78 /* icon_settings@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 322C4E6B14E334300012FA78 /* icon_settings@2x.png */; };
+		323156181516BD7F00C027D7 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 323156171516BD7F00C027D7 /* Parse.framework */; };
 		323401B014F5731900B887F2 /* UIView+GetFirstResponder.m in Sources */ = {isa = PBXBuildFile; fileRef = 323401AF14F5731900B887F2 /* UIView+GetFirstResponder.m */; };
 		323401B414F5733300B887F2 /* AccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 323401B214F5733300B887F2 /* AccountViewController.m */; };
 		323401B514F5733300B887F2 /* AccountViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 323401B314F5733300B887F2 /* AccountViewController.xib */; };
@@ -362,6 +363,7 @@
 		322C4E6914E334300012FA78 /* icon_settings_touch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_settings_touch@2x.png"; sourceTree = "<group>"; };
 		322C4E6A14E334300012FA78 /* icon_settings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_settings.png; sourceTree = "<group>"; };
 		322C4E6B14E334300012FA78 /* icon_settings@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon_settings@2x.png"; sourceTree = "<group>"; };
+		323156171516BD7F00C027D7 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		323401AE14F5731900B887F2 /* UIView+GetFirstResponder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIView+GetFirstResponder.h"; path = "classes/UIView+GetFirstResponder.h"; sourceTree = "<group>"; };
 		323401AF14F5731900B887F2 /* UIView+GetFirstResponder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIView+GetFirstResponder.m"; path = "classes/UIView+GetFirstResponder.m"; sourceTree = "<group>"; };
 		323401B114F5733300B887F2 /* AccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AccountViewController.h; path = classes/AccountViewController.h; sourceTree = "<group>"; };
@@ -550,6 +552,7 @@
 				32E2F1EE14D0929F00191C6F /* Foundation.framework in Frameworks */,
 				32E2F1F014D0929F00191C6F /* CoreGraphics.framework in Frameworks */,
 				32E2F1F214D0929F00191C6F /* CoreData.framework in Frameworks */,
+				323156181516BD7F00C027D7 /* Parse.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -995,6 +998,7 @@
 		32E2F1EA14D0929F00191C6F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				323156171516BD7F00C027D7 /* Parse.framework */,
 				32EB6C0814E43534003D7105 /* MobileCoreServices.framework */,
 				326127C914DCC25E001FD065 /* QuartzCore.framework */,
 				32E2F1EB14D0929F00191C6F /* UIKit.framework */,
