@@ -1242,7 +1242,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         feelingViewController.cameraButtonView.buttonShadowLayer.hidden = YES;
         [feelingViewController.cameraButtonView setButtonPromptVisible:NO];
         
-        [self.view insertSubview:feelingViewController.view belowSubview:self.topBar];
+        [self.view insertSubview:feelingViewController.view belowSubview:self.cameraButtonView];
         feelingViewController.view.frame = CGRectMake(0, -direction * self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);// CGRectOffset(self.view.frame, 0, -direction * self.view.frame.size.height);
 //        NSLog(@"self = %@", NSStringFromCGRect(self.view.frame));
 //        NSLog(@"feel = %@", NSStringFromCGRect(feelingViewController.view.frame));
