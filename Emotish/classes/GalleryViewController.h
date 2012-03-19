@@ -19,7 +19,7 @@
 #import "CameraButtonView.h"
 #import "WebManager.h"
 
-@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate, AccountViewControllerDelegate, SettingsViewControllerDelegate, WebTaskDelegate> {
+@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate, AccountViewControllerDelegate, SettingsViewControllerDelegate/*, WebTaskDelegate*/> {
     
     BOOL debugging;
     

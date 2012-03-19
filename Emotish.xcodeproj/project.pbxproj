@@ -160,7 +160,6 @@
 		324BEE801501856600A3BB6D /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 324BEE741501856600A3BB6D /* SBJsonWriter.m */; };
 		3254DF1014FFF7200089CDF9 /* WebManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3254DF0F14FFF7200089CDF9 /* WebManager.m */; };
 		3256D1791513A4C9008313A7 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3256D1781513A4C9008313A7 /* Parse.framework */; };
-		3256D1801513EF7B008313A7 /* ProcessPhotosOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3256D17F1513EF7B008313A7 /* ProcessPhotosOperation.m */; };
 		3259455A15085E1000423BEC /* UIScrollView+StopScroll.m in Sources */ = {isa = PBXBuildFile; fileRef = 3259455915085E1000423BEC /* UIScrollView+StopScroll.m */; };
 		325C287514E9843500019977 /* btn_back.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C286D14E9843500019977 /* btn_back.png */; };
 		325C287614E9843500019977 /* btn_back@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 325C286E14E9843500019977 /* btn_back@2x.png */; };
@@ -192,6 +191,7 @@
 		32B8ED4E14FE7AC10066F253 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4D14FE7AC10066F253 /* Icon.png */; };
 		32B8ED5014FE7ACB0066F253 /* Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4F14FE7ACB0066F253 /* Icon@2x.png */; };
 		32CDE0521509F4440038EC82 /* SubmitPhotoShared.m in Sources */ = {isa = PBXBuildFile; fileRef = 32CDE0511509F4440038EC82 /* SubmitPhotoShared.m */; };
+		32CF39611516981400B38163 /* WebUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 32CF39601516981400B38163 /* WebUtil.m */; };
 		32D240B114E4CBDF00AB368C /* bottom_bar_camera_view.png in Resources */ = {isa = PBXBuildFile; fileRef = 32D240A514E4CBDF00AB368C /* bottom_bar_camera_view.png */; };
 		32D240B214E4CBDF00AB368C /* bottom_bar_camera_view@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 32D240A614E4CBDF00AB368C /* bottom_bar_camera_view@2x.png */; };
 		32D240C014E4CC0D00AB368C /* top_bar_camera_view.png in Resources */ = {isa = PBXBuildFile; fileRef = 32D240BE14E4CC0C00AB368C /* top_bar_camera_view.png */; };
@@ -431,8 +431,6 @@
 		3256D1721513A086008313A7 /* WebFetch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WebFetch.h; path = classes/WebFetch.h; sourceTree = "<group>"; };
 		3256D1731513A086008313A7 /* WebFetch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = WebFetch.m; path = classes/WebFetch.m; sourceTree = "<group>"; };
 		3256D1781513A4C9008313A7 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
-		3256D17E1513EF7B008313A7 /* ProcessPhotosOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProcessPhotosOperation.h; path = classes/ProcessPhotosOperation.h; sourceTree = "<group>"; };
-		3256D17F1513EF7B008313A7 /* ProcessPhotosOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ProcessPhotosOperation.m; path = classes/ProcessPhotosOperation.m; sourceTree = "<group>"; };
 		3259455815085E1000423BEC /* UIScrollView+StopScroll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIScrollView+StopScroll.h"; path = "classes/UIScrollView+StopScroll.h"; sourceTree = "<group>"; };
 		3259455915085E1000423BEC /* UIScrollView+StopScroll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIScrollView+StopScroll.m"; path = "classes/UIScrollView+StopScroll.m"; sourceTree = "<group>"; };
 		325C286D14E9843500019977 /* btn_back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_back.png; sourceTree = "<group>"; };
@@ -481,6 +479,8 @@
 		32B8ED4F14FE7ACB0066F253 /* Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon@2x.png"; sourceTree = "<group>"; };
 		32CDE0501509F4440038EC82 /* SubmitPhotoShared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SubmitPhotoShared.h; path = classes/SubmitPhotoShared.h; sourceTree = "<group>"; };
 		32CDE0511509F4440038EC82 /* SubmitPhotoShared.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SubmitPhotoShared.m; path = classes/SubmitPhotoShared.m; sourceTree = "<group>"; };
+		32CF395F1516981400B38163 /* WebUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebUtil.h; path = classes/WebUtil.h; sourceTree = "<group>"; };
+		32CF39601516981400B38163 /* WebUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebUtil.m; path = classes/WebUtil.m; sourceTree = "<group>"; };
 		32D240A514E4CBDF00AB368C /* bottom_bar_camera_view.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bottom_bar_camera_view.png; sourceTree = "<group>"; };
 		32D240A614E4CBDF00AB368C /* bottom_bar_camera_view@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bottom_bar_camera_view@2x.png"; sourceTree = "<group>"; };
 		32D240BE14E4CC0C00AB368C /* top_bar_camera_view.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = top_bar_camera_view.png; sourceTree = "<group>"; };
@@ -850,10 +850,10 @@
 		3254DF0C14FFF6CF0089CDF9 /* Web */ = {
 			isa = PBXGroup;
 			children = (
+				32CF395F1516981400B38163 /* WebUtil.h */,
+				32CF39601516981400B38163 /* WebUtil.m */,
 				3254DF0E14FFF7200089CDF9 /* WebManager.h */,
 				3254DF0F14FFF7200089CDF9 /* WebManager.m */,
-				3256D17E1513EF7B008313A7 /* ProcessPhotosOperation.h */,
-				3256D17F1513EF7B008313A7 /* ProcessPhotosOperation.m */,
 				32E524DD1516818D00698CB2 /* GetAndProcessPhotosOperation.h */,
 				32E524DE1516818D00698CB2 /* GetAndProcessPhotosOperation.m */,
 			);
@@ -1375,8 +1375,8 @@
 				32A9EDC2150FDEEF00665023 /* CameraButtonView.m in Sources */,
 				32927EE01511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m in Sources */,
 				329035861512424500E2EB60 /* SDNetworkActivityIndicator.m in Sources */,
-				3256D1801513EF7B008313A7 /* ProcessPhotosOperation.m in Sources */,
 				32E524DF1516818D00698CB2 /* GetAndProcessPhotosOperation.m in Sources */,
+				32CF39611516981400B38163 /* WebUtil.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,15 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol ProcessPhotosOperationDelegate;
+//@protocol ProcessPhotosOperationDelegate;
 
 @interface ProcessPhotosOperation : NSOperation
 
 @property (strong, nonatomic) NSArray * photos;
-@property (unsafe_unretained, nonatomic) id<ProcessPhotosOperationDelegate> delegate;
+//@property (unsafe_unretained, nonatomic) id<ProcessPhotosOperationDelegate> delegate;
 
 @end
 
-@protocol ProcessPhotosOperationDelegate <NSObject>
-- (void)operationFinishedWithSuccess:(NSNumber *)success;
-@end
+//@protocol ProcessPhotosOperationDelegate <NSObject>
+//- (void)operationFinishedWithSuccess:(NSNumber *)success;
+//@end

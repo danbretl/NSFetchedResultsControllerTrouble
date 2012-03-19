@@ -14,7 +14,8 @@
 @property (strong, nonatomic) NSManagedObjectContext * managedObjectContext;
 - (void)mergeChanges:(NSNotification *)notification;
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
-- (void)finishedWithSuccess:(NSNumber *)success;
+//- (void)finishedWithSuccess:(NSNumber *)success;
+- (void) finishedWithSuccess:(BOOL)success;
 @end
 
 @implementation ProcessPhotosOperation
@@ -22,17 +23,19 @@
 @synthesize coreDataManager=_coreDataManager;
 @synthesize managedObjectContext=_managedObjectContext;
 @synthesize photos=_photos;
-@synthesize delegate=_delegate;
+//@synthesize delegate=_delegate;
 
 - (void)main {
     
     NSLog(@"ProcessPhotosOperation main starting");
     
-    @try {
+//    @try {
     
         if (self.isCancelled) {
             NSLog(@"  Cancelled");
-            [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
+            [self finishedWithSuccess:NO];
+            return;
+//            [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
         }
         
         NSLog(@"  Creating NSManagedObjectContext from appDelegate's persistentStoreCoordinator");
@@ -46,10 +49,10 @@
         NSLog(@"  Registering for NSManagedObjectContextDidSaveNotification");
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mergeChanges:) name:NSManagedObjectContextDidSaveNotification object:self.managedObjectContext];    
             
-        if (self.isCancelled) {
-            NSLog(@"  Cancelled");
-            [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
-        }
+//        if (self.isCancelled) {
+//            NSLog(@"  Cancelled");
+//            [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
+//        }
         
         NSLog(@"  Processing Photos");
         for (PFObject * photoServer in self.photos) {
@@ -88,44 +91,50 @@
         }
         if (self.isCancelled) {
             NSLog(@"  Cancelled");
-            [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
+            [self finishedWithSuccess:NO];
+//            [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
         } else {
             NSLog(@"  About to save ProcessPhotosOperation's managedObjectContext");
             [self.coreDataManager saveCoreData];
         }
-    }
+//    }
 
-    @catch (NSException * exception) {
-        NSLog(@"  Caught an exception. Ignoring?");
-        // Do not rethrow exception...
-        NSLog(@"  Cancelled");
-        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES];
-    }
+//    @catch (NSException * exception) {
+//        NSLog(@"  Caught an exception. Ignoring?");
+//        // Do not rethrow exception...
+//        NSLog(@"  Cancelled");
+//        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES];
+//    }
     
 }
 
 - (void)mergeChanges:(NSNotification *)notification {
-    if (self.isCancelled || ![notification isKindOfClass:[NSNotification class]]) { // Something weird happens sometimes where notification is some other Class of object... I should really be figuring out why that happens at all, but instead, I'm just trying to catch the weirdness and abort.
-        NSLog(@"  Cancelled");
-        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
-    }
-    @try {
+//    if (self.isCancelled || ![notification isKindOfClass:[NSNotification class]]) { // Something weird happens sometimes where notification is some other Class of object... I should really be figuring out why that happens at all, but instead, I'm just trying to catch the weirdness and abort.
+//        NSLog(@"  Cancelled");
+//        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES]; return;
+//    }
+//    @try {
         EmotishAppDelegate * appDelegate = (EmotishAppDelegate *)[UIApplication sharedApplication].delegate;
         // Merge changes into the main context on the main thread
         NSLog(@"  About to merge NSManagedObjectContexts");
         [appDelegate.managedObjectContext performSelectorOnMainThread:@selector(mergeChangesFromContextDidSaveNotification:) withObject:notification waitUntilDone:YES];
-        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:YES] waitUntilDone:YES];
-    }
-    @catch (NSException * exception) {
-        NSLog(@"  Caught an exception. Ignoring?");
-        NSLog(@"  Cancelled");
-        // Do not rethrow exception...
-        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES];
-    }
+        [self finishedWithSuccess:YES];
+//        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:YES] waitUntilDone:YES];
+//    }
+//    @catch (NSException * exception) {
+//        NSLog(@"  Caught an exception. Ignoring?");
+//        NSLog(@"  Cancelled");
+//        // Do not rethrow exception...
+//        [self performSelectorOnMainThread:@selector(finishedWithSuccess:) withObject:[NSNumber numberWithBool:NO] waitUntilDone:YES];
+//    }
 }
 
-- (void)finishedWithSuccess:(NSNumber *)success {
-    [self.delegate operationFinishedWithSuccess:success];
+//- (void)finishedWithSuccess:(NSNumber *)success {
+//    [self.delegate operationFinishedWithSuccess:success];
+//}
+
+- (void)finishedWithSuccess:(BOOL)success {
+//    [[NSNotificationCenter defaultCenter] postNotificationName:WEB_GET_PHOTOS_FINISHED_NOTIFICATION object:self userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:success] forKey:WEB_GET_PHOTOS_FINISHED_NOTIFICATION_SUCCESS_KEY]];
 }
 
 //- (void)cancel {

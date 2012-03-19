@@ -7,15 +7,20 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Parse/Parse.h>
 
-@protocol GetAndProcessPhotosOperationDelegate;
+//@protocol GetAndProcessPhotosOperationDelegate;
 
 @interface GetAndProcessPhotosOperation : NSOperation
 
-- (id) initWithGroupClassName:(NSString *)groupClassName matchingGroupServerID:(NSString *)groupServerID visibleOnly:(NSNumber *)visibleOnly beforeEndDate:(NSDate *)endDate afterStartDate:(NSDate *)startDate dateKey:(NSString *)dateKey chronologicalSortIsAscending:(NSNumber *)ascending limit:(NSNumber *)limit delegate:(id<GetAndProcessPhotosOperationDelegate>)delegate;
+@property (strong, nonatomic) PFQuery * photosQuery;
 
-@end
+- (id) initWithGroupClassName:(NSString *)groupClassName matchingGroupServerID:(NSString *)groupServerID visibleOnly:(NSNumber *)visibleOnly beforeEndDate:(NSDate *)endDate afterStartDate:(NSDate *)startDate dateKey:(NSString *)dateKey chronologicalSortIsAscending:(NSNumber *)ascending limit:(NSNumber *)limit;
 
-@protocol GetAndProcessPhotosOperationDelegate <NSObject>
-- (void) getAndProcessPhotosOperation:(GetAndProcessPhotosOperation *)operation finishedWithSuccess:(BOOL)success;
+//- (id) initWithGroupClassName:(NSString *)groupClassName matchingGroupServerID:(NSString *)groupServerID visibleOnly:(NSNumber *)visibleOnly beforeEndDate:(NSDate *)endDate afterStartDate:(NSDate *)startDate dateKey:(NSString *)dateKey chronologicalSortIsAscending:(NSNumber *)ascending limit:(NSNumber *)limit delegate:(id<GetAndProcessPhotosOperationDelegate>)delegate;
+//
+//@end
+//
+//@protocol GetAndProcessPhotosOperationDelegate <NSObject>
+//- (void) getAndProcessPhotosOperation:(GetAndProcessPhotosOperation *)operation finishedWithSuccess:(BOOL)success;
 @end
