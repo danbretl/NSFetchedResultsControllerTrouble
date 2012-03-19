@@ -14,6 +14,6 @@ extern NSString * const WEB_GET_PHOTOS_FINISHED_NOTIFICATION_GROUP_IDENTIFIER_KE
 
 @interface WebUtil : NSObject
 
-+ (NSString *) getPhotosGroupIdentifierForGroupClassName:(NSString *)groupClassName groupServerID:(NSString *)groupServerID;
++ (NSString *) getPhotosRequestIdentifierForGroupClassName:(NSString *)groupClassName groupServerID:(NSString *)groupServerID;
 
 @end

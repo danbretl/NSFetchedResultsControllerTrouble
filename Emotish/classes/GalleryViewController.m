@@ -16,7 +16,7 @@
 #import <Parse/Parse.h>
 #import "NSDateFormatter+EmotishTimeSpans.h"
 #import "SDNetworkActivityIndicator.h"
-#import "WebUtil.h"
+#import "ProcessManager.h"
 
 static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
@@ -28,7 +28,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 - (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 - (void)tableView:(UITableView *)tableView updateTimestampLabelForCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 //- (void) getFeelingsFromServerCallback:(NSArray *)results error:(NSError *)error;
-- (void) getPhotos;
+- (void) getPhotosFromServer;
 - (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
 //- (void) getPhotosFromServerForFeelingCallback:(NSArray *)results error:(NSError *)error;
 - (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
@@ -43,14 +43,15 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 //- (void) hideActivityIndicator;
 //@property int activityCount;
 //@property (nonatomic, strong) WebTask * getPhotosWebTask;
-@property (nonatomic, strong) NSDate * getPhotosAllDate;
-@property (nonatomic, strong) NSString * getPhotosAllGroupIdentifier;
-@property (nonatomic, strong) NSDate * getPhotosFeelingDate;
-@property (nonatomic, strong) NSString * getPhotosFeelingGroupIdentifier;
-@property (nonatomic, strong) Feeling * getPhotosFeeling;
-- (void) gotPhotos:(NSNotification *)notification;
+@property (nonatomic, strong) NSMutableSet * getPhotosRequests;
+//@property (nonatomic, strong) NSDate * getPhotosAllDate;
+//@property (nonatomic, strong) NSString * getPhotosAllGroupIdentifier;
+//@property (nonatomic, strong) NSDate * getPhotosFeelingDate;
+//@property (nonatomic, strong) NSString * getPhotosFeelingGroupIdentifier;
+//@property (nonatomic, strong) Feeling * getPhotosFeeling;
+//- (void) gotPhotos:(NSNotification *)notification;
 - (void) cancelAllWebGetPhotos;
-@property (nonatomic, strong) WebManager * webManagerPrivate;
+//@property (nonatomic, strong) WebManager * webManagerPrivate;
 @end
 
 @implementation GalleryViewController
@@ -70,8 +71,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 //@synthesize activityIndicatorView = _activityIndicatorView, activityCount=_activityCount;
 @synthesize galleryMode=_galleryMode;
 //@synthesize /*getPhotosWebTask=_getPhotosWebTask, */ getPhotosDate=_getPhotosDate, getPhotosFeeling=_getPhotosFeeling;
-@synthesize getPhotosAllDate=_getPhotosAllDate, getPhotosAllGroupIdentifier=_getPhotosAllGroupIdentifier, getPhotosFeelingDate=_getPhotosFeelingDate, getPhotosFeelingGroupIdentifier=_getPhotosFeelingGroupIdentifier, getPhotosFeeling=_getPhotosFeeling;
-@synthesize webManagerPrivate=_webManagerPrivate;
+//@synthesize getPhotosAllDate=_getPhotosAllDate, getPhotosAllGroupIdentifier=_getPhotosAllGroupIdentifier, getPhotosFeelingDate=_getPhotosFeelingDate, getPhotosFeelingGroupIdentifier=_getPhotosFeelingGroupIdentifier, getPhotosFeeling=_getPhotosFeeling;
+//@synthesize webManagerPrivate=_webManagerPrivate;
+@synthesize getPhotosRequests=_getPhotosRequests;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -87,7 +89,8 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
             self.galleryMode = GalleryAlphabetical;
         }
         [[NSUserDefaults standardUserDefaults] setInteger:self.galleryMode forKey:GALLERY_MODE_KEY];
-        self.webManagerPrivate = [[WebManager alloc] init];
+//        self.webManagerPrivate = [[WebManager alloc] init];
+        self.getPhotosRequests = [NSMutableSet set];
     }
     return self;
 }
@@ -167,11 +170,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 		exit(-1);  // Fail
 	}
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gotPhotos:) name:WEB_GET_PHOTOS_FINISHED_NOTIFICATION object:nil];
-    
     BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203150012"];
     if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] == 0 || !oneTimeForceReloadComplete) {
-        [self getPhotos]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
+        [self getPhotosFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203150012"];
     }
     
@@ -531,7 +532,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
             if (self.activeFeelingCell) {
                 [self.activeFeelingCell scrollToOriginAnimated:YES];
             }
-            [self getPhotos];
+            [self getPhotosFromServer];
         }
     }
 }
@@ -759,6 +760,8 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 - (void)submitPhotoViewController:(SubmitPhotoViewController *)submitPhotoViewController didSubmitPhoto:(Photo *)photo withImage:(UIImage *)image {
     
+    [self.feelingsTableView reloadData];
+    
     NSLog(@"submitPhotoViewControllerDidSubmitPhoto");
 
     PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
@@ -794,97 +797,72 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 //}
 
 - (void) cancelAllWebGetPhotos {
-    [self.webManagerPrivate cancelAll];
-    if (self.getPhotosAllGroupIdentifier) {
-        [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+    for (WebGetPhotos * request in self.getPhotosRequests) {
+        [request cancelWebGetPhotos];
+        request.delegate = nil;
     }
-    if (self.getPhotosFeelingGroupIdentifier) {
-        [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-    }
+    [self.getPhotosRequests removeAllObjects];
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopAllActivity];
     [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
-    self.getPhotosAllGroupIdentifier = nil;
-    self.getPhotosFeelingGroupIdentifier = nil;
-    self.getPhotosAllDate = nil;
-    self.getPhotosFeelingDate = nil;
-    self.getPhotosFeeling = nil;
 }
 
-- (void) gotPhotos:(NSNotification *)notification {
-    NSLog(@"GalleryViewController gotPhotos");
+- (void) getPhotosFromServer {
     
-    NSString * groupIdentifier = [notification.userInfo objectForKey:WEB_GET_PHOTOS_FINISHED_NOTIFICATION_GROUP_IDENTIFIER_KEY];
-    NSLog(@"  groupIdentifier = %@", groupIdentifier);
-
-    BOOL notificationForAllGroup = [groupIdentifier isEqualToString:self.getPhotosAllGroupIdentifier];
-    NSLog(@"  is notificationForAllGroup = %d", notificationForAllGroup);
-    BOOL notificationForFeelingGroup = [groupIdentifier isEqualToString:self.getPhotosFeelingGroupIdentifier];
-    NSLog(@"  is notificationForFeelingGroup = %d", notificationForFeelingGroup);
-    
-    if (notificationForAllGroup || notificationForFeelingGroup) {
-        
-        if (notificationForAllGroup) {
-            self.getPhotosAllGroupIdentifier = nil;
-        } else {
-            self.getPhotosFeelingGroupIdentifier = nil;
-        }
-        
-        [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-        if (self.getPhotosAllGroupIdentifier == nil &&
-            self.getPhotosFeelingGroupIdentifier == nil) {
-            NSLog(@"  Both self.getPhotosAllGroupIdentifier and self.getPhotosFeelingGroupIdentifier are nil");
-            [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
-        }
-        
-        BOOL success = [[notification.userInfo objectForKey:WEB_GET_PHOTOS_FINISHED_NOTIFICATION_SUCCESS_KEY] boolValue];
-        if (notificationForAllGroup) {
-            if (success) {
-                [[NSUserDefaults standardUserDefaults] setObject:self.getPhotosAllDate forKey:WEB_RELOAD_ALL_DATE_KEY];
-            }
-            self.getPhotosAllDate = nil;
-        } else {
-            self.getPhotosFeelingDate = nil;
-            self.getPhotosFeeling = nil;
-        }
-        
+    BOOL ignore = NO;
+    for (WebGetPhotos * request in self.getPhotosRequests) {
+        ignore = request.isGeneral;
+        if (ignore) { break; }
     }
     
-}
-
-- (void) getPhotos {
-    
-    if (self.getPhotosAllGroupIdentifier == nil && 
-        self.getPhotosFeelingGroupIdentifier == nil) {
+    if (!ignore) {
         
         [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
         [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
         
         NSDate * lastReloadDate = [[NSUserDefaults standardUserDefaults] objectForKey:    WEB_RELOAD_ALL_DATE_KEY];
+    //    lastReloadDate = nil; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING 
         
-        self.getPhotosAllDate = [NSDate date];
-        self.getPhotosAllGroupIdentifier = [WebUtil getPhotosGroupIdentifierForGroupClassName:nil groupServerID:nil];
-        
-        [self.webManagerPrivate getPhotosForGroupClassName:nil matchingGroupServerID:nil visibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"createdAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000]];
+        WebGetPhotos * request = [[WebGetPhotos alloc] initForPhotosAllWithOptionsVisibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"createdAt" limit:[NSNumber numberWithInt:1000] delegate:self];
+        [self.getPhotosRequests addObject:request];
+        [request startWebGetPhotos];
         
     }
     
 }
 
-- (void) getPhotosFromServerForFeeling:(Feeling *)feeling {
+- (void)getPhotosFromServerForFeeling:(Feeling *)feeling {
     
-    if (self.getPhotosAllGroupIdentifier == nil && 
-        self.getPhotosFeelingGroupIdentifier == nil) {
-        
-        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-        [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
-        
-        self.getPhotosFeeling = feeling;
-        self.getPhotosFeelingDate = [NSDate date];
-        self.getPhotosFeelingGroupIdentifier = [WebUtil getPhotosGroupIdentifierForGroupClassName:@"Feeling" groupServerID:feeling.serverID];
-        
-        [self.webManagerPrivate getPhotosForGroupClassName:@"Feeling" matchingGroupServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"createdAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:10]];
-        
+    [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
+    [self.flagStretchView setOverlayImageViewVisible:YES animated:YES];
+    
+    WebGetPhotos * request = [[WebGetPhotos alloc] initForPhotosWithFeelingServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"createdAt" limit:[NSNumber numberWithInt:10] delegate:self]; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING 
+    [self.getPhotosRequests addObject:request];
+    [request startWebGetPhotos];
+    
+}
+
+- (void)webGetPhotos:(WebGetPhotos *)webGetPhotos succeededWithPhotos:(NSArray *)photosFromWeb {
+    [self.getPhotosRequests removeObject:webGetPhotos];
+    NSLog(@"GalleryViewController got photos: %@", photosFromWeb);
+    NSLog(@"Should process them now!");
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+    [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
+    if (webGetPhotos.isGeneral) {
+        [[NSUserDefaults standardUserDefaults] setObject:webGetPhotos.datetimeExecuted forKey:WEB_RELOAD_ALL_DATE_KEY];
     }
-    
+    if (photosFromWeb && photosFromWeb.count > 0) {
+        [ProcessPhotosOperation processPhotos:photosFromWeb withCoreDataManager:self.coreDataManager];
+//        [[ProcessManager sharedManager] addOperationToProcessPhotos:photosFromWeb];
+    }
+}
+
+- (void)webGetPhotos:(WebGetPhotos *)webGetPhotos failedWithError:(NSError *)error {
+    [self.getPhotosRequests removeObject:webGetPhotos];
+    NSLog(@"Error when trying to get photos. Should report error?");
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];    
+    if (self.getPhotosRequests.count == 0) {
+        [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
+    }
 }
 
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID {

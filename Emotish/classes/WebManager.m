@@ -11,7 +11,7 @@
 #import "WebUtil.h"
 #import <Parse/Parse.h>
 
-NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
+//NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
 
 @interface WebManager ()
 @property (strong, nonatomic, readonly) NSOperationQueue * operationQueue;
@@ -22,15 +22,15 @@ NSString * const WEB_RELOAD_ALL_DATE_KEY = @"WEB_RELOAD_ALL_DATE_KEY";
 @synthesize operationQueue=_operationQueue;
 @synthesize photosQueries=_photosQueries;
 
-//+ (WebManager *)sharedManager {
-//    static WebManager * sharedInstance = nil;
-//    static dispatch_once_t onceToken;
-//    dispatch_once(&onceToken, ^{
-//        sharedInstance = [[WebManager alloc] init];
-//        // Do other initialization stuff here...
-//    });
-//    return sharedInstance;
-//}
++ (WebManager *)sharedManager {
+    static WebManager * sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[WebManager alloc] init];
+        // Do other initialization stuff here...
+    });
+    return sharedInstance;
+}
 
 - (id)init {
     self = [super init];

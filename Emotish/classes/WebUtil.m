@@ -18,7 +18,7 @@ static NSString * WEB_GET_PHOTOS_GROUP_USER_PREFIX = @"EMOTISH_WGP_GU_";
 
 @implementation WebUtil
 
-+ (NSString *)getPhotosGroupIdentifierForGroupClassName:(NSString *)groupClassName groupServerID:(NSString *)groupServerID {
++ (NSString *)getPhotosRequestIdentifierForGroupClassName:(NSString *)groupClassName groupServerID:(NSString *)groupServerID {
     BOOL none = (groupClassName == nil || groupServerID == nil);
     NSString * groupIdentifier = WEB_GET_PHOTOS_GROUP_NONE;
     if (!none) {

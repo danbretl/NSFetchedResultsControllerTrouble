@@ -7,7 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ProcessPhotosOperation.h"
 
 @interface ProcessManager : NSObject
+
++ (ProcessManager *) sharedManager;
+
+- (void) addOperationToProcessPhotos:(NSArray *)photosFromWeb;
 
 @end

@@ -17,7 +17,7 @@
 #import "PushConstants.h"
 #import "EmotishAlertViews.h"
 #import "UIScrollView+StopScroll.h"
-#import "WebUtil.h"
+#import "ProcessManager.h"
 
 #ifdef DEBUG
 #define unlimited_likes_allowed YES
@@ -57,13 +57,14 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (NSString *)photoViewNameForPhotoView:(PhotoView *)photoView;
 - (void)emotishLogoTouched:(UIButton *)button;
 - (void)cameraButtonTouched:(id)sender;
-- (void) gotPhotos:(NSNotification *)notification;
+//- (void) gotPhotos:(NSNotification *)notification;
 //- (void)getPhotosFromServerCallback:(NSArray *)results error:(NSError *)error;
 //@property (strong, nonatomic) PFQuery * getPhotosQuery;
 //@property (strong, nonatomic) WebTask * getPhotosWebTask;
-@property (strong, nonatomic) NSString * getPhotosGroupIdentifier;
-@property (strong, nonatomic) NSDate * getPhotosDate;
-@property (strong, nonatomic) NSMutableArray * photoUpdateQueries;
+@property (strong, nonatomic) WebGetPhotos * getPhotosRequest;
+//@property (strong, nonatomic) NSString * getPhotosGroupIdentifier;
+//@property (strong, nonatomic) NSDate * getPhotosDate;
+//@property (strong, nonatomic) NSMutableArray * photoUpdateQueries;
 - (void) profileButtonTouched:(UIButton *)button;
 - (void) settingsButtonTouched:(UIButton *)button;
 - (void) userCurrent:(PFUser *)userCurrent likedPhotoAttempt:(Photo *)photoLiked;
@@ -97,7 +98,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void) updateHeaderForCurrentFocus;
 - (void) updateAddPhotoLabelForCurrentFocus;
 - (void) cancelAllImageDownloads;
-@property (nonatomic, strong) WebManager * webManagerPrivate;
+//@property (nonatomic, strong) WebManager * webManagerPrivate;
 @end
 
 @implementation PhotosStripViewController
@@ -120,10 +121,11 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize cameraButtonView = _cameraButtonView;
 @synthesize zoomOutGestureRecognizer=_zoomOutGestureRecognizer, swipeUpGestureRecognizer=_swipeUpGestureRecognizer, swipeDownGestureRecognizer=_swipeDownGestureRecognizer, swipeRightHeaderGestureRecognizer=_swipeRightHeaderGestureRecognizer, swipeLeftHeaderGestureRecognizer=_swipeLeftHeaderGestureRecognizer;
 @synthesize finishing=_finishing;
-@synthesize /*getPhotosWebTask=_getPhotosWebTask,*/ getPhotosDate=_getPhotosDate, getPhotosGroupIdentifier=_getPhotosGroupIdentifier;//, getPhotosQuery=_getPhotosQuery;
+//@synthesize /*getPhotosWebTask=_getPhotosWebTask,*/ getPhotosDate=_getPhotosDate, getPhotosGroupIdentifier=_getPhotosGroupIdentifier;//, getPhotosQuery=_getPhotosQuery;
+@synthesize getPhotosRequest=_getPhotosRequest;
 @synthesize signInAlertView=_signInAlertView, confirmDeleteAlertView=_confirmDeleteAlertView, confirmFlagAlertView=_confirmFlagAlertView;
 @synthesize photoToDelete=_photoToDelete;
-@synthesize photoUpdateQueries=_photoUpdateQueries;
+//@synthesize photoUpdateQueries=_photoUpdateQueries;
 @synthesize photoCenterIndex=_photoCenterIndex;
 @synthesize photoViewsPhotoServerIDs=_photoViewsPhotoServerIDs, webImageDownloaders=_webImageDownloaders;
 @synthesize refreshAllRequested=_refreshAllRequested, refreshAllInProgress=_refreshAllInProgress, refreshAllNetChangeBeforePreviousPhotoCenterIndex=_refreshAllNetChangeBeforePreviousPhotoCenterIndex, controllerChangingContent=_controllerChangingContent;
@@ -131,7 +133,7 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 @synthesize scrollJumpInProgress=_scrollJumpInProgress;
 @synthesize swipingInVertically=_swipingInVertically;
 @synthesize delegate=_delegate;
-@synthesize webManagerPrivate=_webManagerPrivate;
+//@synthesize webManagerPrivate=_webManagerPrivate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -139,10 +141,10 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
     if (self) {
         _photoCenterIndex = NSNotFound;
         self.focus = NoFocus;
-        self.photoUpdateQueries = [NSMutableArray array];
+//        self.photoUpdateQueries = [NSMutableArray array];
         self.photoViewsPhotoServerIDs = [NSMutableArray array];
         self.webImageDownloaders = [NSMutableDictionary dictionary];
-        self.webManagerPrivate = [[WebManager alloc] init];
+//        self.webManagerPrivate = [[WebManager alloc] init];
     }
     return self;
 }
@@ -1349,12 +1351,9 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         self.refreshAllInProgress = YES;
         [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
         [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
-        
-        self.getPhotosDate = [NSDate date];
-        self.getPhotosGroupIdentifier = [WebUtil getPhotosGroupIdentifierForGroupClassName:@"Feeling" groupServerID:feeling.serverID];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gotPhotos:) name:WEB_GET_PHOTOS_FINISHED_NOTIFICATION object:nil];
-        [self.webManagerPrivate getPhotosForGroupClassName:@"Feeling" matchingGroupServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000]];
+                
+        self.getPhotosRequest = [[WebGetPhotos alloc] initForPhotosWithFeelingServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"updatedAt" limit:[NSNumber numberWithInt:1000] delegate:self]; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING 
+        [self.getPhotosRequest startWebGetPhotos];
         
     }
     
@@ -1363,52 +1362,51 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
 - (void)getPhotosFromServerForUser:(User *)user {
     
     if (!self.refreshAllInProgress) {
-    
+        
         self.refreshAllInProgress = YES;
         [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
         [self.topBar.backgroundFlagView setOverlayImageViewVisible:YES animated:YES];
         
-        self.getPhotosDate = [NSDate date];
-        self.getPhotosGroupIdentifier = [WebUtil getPhotosGroupIdentifierForGroupClassName:@"User" groupServerID:user.serverID];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gotPhotos:) name:WEB_GET_PHOTOS_FINISHED_NOTIFICATION object:nil];
-        [self.webManagerPrivate getPhotosForGroupClassName:@"User" matchingGroupServerID:user.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:user.webLoadDate dateKey:@"updatedAt" chronologicalSortIsAscending:[NSNumber numberWithBool:NO] limit:[NSNumber numberWithInt:1000]];
+        self.getPhotosRequest = [[WebGetPhotos alloc] initForPhotosWithUserServerID:user.serverID visibleOnly:[NSNumber numberWithBool:NO] beforeEndDate:nil afterStartDate:user.webLoadDate dateKey:@"updatedAt" limit:[NSNumber numberWithInt:1000] delegate:self]; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING 
+        [self.getPhotosRequest startWebGetPhotos];
         
     }
     
 }
 
-- (void) gotPhotos:(NSNotification *)notification {
-    
-    NSString * groupIdentifier = [notification.userInfo objectForKey:WEB_GET_PHOTOS_FINISHED_NOTIFICATION_GROUP_IDENTIFIER_KEY];
-    if ([groupIdentifier isEqualToString:self.getPhotosGroupIdentifier]) {
-
-        [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-        [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
-        
-        BOOL success = [[notification.userInfo objectForKey:WEB_GET_PHOTOS_FINISHED_NOTIFICATION_SUCCESS_KEY] boolValue];
-        if (success) {
-            if (self.focus == FeelingFocus) {
-                self.feelingFocus.webLoadDate = self.getPhotosDate;
-            } else {
-                self.userFocus.webLoadDate = self.getPhotosDate;
-            }
-        }
-        self.getPhotosDate = nil;
-        self.getPhotosGroupIdentifier = nil;
-        self.refreshAllInProgress = NO;
-
-        
+- (void)webGetPhotos:(WebGetPhotos *)webGetPhotos succeededWithPhotos:(NSArray *)photosFromWeb {
+    self.getPhotosRequest = nil;
+    self.refreshAllInProgress = NO;
+    NSLog(@"PhotosStripViewController got photos: %@", photosFromWeb);
+    NSLog(@"Should process them now!");
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
+    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+    if (self.focus == FeelingFocus) {
+        self.feelingFocus.webLoadDate = webGetPhotos.datetimeExecuted;
+    } else {
+        self.userFocus.webLoadDate = webGetPhotos.datetimeExecuted;
     }
+    if (photosFromWeb && photosFromWeb.count > 0) {
+        [ProcessPhotosOperation processPhotos:photosFromWeb withCoreDataManager:self.coreDataManager];
+        //        [[ProcessManager sharedManager] addOperationToProcessPhotos:photosFromWeb];
+    }
+}
 
+- (void)webGetPhotos:(WebGetPhotos *)webGetPhotos failedWithError:(NSError *)error {
+    self.getPhotosRequest = nil;
+    self.refreshAllInProgress = NO;
+    NSLog(@"Error when trying to get photos. Should report error?");
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];    
+    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
 }
 
 - (void) cancelAllWebGetPhotos {
-    [self.webManagerPrivate cancelAll];
+    [self.getPhotosRequest cancelWebGetPhotos];
+    self.getPhotosRequest.delegate = nil;
+    self.getPhotosRequest = nil;
+    self.refreshAllInProgress = NO;
     [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
-    self.getPhotosDate = nil;
-    self.getPhotosGroupIdentifier = nil;
+    [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
 }
 
 // THIS METHOD IS DUPLICATED IN VARIOUS PLACES

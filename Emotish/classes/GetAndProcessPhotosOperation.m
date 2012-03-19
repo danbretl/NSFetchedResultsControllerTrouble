@@ -11,10 +11,10 @@
 #import "CoreDataManager.h"
 #import "EmotishAppDelegate.h"
 
-const BOOL WEB_GET_PHOTOS_CHRONOLOGICAL_SORT_IS_ASCENDING_DEFAULT = NO;
-const BOOL WEB_GET_PHOTOS_VISIBLE_ONLY_DEFAULT = YES;
-const int WEB_GET_PHOTOS_LIMIT_DEFAULT = 10;
-static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updatedAt")
+const BOOL GAP_WEB_GET_PHOTOS_CHRONOLOGICAL_SORT_IS_ASCENDING_DEFAULT = NO;
+const BOOL GAP_WEB_GET_PHOTOS_VISIBLE_ONLY_DEFAULT = YES;
+const int GAP_WEB_GET_PHOTOS_LIMIT_DEFAULT = 10;
+static NSString * GAP_WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updatedAt")
 
 @interface GetAndProcessPhotosOperation()
 - (void) finishedWithSuccess:(BOOL)success;
@@ -54,7 +54,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
         }
         
         if (dateKey == nil) {
-            dateKey = WEB_GET_PHOTOS_DATE_KEY_DEFAULT;
+            dateKey = GAP_WEB_GET_PHOTOS_DATE_KEY_DEFAULT;
         }
         
         if (endDate != nil) {
@@ -66,7 +66,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
             NSLog(@"  whereKey:%@ greaterThanOrEqualTo:%@", dateKey, startDate);
         }
         
-        BOOL ascendingValue = WEB_GET_PHOTOS_CHRONOLOGICAL_SORT_IS_ASCENDING_DEFAULT;
+        BOOL ascendingValue = GAP_WEB_GET_PHOTOS_CHRONOLOGICAL_SORT_IS_ASCENDING_DEFAULT;
         if (ascending != nil) {
             ascendingValue = ascending.boolValue;
         }
@@ -78,7 +78,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
             NSLog(@"  orderByDescending:%@", dateKey);
         }
         
-        int limitValue = WEB_GET_PHOTOS_LIMIT_DEFAULT;
+        int limitValue = GAP_WEB_GET_PHOTOS_LIMIT_DEFAULT;
         if (limit != nil) {
             limitValue = limit.intValue;
         }
@@ -96,13 +96,13 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
 }
 
 - (void)finishedWithSuccess:(BOOL)success {
-    [[NSNotificationCenter defaultCenter] postNotificationName:WEB_GET_PHOTOS_FINISHED_NOTIFICATION object:self userInfo:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:success], WEB_GET_PHOTOS_FINISHED_NOTIFICATION_SUCCESS_KEY, [WebUtil getPhotosGroupIdentifierForGroupClassName:self.groupClassName groupServerID:self.groupServerID], WEB_GET_PHOTOS_FINISHED_NOTIFICATION_GROUP_IDENTIFIER_KEY, nil]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:WEB_GET_PHOTOS_FINISHED_NOTIFICATION object:self userInfo:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:success], WEB_GET_PHOTOS_FINISHED_NOTIFICATION_SUCCESS_KEY, [WebUtil getPhotosRequestIdentifierForGroupClassName:self.groupClassName groupServerID:self.groupServerID], WEB_GET_PHOTOS_FINISHED_NOTIFICATION_GROUP_IDENTIFIER_KEY, nil]];
 }
 
 - (void)main {
     
     if ([self isCancelled]) {
-        NSLog(@"Cancelled");
+        NSLog(@"Cancelled before it even began");
 //        [self finishedWithSuccess:NO];
         return;
     }
@@ -139,7 +139,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
                 for (PFObject * photoServer in objects) {
                     NSLog(@"    Processing Photo %@", photoServer.objectId);
                     if ([self isCancelled]) {
-                        NSLog(@"    Cancelled. Breaking loop.");
+                        NSLog(@"    Cancelled while processing photo %@. Breaking loop.", photoServer.objectId);
                         break;
                     } else {
                         
@@ -172,7 +172,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
                 }
                 
                 if ([self isCancelled]) {
-                    NSLog(@"  Cancelled");
+                    NSLog(@"  Cancelled just before saving core data");
 //                    [self finishedWithSuccess:NO];
                 } else {
                     NSLog(@"  About to save GetAndProcessPhotosOperation's managedObjectContext");

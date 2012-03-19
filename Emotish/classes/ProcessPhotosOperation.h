@@ -7,16 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-
-//@protocol ProcessPhotosOperationDelegate;
+#import "CoreDataManager.h"
 
 @interface ProcessPhotosOperation : NSOperation
 
 @property (strong, nonatomic) NSArray * photos;
-//@property (unsafe_unretained, nonatomic) id<ProcessPhotosOperationDelegate> delegate;
+
+- (id) initWithPhotos:(NSArray *)photos;
+
++ (void) processPhotos:(NSArray *)photos withCoreDataManager:(CoreDataManager *)coreDataManager;
 
 @end
-
-//@protocol ProcessPhotosOperationDelegate <NSObject>
-//- (void)operationFinishedWithSuccess:(NSNumber *)success;
-//@end
