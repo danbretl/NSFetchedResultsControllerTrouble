@@ -65,4 +65,8 @@
     return alertView;
 }
 
++ (UIAlertView *)emailAddedToPasteboardAlertView:(NSString *)emailAddress {
+    return [[UIAlertView alloc] initWithTitle:@"Copied " message:[NSString stringWithFormat:@"We've copied the email address %@ for you, so that you can paste it into your favorite Email app.", emailAddress] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+}
+
 @end

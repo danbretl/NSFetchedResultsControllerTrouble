@@ -1016,6 +1016,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         
 }
 
+// This method is completely ridiculous... There must be a better way.
 - (void) navToRoot {
     
     self.floatingImageView.alpha = 0.0;

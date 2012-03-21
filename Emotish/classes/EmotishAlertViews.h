@@ -30,4 +30,6 @@
 
 + (UIAlertView *) photoLikedAlertViewWithRemoteNotificationUserInfo:(NSDictionary *)userInfo delegate:(id<UIAlertViewDelegate>)delegate;
 
++ (UIAlertView *) emailAddedToPasteboardAlertView:(NSString *)emailAddress;
+
 @end

@@ -420,19 +420,19 @@ const CGFloat PSVC_FLAG_STRETCH_VIEW_HEIGHT_PERCENTAGE_OF_PHOTO_VIEW_IMAGE_HEIGH
         
     }
     
-    if (!self.swipingInVertically) {
-        NSDate * lastReloadDate = self.focus == FeelingFocus ? self.feelingFocus.webLoadDate : self.userFocus.webLoadDate;
-        if (lastReloadDate == nil || abs([lastReloadDate timeIntervalSinceNow]) > 60) {
-            NSLog(@"Should auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
-            if (self.focus == FeelingFocus) {
-                [self getPhotosFromServerForFeeling:self.feelingFocus];
-            } else {
-                [self getPhotosFromServerForUser:self.userFocus];
-            }        
-        } else {
-            NSLog(@"Should not auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
-        }
-    }
+//    if (!self.swipingInVertically) {
+//        NSDate * lastReloadDate = self.focus == FeelingFocus ? self.feelingFocus.webLoadDate : self.userFocus.webLoadDate;
+//        if (lastReloadDate == nil || abs([lastReloadDate timeIntervalSinceNow]) > 60) {
+//            NSLog(@"Should auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
+//            if (self.focus == FeelingFocus) {
+//                [self getPhotosFromServerForFeeling:self.feelingFocus];
+//            } else {
+//                [self getPhotosFromServerForUser:self.userFocus];
+//            }        
+//        } else {
+//            NSLog(@"Should not auto reload %d %d", lastReloadDate == nil, abs([lastReloadDate timeIntervalSinceNow]));
+//        }
+//    }
     
     NSLog(@"%@ PhotosStripViewController viewDidAppear finished", self.focus == FeelingFocus ? @"Feeling" : @"User");
     self.swipingInVertically = NO;

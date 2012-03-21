@@ -14,6 +14,7 @@
 #import "ViewConstants.h"
 #import <Parse/Parse.h>
 #import "UIImageView+WebCache.h"
+#import "EmotishAlertViews.h"
 
 @interface AboutViewController ()
 - (void) backButtonTouched:(UIButton *)button;
@@ -83,10 +84,17 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    self.teamMembers = [self.coreDataManager getEmotishTeamMembers];
-    NSLog(@"self.teamMembers.count = %d", self.teamMembers.count);
     [self.tableView reloadData];
-    [self getEmotishTeamMembersFromServer];
+    if (self.teamMembers.count == 0) {
+    //    self.teamMembers = [self.coreDataManager getEmotishTeamMembers]; // Disabling this just to be absolutely sure that we have all team-member-related data downloaded before we show anything.
+//        NSLog(@"self.teamMembers.count = %d", self.teamMembers.count);
+        [self getEmotishTeamMembersFromServer];
+    }
+}
+
+- (void) viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.teamPhotosQuery cancel];
 }
 
 - (void)backButtonTouched:(UIButton *)button {
@@ -110,7 +118,21 @@
 
 - (void)linkButtonEmailTouched:(UIButton *)linkButtonEmail {
     NSLog(@"%@", NSStringFromSelector(_cmd));
-    // ...
+    NSString * emailAddress = [linkButtonEmail titleForState:UIControlStateNormal];
+    if ([MFMailComposeViewController canSendMail]) {
+        MFMailComposeViewController * mailViewController = [[MFMailComposeViewController alloc] init];
+        mailViewController.mailComposeDelegate = self;
+        [mailViewController setSubject:@"Emotish"];
+        [mailViewController setToRecipients:[NSArray arrayWithObject:emailAddress]];
+        [self presentModalViewController:mailViewController animated:YES];
+    } else {
+        [UIPasteboard generalPasteboard].string = emailAddress;
+        [[EmotishAlertViews emailAddedToPasteboardAlertView:emailAddress] show];
+    }
+}
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error {
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -251,11 +273,12 @@
         [self.coreDataManager saveCoreData];
         self.teamMembers = [self.coreDataManager getEmotishTeamMembers];
         NSLog(@"self.teamMembers.count = %d", self.teamMembers.count);
-//        [self.tableView reloadData];
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(2, self.teamMembers.count)] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView reloadData];
+//        [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(2, self.teamMembers.count)] withRowAnimation:UITableViewRowAnimationFade];
     } else {
         // Do nothing...
     }
+    self.teamPhotosQuery = nil;
 }
 
 @end

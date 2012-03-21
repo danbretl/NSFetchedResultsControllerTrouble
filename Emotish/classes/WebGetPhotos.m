@@ -124,12 +124,12 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
     //        for (PFObject * object in objects) {
     //            NSLog(@"      %@ %@ %@", object.objectId, [[object objectForKey:@"feeling"] objectForKey:@"word"], [[object objectForKey:@"user"] objectForKey:@"username"]);
     //        }
-            self.isExecuting = NO;
             if (!error) {
                 [self.delegate webGetPhotos:self succeededWithPhotos:objects];
             } else {
                 [self.delegate webGetPhotos:self failedWithError:error];
             }
+            self.isExecuting = NO;
         }];
     }
 }
@@ -138,6 +138,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
     if (self.isExecuting) {
         NSLog(@"cancelWebGetPhotos received");
         [self.query cancel]; // No callback
+        self.delegate = nil;
     }
 }
 
