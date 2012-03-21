@@ -62,7 +62,7 @@
     [self.appTextContainer setNeedsLayout];
     
     self.teamTextContainer = [[AboutBlurbView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, 0)];
-    [self.teamTextContainer setBlurbText:@"This app was crafted with care at Redrawn Labs in New York City. We are all about innovative design, speedy iteration, and inspiring technology. And cupcakes. But mostly those first three."];
+    [self.teamTextContainer setBlurbText:@"This app was crafted with care at Redrawn Labs in New York City. We are all about innovative design, speedy iteration, and inspiring technology. And cupcakes. But mostly the first three."];
     [self.teamTextContainer.linksView addLinkButtonWithText:@"redrawnlabs.com" target:self selector:@selector(linkButtonGeneralTouched:)];
     [self.teamTextContainer.linksView addLinkButtonWithText:@"@redrawnlabs" target:self selector:@selector(linkButtonTwitterTouched:)];
     [self.teamTextContainer.linksView addLinkButtonWithText:@"redrawnlabs.tumblr.com" target:self selector:@selector(linkButtonTumblrTouched:)];
