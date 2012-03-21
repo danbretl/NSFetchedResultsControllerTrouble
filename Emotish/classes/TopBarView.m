@@ -45,8 +45,10 @@ const double  TBV_ANIMATION_DURATION = 0.25;
 //@property (strong, nonatomic) UIView * brandingContainer;
 @property (strong, nonatomic) UILabel * brandingStampLabelAlphabetical;
 @property (strong, nonatomic) UILabel * brandingStampLabelRecent;
+@property (strong, nonatomic) UILabel * brandingStampGeneral;
 @property (unsafe_unretained, nonatomic) NSTimer * brandingStampFadeTimer;
 - (void) brandingStampFade:(NSTimer *)timer;
+- (void) setBrandingStampText:(NSString *)brandingStampLabelText forBrandingStampLabel:(UILabel *)brandingStampLabel;
 @end
 
 @implementation TopBarView
@@ -55,7 +57,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
 @synthesize buttonBranding=_buttonBranding, buttonLeftSpecial=_buttonLeftSpecial, buttonLeftSpecialA=_buttonLeftSpecialA, buttonLeftSpecialB=_buttonLeftSpecialB, buttonLeftNormal=_buttonLeftNormal, buttonLeftNormalA=_buttonLeftNormalA, buttonLeftNormalB=_buttonLeftNormalB, buttonRightNormal=_buttonRightNormal, buttonRightNormalA=_buttonRightNormalA, buttonRightNormalB=_buttonRightNormalB, dividerLayer=_dividerLayer;
 @synthesize viewMode=_viewMode, brandingStamp=_brandingStamp;
 @synthesize backgroundView=_backgroundView, backgroundFlagView=_backgroundFlagView;
-@synthesize /*brandingContainer=_brandingContainer, */brandingStampLabelAlphabetical=_brandingStampLabelAlphabetical, brandingStampLabelRecent=_brandingStampLabelRecent, brandingStampFadeTimer=_brandingStampFadeTimer;
+@synthesize /*brandingContainer=_brandingContainer, */brandingStampLabelAlphabetical=_brandingStampLabelAlphabetical, brandingStampLabelRecent=_brandingStampLabelRecent, brandingStampGeneral=_brandingStampGeneral, brandingStampFadeTimer=_brandingStampFadeTimer;
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -83,7 +85,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:self.backgroundView];
     
-    self.backgroundFlagView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, 10, self.bounds.size.width, self.bounds.size.height - 10)];
+    self.backgroundFlagView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, 30, self.bounds.size.width, self.bounds.size.height - 30)];
     self.backgroundFlagView.angledShapes = NO;
     self.backgroundFlagView.icon.hidden = YES;
     self.backgroundFlagView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -110,10 +112,10 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     
     self.brandingStampLabelAlphabetical = [[UILabel alloc] init];
     self.brandingStampLabelRecent = [[UILabel alloc] init];
-    NSDictionary * brandingStampLabels = [NSDictionary dictionaryWithObjectsAndKeys:self.brandingStampLabelAlphabetical, @"a to z", self.brandingStampLabelRecent, @"recent", nil];
+    self.brandingStampGeneral = [[UILabel alloc] init];
+    NSDictionary * brandingStampLabels = [NSDictionary dictionaryWithObjectsAndKeys:self.brandingStampLabelAlphabetical, @"a to z", self.brandingStampLabelRecent, @"recent", self.brandingStampGeneral, @"general", nil];
     for (NSString * brandingStampLabelText in brandingStampLabels) {
         UILabel * brandingStampLabel = [brandingStampLabels objectForKey:brandingStampLabelText];
-        
         brandingStampLabel.textColor = [UIColor colorWithRed:158.0/255.0 green:178.0/255.0 blue:196.0/255.0 alpha:1.0];
         brandingStampLabel.font = [UIFont boldSystemFontOfSize:12.0];
         brandingStampLabel.userInteractionEnabled = NO;
@@ -122,11 +124,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
         brandingStampLabel.textAlignment = UITextAlignmentRight;
         brandingStampLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
         brandingStampLabel.alpha = 0.0;
-        
-        brandingStampLabel.text = brandingStampLabelText;
-        [brandingStampLabel sizeToFit];
-        brandingStampLabel.frame = CGRectMake(self.buttonBranding.frame.size.width - self.buttonBranding.contentEdgeInsets.right - brandingStampLabel.frame.size.width, VC_TOP_BAR_HEIGHT - brandingStampLabel.frame.size.height - 1, brandingStampLabel.frame.size.width, brandingStampLabel.frame.size.height);
-        
+        [self setBrandingStampText:brandingStampLabelText forBrandingStampLabel:brandingStampLabel];
         [self.buttonBranding addSubview:brandingStampLabel];
     }
     
@@ -193,12 +191,23 @@ const double  TBV_ANIMATION_DURATION = 0.25;
     }
 }
 
+- (void) setBrandingStampText:(NSString *)brandingStampLabelText forBrandingStampLabel:(UILabel *)brandingStampLabel {
+    brandingStampLabel.text = brandingStampLabelText;
+    [brandingStampLabel sizeToFit];
+    brandingStampLabel.frame = CGRectMake(self.buttonBranding.frame.size.width - self.buttonBranding.contentEdgeInsets.right - brandingStampLabel.frame.size.width, VC_TOP_BAR_HEIGHT - brandingStampLabel.frame.size.height - 1, brandingStampLabel.frame.size.width, brandingStampLabel.frame.size.height);    
+}
+
 - (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp {
     [self setBrandingStamp:brandingStamp animated:NO];
 }
 
 - (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated {
     [self setBrandingStamp:brandingStamp animated:animated delayedFadeToNone:NO];
+}
+
+- (void)setBrandingStampToCurrentAppVersionAnimated:(BOOL)animated {
+    [self setBrandingStampText:[NSString stringWithFormat:@"v%@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]] forBrandingStampLabel:self.brandingStampGeneral];
+    [self setBrandingStamp:StampVersion animated:animated];
 }
 
 - (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated delayedFadeToNone:(BOOL)shouldFadeToNoneAfterDelay {
@@ -217,6 +226,7 @@ const double  TBV_ANIMATION_DURATION = 0.25;
         [UIView animateWithDuration:animated ? TBV_ANIMATION_DURATION : 0 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             self.brandingStampLabelAlphabetical.alpha = brandingStamp == StampAlphabetical ? 1.0 : 0.0;
             self.brandingStampLabelRecent.alpha = brandingStamp == StampRecent ? 1.0 : 0.0;
+            self.brandingStampGeneral.alpha = (brandingStamp != StampAlphabetical && brandingStamp != StampRecent && brandingStamp != StampNone) ? 1.0 : 0.0;
         } completion:NULL];
         
         if (shouldFadeToNoneAfterDelay) {

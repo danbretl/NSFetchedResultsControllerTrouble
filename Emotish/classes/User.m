@@ -17,7 +17,11 @@
 @dynamic serverID;
 @dynamic likes;
 @dynamic webLoadDate;
-//@dynamic webFetches;
+@dynamic emotishTeamEmail;
+@dynamic emotishTeamOneLiner;
+@dynamic emotishTeamTwitterUsername;
+@dynamic isEmotishTeamMember;
+@dynamic emotishTeamPhoto;
 
 - (NSSet *)photosVisible {
     return [self.photos filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"hidden == NO"]];

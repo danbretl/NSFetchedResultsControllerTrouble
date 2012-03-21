@@ -28,4 +28,6 @@
 
 + (UIAlertView *) userEditedAlertView;
 
++ (UIAlertView *) photoLikedAlertViewWithRemoteNotificationUserInfo:(NSDictionary *)userInfo delegate:(id<UIAlertViewDelegate>)delegate;
+
 @end

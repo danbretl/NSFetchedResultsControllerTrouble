@@ -14,6 +14,8 @@
 + (UIColor *) userColor;
 + (UIColor *) emotishColor;
 
++ (UIColor *)lightEmotishColor;
+
 + (UIColor *) accountInputColor;
 
 + (UIColor *) timeLikesColor;

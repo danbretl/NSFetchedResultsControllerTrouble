@@ -22,6 +22,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
 @property (nonatomic) BOOL isExecuting;
 @property (nonatomic) BOOL isGeneral;
 @property (nonatomic, strong) NSNumber * limit;
+@property (nonatomic, strong) NSString * groupServerID;
 @end
 
 @implementation WebGetPhotos
@@ -31,6 +32,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
 @synthesize datetimeExecuted=_datetimeExecuted, isExecuting=_isExecuting;
 @synthesize isGeneral=_isGeneral;
 @synthesize limit=_limit;
+@synthesize groupServerID=_groupServerID;
 
 - (id)initForPhotosAllWithOptionsVisibleOnly:(NSNumber *)visibleOnly beforeEndDate:(NSDate *)endDate afterStartDate:(NSDate *)startDate dateKey:(NSString *)dateKey limit:(NSNumber *)limit delegate:(id<WebGetPhotosDelegate>)delegate {
     return [self initWithGroupClassName:nil matchingGroupServerID:nil visibleOnly:visibleOnly beforeEndDate:endDate afterStartDate:startDate dateKey:dateKey limit:limit delegate:delegate];
@@ -50,6 +52,7 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
     
     if (self) {
         self.query = [PFQuery queryWithClassName:@"Photo"];
+        NSLog(@"Setting up PFQuery for Photo objects");
         
         self.isGeneral = (groupServerID == nil);
         
@@ -62,6 +65,9 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
                 [self.query whereKey:groupClassName.lowercaseString equalTo:user];
             }
             NSLog(@"  whereKey:%@ equalTo:%@", groupClassName.lowercaseString, groupServerID);
+            self.groupServerID = groupServerID;
+        } else {
+            self.groupServerID = nil;
         }
         
         if (visibleOnly != nil && visibleOnly.boolValue) {

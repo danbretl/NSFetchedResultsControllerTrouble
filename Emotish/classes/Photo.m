@@ -27,6 +27,19 @@
 @dynamic hiddenLocal;
 @dynamic hiddenServer;
 @dynamic showInPhotosStrip;
+@dynamic userForMainPhoto;
+
+- (void)setHidden:(NSNumber *)hidden {
+//    NSLog(@"setHidden");
+    [self willChangeValueForKey:@"hidden"];
+    [self setPrimitiveValue:hidden forKey:@"hidden"];
+    [self didChangeValueForKey:@"hidden"];
+//    NSLog(@"  self.feeling = %@", self.feeling);
+//    NSLog(@"  self.feeling.datetimeMostRecentPhoto = %@", self.feeling.datetimeMostRecentPhoto);
+    [self.feeling updateDatetimeMostRecentPhoto];
+//    NSLog(@"  self.feeling = %@", self.feeling);
+//    NSLog(@"  self.feeling.datetimeMostRecentPhoto = %@", self.feeling.datetimeMostRecentPhoto);
+}
 
 - (BOOL)likeExistsForUserServerID:(NSString *)userServerID {
     BOOL likeExists = NO;

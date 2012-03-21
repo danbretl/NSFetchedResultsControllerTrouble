@@ -7,6 +7,12 @@
 //
 
 #import "CoreDataManager.h"
+#import "NSDateFormatter+EmotishTimeSpans.h"
+
+@interface CoreDataManager ()
+- (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer;
+- (Feeling *) addOrUpdateFeelingFromServer:(PFObject *)feelingServer;
+@end
 
 @implementation CoreDataManager
 
@@ -20,16 +26,26 @@
 }
 
 - (void) saveCoreData {
-    NSError * error;
-    if (![self.managedObjectContext save:&error]) {
-        NSLog(@"Error saving core data: %@", [error localizedDescription]);
-        NSLog(@"%@", [error userInfo]);
-        if ([[error userInfo] objectForKey:@"conflictList"]) {
-            for (NSMergeConflict * mergeConflict in [[error userInfo] objectForKey:@"conflictList"]) {
-                NSLog(@"\n\n%@\n%@\n%@\n%@\n\n", mergeConflict.sourceObject, mergeConflict.cachedSnapshot, mergeConflict.objectSnapshot, mergeConflict.persistedSnapshot);
-            }
-        }
+    NSLog(@"saveCoreData started");
+    NSError *error = nil;
+    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
+    if (managedObjectContext != nil) {
+        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error]) {
+            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+            abort();
+        } 
     }
+    NSLog(@"saveCoreData finished");
+//    NSError * error;
+//    if (![self.managedObjectContext save:&error]) {
+//        NSLog(@"Error saving core data: %@", [error localizedDescription]);
+//        NSLog(@"%@", [error userInfo]);
+//        if ([[error userInfo] objectForKey:@"conflictList"]) {
+//            for (NSMergeConflict * mergeConflict in [[error userInfo] objectForKey:@"conflictList"]) {
+//                NSLog(@"\n\n%@\n%@\n%@\n%@\n\n", mergeConflict.sourceObject, mergeConflict.cachedSnapshot, mergeConflict.objectSnapshot, mergeConflict.persistedSnapshot);
+//            }
+//        }
+//    }
 }
 
 - (NSArray *) getAllObjectsForEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors {
@@ -60,6 +76,10 @@
     return matchingObject;
 }
 
+- (NSArray *)getEmotishTeamMembers {
+    return [self getAllObjectsForEntityName:@"User" predicate:[NSPredicate predicateWithFormat:@"isEmotishTeamMember == YES"] sortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES]]];
+}
+
 - (void)deleteAllLikes {
     NSLog(@"Deleting all likes");
     NSArray * allLikes = [self getAllObjectsForEntityName:@"Like" predicate:nil sortDescriptors:nil];
@@ -85,7 +105,6 @@
     for (Photo * photo in allFlaggedPhotos) {
         photo.hiddenLocal = [NSNumber numberWithBool:NO];
         photo.hidden = photo.hiddenServer;
-        photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
     }
     [self updateAllFeelingDatetimes];
 }
@@ -132,6 +151,12 @@
     User * user = (User *)[self getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", userServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
     user.serverID = userServer.objectId;
     user.name = [userServer objectForKey:@"username"];
+    user.isEmotishTeamMember = [userServer objectForKey:@"isEmotishTeamMember"];
+    if (user.isEmotishTeamMember.boolValue) {
+        user.emotishTeamEmail = [userServer objectForKey:@"emotishTeamEmail"];
+        user.emotishTeamTwitterUsername = [userServer objectForKey:@"emotishTeamTwitterUsername"];
+        user.emotishTeamOneLiner = [userServer objectForKey:@"emotishTeamOneLiner"];
+    }
     return user;
 }
 
@@ -148,19 +173,16 @@
     photo.hiddenServer = [NSNumber numberWithBool:[[photoServer objectForKey:@"deleted"] boolValue] || [[photoServer objectForKey:@"flagged"] boolValue]];
     photo.hidden = [NSNumber numberWithBool:(photo.hiddenServer.boolValue || photo.hiddenLocal.boolValue)];
 //    photo.shouldHighlight = [NSNumber numberWithBool:newObjectMadeIndicator]; // This is unnecessary, for now. This value defaults to YES, which is what we want. Otherwise, it is set to NO when an image is viewed.
-    [photo.feeling updateDatetimeMostRecentPhoto];
     return photo;
 }
 
 - (Photo *)addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer {
+    Feeling * feeling = [self addOrUpdateFeelingFromServer:feelingServer];
+    User * user = [self addOrUpdateUserFromServer:userServer];
     Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
-    photo.feeling = [self addOrUpdateFeelingFromServer:feelingServer];
-    [photo.feeling updateDatetimeMostRecentPhoto];
-//    if (!photo.hidden.boolValue && (photo.feeling.datetimeMostRecentPhoto == nil || [photo.feeling.datetimeMostRecentPhoto compare:photo.datetime] == NSOrderedAscending)) {
-//        photo.feeling.datetimeMostRecentPhoto = photo.datetime;
-//        NSLog(@"photo.feeling.datetimeMostRecentPhoto updated");
-//    }
-    photo.user = [self addOrUpdateUserFromServer:userServer];
+    photo.feeling = feeling;
+    photo.user = user;
+    photo.hidden = photo.hidden;
     return photo;
 }
 
@@ -168,8 +190,6 @@
     Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
     photo.hiddenLocal = [NSNumber numberWithBool:YES];
     photo.hidden = [NSNumber numberWithBool:YES];
-    [photo.feeling updateDatetimeMostRecentPhoto]; // This is touching the Feeling now. This is such a stupid stupid stupid way to do things.
-    //photo.feeling.word = photo.feeling.word; // Touch the Feeling so that the Gallery gets notified of a potential change in a Photo being hidden or not.
     return photo;
 }
 
@@ -197,6 +217,20 @@
     likeLocal.photo = photoLocal;
     likeLocal.user = userLocal;
     return likeLocal;
+}
+
+- (void) debugLogAllFeelingsAlphabetically {
+    NSLog(@"Debugging feelings alphabetically");
+    for (Feeling * feeling in [self getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES]]]) {
+        NSLog(@"  %@ - (%@) - %@", feeling.word, [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES], feeling.datetimeMostRecentPhoto);
+    }
+}
+
+- (void) debugLogAllFeelingsChronologicallyDatetimeMostRecentPhoto {
+    NSLog(@"Debugging feelings chronologically");
+    for (Feeling * feeling in [self getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetimeMostRecentPhoto" ascending:NO]]]) {
+        NSLog(@"  %@ - (%@) - %@", feeling.word, [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES], feeling.datetimeMostRecentPhoto);
+    }
 }
 
 @end

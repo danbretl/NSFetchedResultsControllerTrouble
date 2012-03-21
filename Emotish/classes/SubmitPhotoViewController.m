@@ -118,6 +118,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
     self.feelingTextField.frame = CGRectMake(0, 0, 320, CGRectGetMinY(self.photoView.frame));
     self.feelingTextField.textFieldInsets = UIEdgeInsetsMake(0, self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, PC_PHOTO_CELL_MARGIN_TOP, 320 - (CGRectGetMaxX(self.photoView.frame) - PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL));
     self.feelingTextField.backgroundColor = [UIColor clearColor];
+    self.feelingTextField.textColor = [UIColor feelingColor];
     CAGradientLayer * feelingTextFieldGradientLayer = [CAGradientLayer layer];
     feelingTextFieldGradientLayer.frame = self.feelingTextField.bounds;
     feelingTextFieldGradientLayer.colors = [NSArray arrayWithObjects:(id)[UIColor whiteColor].CGColor, (id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor, nil];

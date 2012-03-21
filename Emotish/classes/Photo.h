@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Feeling, User, Like;//, WebFetch;
+@class Feeling, User, Like;
 
 @interface Photo : NSManagedObject
 
@@ -27,6 +27,7 @@
 @property (nonatomic, retain) NSNumber * hiddenLocal;
 @property (nonatomic, retain) NSNumber * hiddenServer;
 @property (nonatomic, retain) NSNumber * showInPhotosStrip;
+@property (nonatomic, retain) User *userForMainPhoto;
 
 @end
 

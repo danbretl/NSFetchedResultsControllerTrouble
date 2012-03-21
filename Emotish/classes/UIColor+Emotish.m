@@ -22,6 +22,10 @@
     return [UIColor colorWithRed:129.0/255.0 green:151.0/255.0 blue:170.0/255.0 alpha:1.0];
 }
 
++ (UIColor *)lightEmotishColor {
+    return [UIColor colorWithRed:185.0/255.0 green:203.0/255.0 blue:218.0/255.0 alpha:1.0];
+}
+
 + (UIColor *)accountInputColor {
     return [UIColor colorWithRed:137.0/255.0 green:135.0/255.0 blue:135.0/255.0 alpha:1.0];
 }

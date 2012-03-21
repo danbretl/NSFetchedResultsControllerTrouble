@@ -17,7 +17,6 @@
 @dynamic serverID;
 @dynamic datetimeMostRecentPhoto;
 @dynamic webLoadDate;
-//@dynamic webFetches;
 
 - (NSSet *)photosVisible {
     return [self.photos filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"hidden == NO"]];
@@ -42,7 +41,12 @@
 }
 
 - (void)updateDatetimeMostRecentPhoto {
+    NSLog(@"%@ updateDatetimeMostRecentPhoto", self.word);
+    NSLog(@"  self.datetimeMostRecentPhoto = %@", self.datetimeMostRecentPhoto);
+    NSLog(@"  self.mostRecentPhotoVisible.datetime = %@", self.mostRecentPhotoVisible.datetime);
     self.datetimeMostRecentPhoto = self.mostRecentPhotoVisible.datetime;
+    NSLog(@"  self.datetimeMostRecentPhoto = %@", self.datetimeMostRecentPhoto);
+    NSLog(@"  self.mostRecentPhotoVisible.datetime = %@", self.mostRecentPhotoVisible.datetime);
 }
 
 @end

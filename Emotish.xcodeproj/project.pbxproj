@@ -181,12 +181,19 @@
 		32835D7F14ED8A3700CE66A8 /* photo_image_placeholder@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 32835D7D14ED8A3700CE66A8 /* photo_image_placeholder@2x.png */; };
 		329035861512424500E2EB60 /* SDNetworkActivityIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 329035851512423500E2EB60 /* SDNetworkActivityIndicator.m */; };
 		32927EE01511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m in Sources */ = {isa = PBXBuildFile; fileRef = 32927EDF1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m */; };
+		3292B8761519328C0039164B /* SettingsSectionHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3292B8751519328C0039164B /* SettingsSectionHeaderView.m */; };
 		3299A14614D0967A0017FAEF /* GalleryFeelingCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3299A14514D0967A0017FAEF /* GalleryFeelingCell.m */; };
 		3299A14914D096890017FAEF /* GalleryFeelingImageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3299A14814D096890017FAEF /* GalleryFeelingImageCell.m */; };
 		329D112F14D9B0BD00F69263 /* PhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D112E14D9B0BD00F69263 /* PhotoView.m */; };
 		329D113214D9DBF900F69263 /* ClipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329D113114D9DBF900F69263 /* ClipView.m */; };
 		329E2C4314DCBCE5004AE89D /* FlagStretchView.m in Sources */ = {isa = PBXBuildFile; fileRef = 329E2C4214DCBCE5004AE89D /* FlagStretchView.m */; };
 		32A9EDC2150FDEEF00665023 /* CameraButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32A9EDC1150FDEEF00665023 /* CameraButtonView.m */; };
+		32ADA4FB15190409003ED0D2 /* AboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32ADA4F915190409003ED0D2 /* AboutViewController.m */; };
+		32ADA4FC15190409003ED0D2 /* AboutViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 32ADA4FA15190409003ED0D2 /* AboutViewController.xib */; };
+		32ADA50015191B96003ED0D2 /* AboutBlurbView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32ADA4FF15191B96003ED0D2 /* AboutBlurbView.m */; };
+		32B10819151989320079E320 /* EmotishURLManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 32B10818151989320079E320 /* EmotishURLManager.m */; };
+		32B1081D1519A0DF0079E320 /* AboutLinksView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32B1081C1519A0DF0079E320 /* AboutLinksView.m */; };
+		32B108201519A5C50079E320 /* AboutTeamMemberCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 32B1081F1519A5C50079E320 /* AboutTeamMemberCell.m */; };
 		32B8ED4A14FE7A4F0066F253 /* Icon-Small.png in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4714FE7A4F0066F253 /* Icon-Small.png */; };
 		32B8ED4B14FE7A4F0066F253 /* Icon-Small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4814FE7A4F0066F253 /* Icon-Small@2x.png */; };
 		32B8ED4C14FE7A4F0066F253 /* iTunesArtwork in Resources */ = {isa = PBXBuildFile; fileRef = 32B8ED4914FE7A4F0066F253 /* iTunesArtwork */; };
@@ -430,10 +437,9 @@
 		324BEE721501856600A3BB6D /* SBJsonUTF8Stream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SBJsonUTF8Stream.m; path = classes/SBJsonUTF8Stream.m; sourceTree = "<group>"; };
 		324BEE731501856600A3BB6D /* SBJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SBJsonWriter.h; path = classes/SBJsonWriter.h; sourceTree = "<group>"; };
 		324BEE741501856600A3BB6D /* SBJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SBJsonWriter.m; path = classes/SBJsonWriter.m; sourceTree = "<group>"; };
+		324C9DC1151A44FB00AF2166 /* Emotish 012.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 012.xcdatamodel"; sourceTree = "<group>"; };
 		3253338E151137C5000B1127 /* Emotish 010.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 010.xcdatamodel"; sourceTree = "<group>"; };
 		3256D17115139F20008313A7 /* Emotish 011.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 011.xcdatamodel"; sourceTree = "<group>"; };
-		3256D1721513A086008313A7 /* WebFetch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WebFetch.h; path = classes/WebFetch.h; sourceTree = "<group>"; };
-		3256D1731513A086008313A7 /* WebFetch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = WebFetch.m; path = classes/WebFetch.m; sourceTree = "<group>"; };
 		3259455815085E1000423BEC /* UIScrollView+StopScroll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIScrollView+StopScroll.h"; path = "classes/UIScrollView+StopScroll.h"; sourceTree = "<group>"; };
 		3259455915085E1000423BEC /* UIScrollView+StopScroll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIScrollView+StopScroll.m"; path = "classes/UIScrollView+StopScroll.m"; sourceTree = "<group>"; };
 		325C286D14E9843500019977 /* btn_back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_back.png; sourceTree = "<group>"; };
@@ -463,6 +469,8 @@
 		3290AD9E150C6FDA001C9E74 /* Emotish 009.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 009.xcdatamodel"; sourceTree = "<group>"; };
 		32927EDE1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDateFormatter+EmotishTimeSpans.h"; path = "classes/NSDateFormatter+EmotishTimeSpans.h"; sourceTree = "<group>"; };
 		32927EDF1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDateFormatter+EmotishTimeSpans.m"; path = "classes/NSDateFormatter+EmotishTimeSpans.m"; sourceTree = "<group>"; };
+		3292B8741519328C0039164B /* SettingsSectionHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SettingsSectionHeaderView.h; path = classes/SettingsSectionHeaderView.h; sourceTree = "<group>"; };
+		3292B8751519328C0039164B /* SettingsSectionHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SettingsSectionHeaderView.m; path = classes/SettingsSectionHeaderView.m; sourceTree = "<group>"; };
 		32938F7A1510141D00412267 /* CameraConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CameraConstants.h; path = classes/CameraConstants.h; sourceTree = "<group>"; };
 		3299A14214D095B20017FAEF /* GalleryConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryConstants.h; path = classes/GalleryConstants.h; sourceTree = "<group>"; };
 		3299A14414D0967A0017FAEF /* GalleryFeelingCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryFeelingCell.h; path = classes/GalleryFeelingCell.h; sourceTree = "<group>"; };
@@ -477,6 +485,17 @@
 		329E2C4214DCBCE5004AE89D /* FlagStretchView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FlagStretchView.m; path = classes/FlagStretchView.m; sourceTree = "<group>"; };
 		32A9EDC0150FDEEF00665023 /* CameraButtonView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CameraButtonView.h; path = classes/CameraButtonView.h; sourceTree = "<group>"; };
 		32A9EDC1150FDEEF00665023 /* CameraButtonView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CameraButtonView.m; path = classes/CameraButtonView.m; sourceTree = "<group>"; };
+		32ADA4F815190409003ED0D2 /* AboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AboutViewController.h; path = classes/AboutViewController.h; sourceTree = "<group>"; };
+		32ADA4F915190409003ED0D2 /* AboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AboutViewController.m; path = classes/AboutViewController.m; sourceTree = "<group>"; };
+		32ADA4FA15190409003ED0D2 /* AboutViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = AboutViewController.xib; path = classes/AboutViewController.xib; sourceTree = "<group>"; };
+		32ADA4FE15191B96003ED0D2 /* AboutBlurbView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AboutBlurbView.h; path = classes/AboutBlurbView.h; sourceTree = "<group>"; };
+		32ADA4FF15191B96003ED0D2 /* AboutBlurbView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AboutBlurbView.m; path = classes/AboutBlurbView.m; sourceTree = "<group>"; };
+		32B10817151989320079E320 /* EmotishURLManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EmotishURLManager.h; path = classes/EmotishURLManager.h; sourceTree = "<group>"; };
+		32B10818151989320079E320 /* EmotishURLManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EmotishURLManager.m; path = classes/EmotishURLManager.m; sourceTree = "<group>"; };
+		32B1081B1519A0DF0079E320 /* AboutLinksView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AboutLinksView.h; path = classes/AboutLinksView.h; sourceTree = "<group>"; };
+		32B1081C1519A0DF0079E320 /* AboutLinksView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AboutLinksView.m; path = classes/AboutLinksView.m; sourceTree = "<group>"; };
+		32B1081E1519A5C50079E320 /* AboutTeamMemberCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AboutTeamMemberCell.h; path = classes/AboutTeamMemberCell.h; sourceTree = "<group>"; };
+		32B1081F1519A5C50079E320 /* AboutTeamMemberCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AboutTeamMemberCell.m; path = classes/AboutTeamMemberCell.m; sourceTree = "<group>"; };
 		32B8ED4714FE7A4F0066F253 /* Icon-Small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-Small.png"; sourceTree = "<group>"; };
 		32B8ED4814FE7A4F0066F253 /* Icon-Small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-Small@2x.png"; sourceTree = "<group>"; };
 		32B8ED4914FE7A4F0066F253 /* iTunesArtwork */ = {isa = PBXFileReference; lastKnownFileType = file; path = iTunesArtwork; sourceTree = "<group>"; };
@@ -914,6 +933,8 @@
 				32FF145F14FCA6E500829FB0 /* PushConstants.m */,
 				323BDC5015013FC4004FF030 /* EmotishAlertViews.h */,
 				323BDC5115013FC4004FF030 /* EmotishAlertViews.m */,
+				32B10817151989320079E320 /* EmotishURLManager.h */,
+				32B10818151989320079E320 /* EmotishURLManager.m */,
 				32D240CF14E4D6D300AB368C /* TopBarView.h */,
 				32D240D014E4D6D300AB368C /* TopBarView.m */,
 				329E2C4114DCBCE5004AE89D /* FlagStretchView.h */,
@@ -1055,8 +1076,6 @@
 				323B2FDF14D77C4A0035BF74 /* User.m */,
 				3248245C14FC3F5F00BF5E65 /* Like.h */,
 				3248245D14FC3F5F00BF5E65 /* Like.m */,
-				3256D1721513A086008313A7 /* WebFetch.h */,
-				3256D1731513A086008313A7 /* WebFetch.m */,
 				323B2FDB14D77B0E0035BF74 /* CoreDataManager.h */,
 				323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */,
 			);
@@ -1103,6 +1122,8 @@
 				32F1F45014F7F28F005A4803 /* SettingsViewController.h */,
 				32F1F45114F7F28F005A4803 /* SettingsViewController.m */,
 				32F1F45214F7F28F005A4803 /* SettingsViewController.xib */,
+				3292B8741519328C0039164B /* SettingsSectionHeaderView.h */,
+				3292B8751519328C0039164B /* SettingsSectionHeaderView.m */,
 				32F1F45514F8826F005A4803 /* SettingsItemTableViewCell.h */,
 				32F1F45614F8826F005A4803 /* SettingsItemTableViewCell.m */,
 				3237426B150E788100950B4A /* EditAccountViewController.h */,
@@ -1111,6 +1132,15 @@
 				32E14FE5150ED48E00A9D0C2 /* SendFeedbackViewController.h */,
 				32E14FE6150ED48E00A9D0C2 /* SendFeedbackViewController.m */,
 				32E14FE7150ED48F00A9D0C2 /* SendFeedbackViewController.xib */,
+				32ADA4F815190409003ED0D2 /* AboutViewController.h */,
+				32ADA4F915190409003ED0D2 /* AboutViewController.m */,
+				32ADA4FA15190409003ED0D2 /* AboutViewController.xib */,
+				32ADA4FE15191B96003ED0D2 /* AboutBlurbView.h */,
+				32ADA4FF15191B96003ED0D2 /* AboutBlurbView.m */,
+				32B1081B1519A0DF0079E320 /* AboutLinksView.h */,
+				32B1081C1519A0DF0079E320 /* AboutLinksView.m */,
+				32B1081E1519A5C50079E320 /* AboutTeamMemberCell.h */,
+				32B1081F1519A5C50079E320 /* AboutTeamMemberCell.m */,
 			);
 			name = Settings;
 			sourceTree = "<group>";
@@ -1312,6 +1342,7 @@
 				32F2ED1A151462D300A7E882 /* activity_indicator_small_02@2x.png in Resources */,
 				32F2ED1B151462D300A7E882 /* activity_indicator_small_03.png in Resources */,
 				32F2ED1C151462D300A7E882 /* activity_indicator_small_03@2x.png in Resources */,
+				32ADA4FC15190409003ED0D2 /* AboutViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1383,6 +1414,12 @@
 				32CF39611516981400B38163 /* WebUtil.m in Sources */,
 				328339591516BC5000F5851C /* ProcessManager.m in Sources */,
 				3214333C1516D2950054E450 /* WebGetPhotos.m in Sources */,
+				32ADA4FB15190409003ED0D2 /* AboutViewController.m in Sources */,
+				32ADA50015191B96003ED0D2 /* AboutBlurbView.m in Sources */,
+				3292B8761519328C0039164B /* SettingsSectionHeaderView.m in Sources */,
+				32B10819151989320079E320 /* EmotishURLManager.m in Sources */,
+				32B1081D1519A0DF0079E320 /* AboutLinksView.m in Sources */,
+				32B108201519A5C50079E320 /* AboutTeamMemberCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1596,6 +1633,7 @@
 		32E2F1FF14D0929F00191C6F /* Emotish.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				324C9DC1151A44FB00AF2166 /* Emotish 012.xcdatamodel */,
 				3256D17115139F20008313A7 /* Emotish 011.xcdatamodel */,
 				3253338E151137C5000B1127 /* Emotish 010.xcdatamodel */,
 				3290AD9E150C6FDA001C9E74 /* Emotish 009.xcdatamodel */,
@@ -1609,7 +1647,7 @@
 				323B2FCD14D753F00035BF74 /* Emotish 001.xcdatamodel */,
 				32E2F20014D0929F00191C6F /* Emotish.xcdatamodel */,
 			);
-			currentVersion = 3256D17115139F20008313A7 /* Emotish 011.xcdatamodel */;
+			currentVersion = 324C9DC1151A44FB00AF2166 /* Emotish 012.xcdatamodel */;
 			path = Emotish.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

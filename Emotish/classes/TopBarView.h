@@ -18,6 +18,7 @@ typedef enum {
     StampNone = 0,
     StampAlphabetical = 1,
     StampRecent = 2,
+    StampVersion = 3,
 } TopBarBrandingStamp;
 
 typedef enum {
@@ -51,6 +52,7 @@ typedef enum {
 - (void) setViewMode:(TopBarViewMode)viewMode animated:(BOOL)animated;
 - (void) setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated;
 - (void)setBrandingStamp:(TopBarBrandingStamp)brandingStamp animated:(BOOL)animated delayedFadeToNone:(BOOL)shouldFadeToNoneAfterDelay;
+- (void)setBrandingStampToCurrentAppVersionAnimated:(BOOL)animated;
 - (void) showButtonType:(TopBarButtonType)buttonType inPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;
 - (void) hideButtonInPosition:(TopBarButtonPosition)buttonPosition animated:(BOOL)animated;
 - (void) addTarget:(id)target selector:(SEL)selector forButtonPosition:(TopBarButtonPosition)buttonPosition;

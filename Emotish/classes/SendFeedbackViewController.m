@@ -51,11 +51,11 @@ const CGFloat SEND_FEEDBACK_VIEW_PADDING_BOTTOM = 20.0;
     [self.topBar.buttonLeftNormal addTarget:self action:@selector(backButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     [self.topBar.buttonRightNormal addTarget:self action:@selector(doneButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     
-    self.headerLabel.textColor = [UIColor emotishColor];
+    self.headerLabel.textColor = [UIColor lightEmotishColor];
 
     self.textViewContainer.layer.cornerRadius = 10.0;
     self.textViewContainer.layer.borderWidth = 1.0;
-    self.textViewContainer.layer.borderColor = [UIColor colorWithRed:207.0/255.0 green:205.0/255.0 blue:205.0/255.0 alpha:1.0].CGColor;//[UIColor emotishColor].CGColor;
+    self.textViewContainer.layer.borderColor = [UIColor colorWithRed:207.0/255.0 green:205.0/255.0 blue:205.0/255.0 alpha:1.0].CGColor;
 
     self.textView.textColor = [UIColor accountInputColor];
     self.textView.text = self.message;

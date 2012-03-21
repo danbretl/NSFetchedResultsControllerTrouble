@@ -250,6 +250,7 @@ const CGFloat FSV_OVERLAY_IMAGEVIEW_VISIBLE_HANG_OUT_DISTANCE_DEFAULT = 0.0;
                                              [UIImage imageNamed:@"activity_indicator_small_03.png"], nil];
     self.overlayImageView.animationDuration = 0.5;
     self.overlayImageView.alpha = 0.0;
+    self.overlayImageView.clipsToBounds = YES;
     [self addSubview:self.overlayImageView];
     self.overlayImageViewVisibleHangOutDistance = FSV_OVERLAY_IMAGEVIEW_VISIBLE_HANG_OUT_DISTANCE_DEFAULT;
    

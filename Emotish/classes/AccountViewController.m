@@ -71,6 +71,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @property (nonatomic, strong) PF_FBRequest * fbRequestMe;
 @property (nonatomic, unsafe_unretained) NSURLConnection * twConnectionBasicInfo;
 @property (nonatomic, strong) NSMutableData * twConnectionBasicInfoData;
+// Web
+@property (nonatomic, strong) PFQuery * queryForUser;
 
 // Methods - General
 - (void) cancelButtonTouched:(id)sender;
@@ -129,7 +131,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 @synthesize workingOnAccountFromTwitter=_workingOnAccountFromTwitter;
 @synthesize fbRequestMe=_fbRequestMe, twConnectionBasicInfo=_twConnectionBasicInfo, twConnectionBasicInfoData=_twConnectionBasicInfoData;
 @synthesize shouldImmediatelyAttemptFacebookConnect=_shouldImmediatelyAttemptFacebookConnect, shouldImmediatelyAttemptTwitterConnect=_shouldImmediatelyAttemptTwitterConnect;
-@synthesize likesQuery=_likesQuery, flagsQuery=_flagsQuery;
+@synthesize likesQuery=_likesQuery, flagsQuery=_flagsQuery, queryForUser=_queryForUser;
 @synthesize coreDataManager=_coreDataManager;
 @synthesize delegate=_delegate;
 
@@ -288,6 +290,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         self.shouldImmediatelyAttemptTwitterConnect = NO;
         [self connectViaTwitter];
     }
+//    self.topBar.backgroundColor = [UIColor blackColor];
 }
 
 - (IBAction)accountOptionButtonTouched:(id)accountOptionButton {
@@ -326,6 +329,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 
 - (void) disableMainViewsContainerInteractionAndFadeUIExceptForAccountOptionButton:(UIButton *)button {
     self.mainViewsContainer.userInteractionEnabled = NO;
+    self.topBar.buttonLeftNormal.enabled = NO;
+    self.topBar.buttonRightNormal.enabled = NO;
     self.usernameButton.alpha = button == self.usernameButton ? 1.0 : 0.5;
     self.facebookButton.alpha = button == self.facebookButton ? 1.0 : 0.5;
     self.twitterButton.alpha  = button == self.twitterButton  ? 1.0 : 0.5;
@@ -336,6 +341,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 
 - (void) enableMainViewsContainerInteractionAndRestoreUI {
     self.mainViewsContainer.userInteractionEnabled = YES;
+    self.topBar.buttonLeftNormal.enabled = YES;
+    self.topBar.buttonRightNormal.enabled = YES;
     self.usernameButton.alpha = 1.0;
     self.facebookButton.alpha = AVC_FACEBOOK_ENABLED ? 1.0 : 0.5;
     self.twitterButton.alpha = AVC_TWITTER_ENABLED ? 1.0 : 0.5;
@@ -461,6 +468,9 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 }
 
 - (void)cancelButtonTouched:(id)sender {
+    [self.queryForUser cancel];
+    [self.flagsQuery cancel];
+    [self.likesQuery cancel];
     if (initialPromptScreenVisible) {
         [self cancelRequested];
     } else {
@@ -469,8 +479,14 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             self.workingOnAccountFromFacebook = NO;
             self.workingOnAccountFromTwitter = NO;
         }
-        [self showContainer:self.accountOptionsContainer animated:YES];
+        [self showContainer:self.accountOptionsContainer animated:YES];        
     }
+    [[SDNetworkActivityIndicator sharedActivityIndicator] stopAllActivity];
+    [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+    self.topBar.buttonRightNormal.enabled = YES;
+    self.topBar.buttonLeftNormal.enabled = YES;
+    self.view.userInteractionEnabled = YES;
+    self.mainViewsContainer.userInteractionEnabled = YES;
 }
 
 - (void) doneButtonTouched:(id)sender {
@@ -558,9 +574,11 @@ BOOL const AVC_TWITTER_ENABLED = YES;
                 } else {
                     [self.forgotPasswordConnectionErrorAlertView show];
                 }
+                [self.passwordTextField becomeFirstResponder];
             }];
 //            [self.webConnector forgotPasswordForAccountAssociatedWithEmail:self.emailTextField.text];
         } else {
+            [self.passwordTextField becomeFirstResponder];
             // Do nothing.
         }
     } else if (alertView == self.anotherAccountWithUsernameExistsAlertView ||
@@ -628,23 +646,33 @@ BOOL const AVC_TWITTER_ENABLED = YES;
                 self.usernameInputString = idInput;
                 queryKey = @"usernameLowercase";
             }
-            PFQuery * queryForUser = [PFQuery queryForUser];
-            [queryForUser whereKey:queryKey equalTo:idInput.lowercaseString];
-            [queryForUser getFirstObjectInBackgroundWithBlock:^(PFObject * object, NSError * error){
+            self.queryForUser = [PFQuery queryForUser];
+            [self.queryForUser whereKey:queryKey equalTo:idInput.lowercaseString];
+            [[self.view getFirstResponder] resignFirstResponder];
+            self.topBar.buttonRightNormal.enabled = NO;
+            self.mainViewsContainer.userInteractionEnabled = NO;
+            [self.queryForUser getFirstObjectInBackgroundWithBlock:^(PFObject * object, NSError * error){
                 if (!error) {
                     if (object != nil) {
                         PFUser * userObject = (PFUser *)object;
                         NSLog(@"About to call logInWithUsernameInBackground username:%@ password:%@", userObject.username, self.passwordInputString);
                         self.emailInputString = userObject.email; // Sort of a hack...
+//                        self.view.userInteractionEnabled = NO;
+                        self.topBar.buttonLeftNormal.enabled = NO;
                         [PFUser logInWithUsernameInBackground:userObject.username password:self.passwordInputString target:self selector:@selector(logInWithUsernameCallback:error:)];
                     } else {
                         [self showAccountCreationInputViews:YES showPasswordConfirmation:YES activateAppropriateFirstResponder:YES animated:YES];
                         [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+                        self.topBar.buttonRightNormal.enabled = YES;
+                        self.mainViewsContainer.userInteractionEnabled = YES;
                     }
                 } else {
                     NSLog(@"Error: %@ %@", error, [error userInfo]);
                     [[EmotishAlertViews generalConnectionErrorAlertView] show];
                     [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+                    self.topBar.buttonLeftNormal.enabled = YES;
+                    self.topBar.buttonRightNormal.enabled = YES;
+                    self.mainViewsContainer.userInteractionEnabled = YES;
                 }
             }];
             
@@ -765,11 +793,15 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             NSLog(@"Logged in with user %@", user);
             [self.coreDataManager addOrUpdateUserFromServer:user];
             [self.coreDataManager saveCoreData];
+            self.topBar.buttonLeftNormal.enabled = YES;
             [self accountConnectLastStepsForUserServer:user pullLikes:YES pullFlags:YES];
         } else {
             // I *guess* this means that the password was incorrect... Not really fitting into their documentation, but oh well.
             [self.passwordIncorrectAlertView show];
             [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+            self.topBar.buttonLeftNormal.enabled = YES;
+            self.topBar.buttonRightNormal.enabled = YES;
+            self.mainViewsContainer.userInteractionEnabled = YES;
         }
     } else {
         NSLog(@"%@", *error);
@@ -780,7 +812,11 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         [[EmotishAlertViews generalConnectionErrorAlertView] show];
 //        }
         [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+        self.topBar.buttonLeftNormal.enabled = YES;
+        self.topBar.buttonRightNormal.enabled = YES;
+        self.mainViewsContainer.userInteractionEnabled = YES;
     }
+//    self.view.userInteractionEnabled = YES;
 }
 
 - (void) attemptToProceedWithSuccessfulLogin {
@@ -792,6 +828,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             method = TwitterAccountConnect;
         }
         [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
+//        self.topBar.backgroundColor = [UIColor clearColor];
         [self.delegate accountViewController:self didFinishWithConnection:YES viaConnectMethod:method];
     } else {
         NSLog(@"waiting to proceed with successful login, self.waitingForLikes=%d, self.waitingToSubscribeToNotificationsChannel=%d", self.waitingForLikes, self.waitingToSubscribeToNotificationsChannel);
@@ -876,6 +913,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
         
         void(^successfulUserActionBlock)(PFUser *) = ^(PFUser * user){
             [self.coreDataManager addOrUpdateUserFromServer:user];
+            [self.coreDataManager saveCoreData];
             [self accountConnectLastStepsForUserServer:user pullLikes:NO pullFlags:NO];
         };
         
@@ -893,21 +931,35 @@ BOOL const AVC_TWITTER_ENABLED = YES;
             [self.topBar.backgroundFlagView setOverlayImageViewVisible:NO animated:YES];
         };
         
+        [[self.view getFirstResponder] resignFirstResponder];
+        self.topBar.buttonLeftNormal.enabled = NO;
+        self.topBar.buttonRightNormal.enabled = NO;
+        self.mainViewsContainer.userInteractionEnabled = NO;
         if (self.workingOnAccountFromSocialNetwork) {
+//            self.view.userInteractionEnabled = NO;
             [userToWorkWith saveInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
                 if (!error) {
                     successfulUserActionBlock([PFUser currentUser]);
                 } else {
                     respondToUserRelatedErrorBlock(error);
                 }
+                self.topBar.buttonLeftNormal.enabled = YES;
+                self.topBar.buttonRightNormal.enabled = YES;
+                self.mainViewsContainer.userInteractionEnabled = YES;
+//                self.view.userInteractionEnabled = YES;
             }];
         } else {
+            [[self.view getFirstResponder] resignFirstResponder];
             [userToWorkWith signUpInBackgroundWithBlock:^(BOOL succeeded, NSError * error){
                 if (!error) {
                     successfulUserActionBlock([PFUser currentUser]);
                 } else {
                     respondToUserRelatedErrorBlock(error);
                 }
+                self.topBar.buttonLeftNormal.enabled = YES;
+                self.topBar.buttonRightNormal.enabled = YES;
+                self.mainViewsContainer.userInteractionEnabled = YES;
+//                self.view.userInteractionEnabled = YES;
             }];
         }
         
@@ -1119,7 +1171,8 @@ BOOL const AVC_TWITTER_ENABLED = YES;
 - (void)swipedToCancel:(UISwipeGestureRecognizer *)swipeGestureRecognizer {
     if (initialPromptScreenVisible &&
         (swipeGestureRecognizer == self.swipeDownGestureRecognizer ||
-         swipeGestureRecognizer == self.swipeRightGestureRecognizer)) {
+         swipeGestureRecognizer == self.swipeRightGestureRecognizer) &&
+        self.topBar.buttonLeftNormal.enabled) { // Sort of hackish... But, the swipe is really just a different way of accessing cancel button functionality, so I'm sort of OK with it.
             [self cancelRequested];
     }
 }
@@ -1141,6 +1194,7 @@ BOOL const AVC_TWITTER_ENABLED = YES;
     if (self.workingOnAccountFromSocialNetwork) {
         [self deleteAndLogOutCurrentUser];
     }
+//    self.topBar.backgroundColor = [UIColor clearColor];
     [self.delegate accountViewController:self didFinishWithConnection:NO viaConnectMethod:FailureToConnect];
 }
 

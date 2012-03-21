@@ -59,4 +59,10 @@
     return [[UIAlertView alloc] initWithTitle:@"User Updated" message:@"Your user account has successfully been updated." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
 }
 
++ (UIAlertView *)photoLikedAlertViewWithRemoteNotificationUserInfo:(NSDictionary *)userInfo delegate:(id<UIAlertViewDelegate>)delegate {
+    UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"Emotish" message:[[userInfo objectForKey:@"aps"] objectForKey:@"alert"] delegate:self cancelButtonTitle:@"OK" otherButtonTitles:@"Show Me", nil];
+    alertView.delegate = delegate;
+    return alertView;
+}
+
 @end

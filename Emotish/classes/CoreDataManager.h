@@ -32,20 +32,23 @@
 - (void) updateAllFeelingDatetimes;
 - (void) clearAllShowInPhotosStripForFeeling:(Feeling *)feeling;
 - (void) clearAllShowInPhotosStripForUser:(User *)user;
+- (NSArray *) getEmotishTeamMembers;
 
 //- (NSArray *) getFeelings;
 //- (Feeling *) getFeelingAlphabeticallyBeforeFeeling:(Feeling *)feeling;
 //- (Feeling *) getFeelingAlphabeticallyAfterFeeling:(Feeling *)feeling;
 
 // The following methods will get an existing object that matches the given server object's objectID (serverID, locally speaking), or will create one if it doesn't exist already.
-- (Feeling *) addOrUpdateFeelingFromServer:(PFObject *)feelingServer;
 - (User *) addOrUpdateUserFromServer:(PFObject *)userServer;
-//
-- (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer;
 - (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer feelingFromServer:(PFObject *)feelingServer userFromServer:(PFObject *)userServer;
 - (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer withFlagFromServer:(PFObject *)flagServer;
 //
 - (Like *) addOrUpdateLikeFromServer:(PFObject *)likeServer;
 - (Like *) addOrUpdateLikeFromServer:(PFObject *)likeServer photoFromServer:(PFObject *)photoServer userFromServer:(PFObject *)userServer;
 
+@end
+
+@interface CoreDataManager (Debugging)
+- (void) debugLogAllFeelingsAlphabetically;
+- (void) debugLogAllFeelingsChronologicallyDatetimeMostRecentPhoto;
 @end

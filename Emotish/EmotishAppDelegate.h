@@ -23,8 +23,6 @@
 @property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-@property (strong, nonatomic) UIAlertView * notificationAlertView;
-@property (strong, nonatomic) NSString * notificationPhotoServerID;
 - (void) attemptNavigateToPhotoWithServerID:(NSString *)photoServerID;
 
 - (void)saveContext;

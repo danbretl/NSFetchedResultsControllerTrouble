@@ -11,6 +11,7 @@
 #import "PushConstants.h"
 #import "NotificationConstants.h"
 #import "SDImageCache.h"
+#import "EmotishAlertViews.h"
 
 //#ifdef DEBUG
 //#define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
@@ -22,6 +23,8 @@
 
 @interface EmotishAppDelegate()
 @property (nonatomic) BOOL appOpenedURLFlag;
+@property (strong, nonatomic) UIAlertView * notificationAlertView;
+@property (strong, nonatomic) NSString * notificationPhotoServerID;
 @end
 
 @implementation EmotishAppDelegate
@@ -47,6 +50,62 @@
     [PFTwitterUtils initializeWithConsumerKey:@"mWfvpMuJ480juFn64Ejc1Q" consumerSecret:@"qPdtbIQCcMQdCjte4CVEfzFhjPC7tSEGuOsF8WbYo"];
 
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
+    
+//    NSLog(@"TEAM MEMBERS UTIL BEGIN");
+//    NSLog(@"TEAM MEMBERS UTIL BEGIN");
+//    NSLog(@"TEAM MEMBERS UTIL BEGIN");
+//    PFQuery * teamMembersQuery = [PFQuery queryForUser];
+//    [teamMembersQuery whereKey:@"isEmotishTeamMember" equalTo:[NSNumber numberWithBool:YES]];
+//    [teamMembersQuery includeKey:@"emotishTeamPhoto"];
+//    NSArray * teamMembers = [teamMembersQuery findObjects];
+//    NSLog(@"  FOUND %d TEAM MEMBERS", teamMembers.count);
+//    for (PFUser * teamMember in teamMembers) {
+//        NSLog(@"    %@", teamMember.username);
+//        PFObject * teamPhoto = [teamMember objectForKey:@"emotishTeamPhoto"];
+//        [teamPhoto setObject:[NSNumber numberWithBool:YES] forKey:@"isEmotishTeamPhoto"];
+//        [teamPhoto save];
+//    }
+//    NSLog(@"TEAM MEMBERS UTIL END");
+//    NSLog(@"TEAM MEMBERS UTIL END");
+//    NSLog(@"TEAM MEMBERS UTIL END");
+
+    
+//    NSLog(@"Debugging at start up...");
+    
+//    BOOL SHOULD_START_FRESH = YES; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+//    
+//    // Debugging...
+//    BOOL SHOULD_FLUSH_DATABASE = SHOULD_START_FRESH;
+//    if (SHOULD_FLUSH_DATABASE) {
+//        NSLog(@"Flushing database");
+//        NSArray * photos = [self.coreDataManager getAllObjectsForEntityName:@"Photo" predicate:nil sortDescriptors:nil];
+//        NSLog(@"  Deleting %d photos", photos.count);
+//        for (Photo * photo in photos) {
+//            [self.coreDataManager.managedObjectContext deleteObject:photo];
+//        }
+//        NSArray * feelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
+//        NSLog(@"  Deleting %d feelings", feelings.count);
+//        for (Feeling * feeling in feelings) {
+//            [self.coreDataManager.managedObjectContext deleteObject:feeling];
+//        }
+//        NSArray * users = [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil];
+//        NSLog(@"  Deleting %d users", users.count);
+//        for (User * user in users) {
+//            [self.coreDataManager.managedObjectContext deleteObject:user];
+//        }
+//        NSArray * likes = [self.coreDataManager getAllObjectsForEntityName:@"Like" predicate:nil sortDescriptors:nil];
+//        NSLog(@"  Deleting %d likes", likes.count);
+//        for (Like * like in likes) {
+//            [self.coreDataManager.managedObjectContext deleteObject:like];
+//        }
+//        [[NSUserDefaults standardUserDefaults] setObject:nil forKey:WEB_RELOAD_ALL_DATE_KEY];
+//    }
+////    [self.coreDataManager saveCoreData];
+//    BOOL SHOULD_LOG_OUT = SHOULD_START_FRESH;
+//    if (SHOULD_LOG_OUT) {
+//        NSLog(@"Forcing logout");
+//        [PFUser logOut];
+//    }
     
     [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge|UIRemoteNotificationTypeAlert|UIRemoteNotificationTypeSound];
     
@@ -99,6 +158,7 @@
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
+    NSLog(@"applicationWillResignActive");
     /*
      Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
      Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
@@ -106,6 +166,7 @@
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
+    NSLog(@"applicationDidEnterBackground");
     [self saveContext];
     /* Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
      If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits. */
@@ -126,6 +187,7 @@
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
+    NSLog(@"applicationWillTerminate");
     // Saves changes in the application's managed object context before the application terminates.
     [self saveContext];
 }
@@ -159,8 +221,7 @@
     } else {
         if (application.applicationState == UIApplicationStateActive) {
             NSLog(@"Application is active");
-            self.notificationAlertView = [[UIAlertView alloc] initWithTitle:@"Emotish" message:[[userInfo objectForKey:@"aps"] objectForKey:@"alert"] delegate:self cancelButtonTitle:@"OK" otherButtonTitles:@"Show Me", nil];
-            self.notificationAlertView.delegate = self;
+            self.notificationAlertView = [EmotishAlertViews photoLikedAlertViewWithRemoteNotificationUserInfo:userInfo delegate:self];
             [self.notificationAlertView show];
         } else {
             NSLog(@"Application was inactive");
@@ -171,7 +232,8 @@
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (alertView == self.notificationAlertView && buttonIndex != self.notificationAlertView.cancelButtonIndex) {
+    if (alertView == self.notificationAlertView && 
+        buttonIndex != self.notificationAlertView.cancelButtonIndex) {
         // Should navigate user to photo...
         [self attemptNavigateToPhotoWithServerID:self.notificationPhotoServerID];
     }
@@ -180,12 +242,6 @@
 
 - (void)attemptNavigateToPhotoWithServerID:(NSString *)photoServerID {
     
-    // Currently either...
-    // - In Gallery
-    // - In Feeling or User PhotosStrip
-    // - In Camera View or Photo Submission Screen
-    // - In Settings
-    
     if (self.rootNavController.visibleViewController == self.galleryViewController) {
         NSLog(@"Gallery is visible.");
     } else {
@@ -193,24 +249,15 @@
     }
 
     [self.galleryViewController navToRootAndShowUserStripViewControllerForPhotoWithServerID:photoServerID];
-
-//    [self.rootNavController popToRootViewControllerAnimated:NO];
-//    [self.galleryViewController 
-//    if (self.rootNavController.visibleViewController == self.galleryViewController) {
-//        
-//    } else {
-//        
-//    }
     
 }
 
 - (void)saveContext {
     NSError *error = nil;
     NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
-    if (managedObjectContext != nil)
-    {
-        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error])
-        {
+    if (managedObjectContext != nil) {
+        if ( [managedObjectContext hasChanges] && 
+            ![managedObjectContext save:&error]) {
             /*
              Replace this implementation with code to handle the error appropriately.
              

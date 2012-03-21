@@ -17,7 +17,11 @@
 @property (nonatomic, retain) NSString * serverID;
 @property (nonatomic, retain) NSSet * likes;
 @property (nonatomic, retain) NSDate * webLoadDate;
-//@property (nonatomic, retain) NSSet *webFetches;
+@property (nonatomic, retain) NSString * emotishTeamEmail;
+@property (nonatomic, retain) NSString * emotishTeamOneLiner;
+@property (nonatomic, retain) NSString * emotishTeamTwitterUsername;
+@property (nonatomic, retain) NSNumber * isEmotishTeamMember;
+@property (nonatomic, retain) Photo *emotishTeamPhoto;
 @end
 
 @interface User (CoreDataGeneratedAccessors)
@@ -29,10 +33,6 @@
 - (void)removePhotosObject:(Photo *)value;
 - (void)addPhotos:(NSSet *)values;
 - (void)removePhotos:(NSSet *)values;
-//- (void)addWebFetchesObject:(WebFetch *)value;
-//- (void)removeWebFetchesObject:(WebFetch *)value;
-//- (void)addWebFetches:(NSSet *)values;
-//- (void)removeWebFetches:(NSSet *)values;
 @end
 
 @interface User (Convenience)

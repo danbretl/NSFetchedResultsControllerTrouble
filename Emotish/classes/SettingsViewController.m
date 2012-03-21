@@ -15,6 +15,8 @@
 #import "NotificationConstants.h"
 #import "EditAccountViewController.h"
 #import "SendFeedbackViewController.h"
+#import "AboutViewController.h"
+#import "SettingsSectionHeaderView.h"
 
 @interface SettingsItem : NSObject
 @property (nonatomic, strong) NSString * titleNormal;
@@ -414,8 +416,9 @@
 - (void) aboutEmotishTouched:(SettingsItem *)settingsItem {
     // Push a VC about the app and team
     NSLog(@"%@", NSStringFromSelector(_cmd));    
-    [self.tempUnfinishedAlertView show];
-    [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+    AboutViewController * aboutViewController = [[AboutViewController alloc] initWithNibName:@"AboutViewController" bundle:[NSBundle mainBundle]];
+    aboutViewController.coreDataManager = self.coreDataManager;
+    [self.navigationController pushViewController:aboutViewController animated:YES];
 }
 - (void) rateInAppStoreTouched:(SettingsItem *)settingsItem {
     // Multitask away to the App Store
@@ -446,11 +449,6 @@
     cell.highlightedBackgroundColor = [[SettingsViewController colorForSection:indexPath.section] colorWithAlphaComponent:0.20];
     cell.arrowView.alpha = settingsItem.showArrowCurrent.boolValue ? 1.0 : 0.0;
     
-//    // TEMPORARY... VISIBLY DISABLING FACEBOOK & TWITTER CONNECT UNTIL WE IMPLEMENT THOSE FEATURES
-//    BOOL tempDisable = indexPath.section == 1 && indexPath.row < 2;
-//    cell.userInteractionEnabled = !tempDisable;
-//    cell.textLabel.alpha = tempDisable ? 0.5 : 1.0;
-    
     // Return the cell
     return cell;
     
@@ -466,24 +464,11 @@
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView * sectionHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, [self tableView:tableView heightForHeaderInSection:section])];
-    sectionHeaderView.backgroundColor = [UIColor whiteColor];
-    UIView * sectionHeaderBorderBottom = [[UIView alloc] initWithFrame:CGRectMake(0, sectionHeaderView.frame.size.height - 1, sectionHeaderView.frame.size.width, 1)];
-    sectionHeaderBorderBottom.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-    sectionHeaderBorderBottom.backgroundColor = tableView.separatorColor;
-    [sectionHeaderView addSubview:sectionHeaderBorderBottom];
-    CGFloat sectionHeaderLabelPaddingHorizontal = 20.0;
-    UILabel * sectionHeaderLabel = [[UILabel alloc] initWithFrame:CGRectMake(sectionHeaderLabelPaddingHorizontal, 0, sectionHeaderView.frame.size.width - 2 * sectionHeaderLabelPaddingHorizontal, sectionHeaderView.frame.size.height)];
-    sectionHeaderLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    sectionHeaderLabel.textColor = [SettingsViewController colorForSection:section];
-    sectionHeaderLabel.font = [UIFont boldSystemFontOfSize:38.0];
-    sectionHeaderLabel.textAlignment = UITextAlignmentLeft;
-    sectionHeaderLabel.adjustsFontSizeToFitWidth = NO;
-    sectionHeaderLabel.backgroundColor = [UIColor clearColor];
-    sectionHeaderLabel.text = [self tableView:tableView titleForHeaderInSection:section];
-    [sectionHeaderView addSubview:sectionHeaderLabel];
-    sectionHeaderView.alpha = 0.8;
-    return sectionHeaderView;
+    SettingsSectionHeaderView * headerView = [[SettingsSectionHeaderView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, [self tableView:tableView heightForHeaderInSection:section])];
+    headerView.labelText = [self tableView:tableView titleForHeaderInSection:section];
+    headerView.labelTextColor = [SettingsViewController colorForSection:section];
+    headerView.borderBottomColor = tableView.separatorColor;
+    return headerView;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -495,17 +480,14 @@
 }
 
 + (UIColor *)colorForSection:(NSUInteger)section {
-    CGFloat red, green, blue;
+    UIColor * colorForSection = nil;
     switch (section) {
-        case 0: red=115; green=205; blue=247; break;
-        case 1: red=254; green=180; blue= 36; break;
-        case 2: red=185; green=203; blue=218; break;
-        default:  
-            red = 0; green = 0; blue = 0;
-            NSLog(@"ERROR in SettingsViewController - unrecognized section number %d", section);
-            break;
+        case 0: colorForSection = [UIColor userColor];         break;
+        case 1: colorForSection = [UIColor feelingColor];      break;
+        case 2: colorForSection = [UIColor lightEmotishColor]; break;
+        default: NSLog(@"ERROR in SettingsViewController - unrecognized section number %d", section); break;
     }
-    return [UIColor colorWithRed:red/255.0 green:green/255.0 blue:blue/255.0 alpha:1.0];
+    return colorForSection;
 }
 
 - (SettingsItem *)settingsItemForIndexPath:(NSIndexPath *)indexPath {

@@ -90,11 +90,16 @@
         PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
         PFObject * userServer    = [photoServer objectForKey:@"user"];
         Photo * photoLocal = [coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
-        NSLog(@"Added or updated photo %@", photoLocal);
+        NSLog(@"Added or updated photo %@ (%@ %@)", photoLocal.serverID, photoLocal.user.name, photoLocal.feeling.word);
     }
 
-    [coreDataManager saveCoreData];
+//    [coreDataManager saveCoreData];
     
 }
+
+//+ (void) updateFeelingsChronologicalSortWithCoreDataManager:(CoreDataManager *)coreDataManager {
+////    NSArray * feelings = [coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:[NSPredicate predicateWithFormat:@"ANY photos.hidden == NO"] sortDescriptors:nil];
+//    [coreDataManager updateAllFeelingDatetimes];
+//}
 
 @end
