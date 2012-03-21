@@ -24,7 +24,6 @@ const CGFloat ATMC_PADDING_TOP = 0.0;
         self.photoView.photoImageView.clipsToBounds = YES;
         self.photoView.userInteractionEnabled = YES;
         self.photoView.photoCaptionTextField.textColor = [UIColor feelingColor];
-        self.photoView.delegate = self;
         self.photoView.actionButtonsEnabled = NO;
         [self.photoView showInfo:NO animated:NO];
         [self addSubview:self.photoView];

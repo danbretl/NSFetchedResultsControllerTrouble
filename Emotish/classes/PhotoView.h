@@ -43,6 +43,10 @@ typedef enum {
 - (void) setActionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode enabled:(BOOL)enabled visible:(BOOL)visible;
 - (UIButton *)actionButtonWithCode:(PhotoViewActionButtonCode)actionButtonCode;
 
+@property (strong, nonatomic) UITapGestureRecognizer *       tapSingleGestureRecognizer;
+@property (strong, nonatomic) UITapGestureRecognizer *       tapDoubleGestureRecognizer;
+@property (strong, nonatomic) UILongPressGestureRecognizer * tapHoldGestureRecognizer;
+
 @property (unsafe_unretained, nonatomic) id<PhotoViewDelegate> delegate;
 
 @end

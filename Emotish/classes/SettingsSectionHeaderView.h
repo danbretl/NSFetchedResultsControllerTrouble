@@ -18,4 +18,6 @@
 @property (nonatomic) CGFloat paddingLeft;
 @property (nonatomic) CGFloat paddingRight;
 
+@property (nonatomic, strong) UIButton * button;
+
 @end

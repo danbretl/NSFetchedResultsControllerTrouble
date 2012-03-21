@@ -15,6 +15,7 @@
 #import <Parse/Parse.h>
 #import "UIImageView+WebCache.h"
 #import "EmotishAlertViews.h"
+#import "NotificationConstants.h"
 
 @interface AboutViewController ()
 - (void) backButtonTouched:(UIButton *)button;
@@ -24,6 +25,7 @@
 - (void) linkButtonEmailTouched:(UIButton *)linkButtonEmail;
 - (void) getEmotishTeamMembersFromServer;
 - (void) getEmotishTeamMembersFromServerCallback:(NSArray *)teamMemberPhotos error:(NSError *)error;
+- (void) sectionHeaderButtonTouched:(UIButton *)sectionHeaderButton;
 @property (nonatomic, strong) NSArray * teamMembers;
 @property (nonatomic, strong) PFQuery * teamPhotosQuery;
 @end
@@ -185,6 +187,7 @@
     }
     
     UITableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:CellID];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
     if (cell == nil) {
         if (isAppCell || isTeamCell) {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellID];
@@ -211,6 +214,12 @@
         [teamMemberCell.linksView removeAllLinkButtons];
         [teamMemberCell.linksView addLinkButtonWithText:[NSString stringWithFormat:@"@%@", teamMember.emotishTeamTwitterUsername] target:self selector:@selector(linkButtonTwitterTouched:)];
         [teamMemberCell.linksView addLinkButtonWithText:teamMember.emotishTeamEmail target:self selector:@selector(linkButtonEmailTouched:)];
+        
+        teamMemberCell.photoView.delegate = self;
+        teamMemberCell.photoView.tapSingleGestureRecognizer.enabled = YES;
+        teamMemberCell.photoView.tapDoubleGestureRecognizer.enabled = NO;
+        teamMemberCell.photoView.tag = indexPath.section - 2;
+        
         
     }
 
@@ -242,6 +251,8 @@
 //    headerView.borderBottomColor = [UIColor whiteColor];// tableView.separatorColor;
     if (section > 1) {
         headerView.paddingLeft = PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X;
+        headerView.button.tag = section - 2;
+        [headerView.button addTarget:self action:@selector(sectionHeaderButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
     }
     return headerView;
 }
@@ -279,6 +290,32 @@
         // Do nothing...
     }
     self.teamPhotosQuery = nil;
+}
+
+- (void) userTouchedForSectionIndex:(int)sectionIndex {
+    
+    User * teamMember = [self.teamMembers objectAtIndex:sectionIndex];
+    NSLog(@"userTouchedForSectionIndex:%d", sectionIndex);
+    NSLog(@"teamMember : %@", teamMember);
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_NAVIGATE_TO_USER_PHOTO object:nil userInfo:[NSDictionary dictionaryWithObjectsAndKeys:teamMember.serverID, NOTIFICATION_NAVIGATE_TO_USER_PHOTO_KEY_USER_SERVER_ID, teamMember.emotishTeamPhoto.serverID, NOTIFICATION_NAVIGATE_TO_USER_PHOTO_KEY_PHOTO_SERVER_ID, nil]];
+    
+}
+
+- (void) sectionHeaderButtonTouched:(UIButton *)sectionHeaderButton {
+    [self userTouchedForSectionIndex:sectionHeaderButton.tag];
+}
+
+- (void) photoView:(PhotoView *)photoView photoCaptionButtonTouched:(UIButton *)photoCaptionButton {
+    [self userTouchedForSectionIndex:photoView.tag];
+}
+
+- (void)photoView:(PhotoView *)photoView tapSingleGestureDidBegin:(UITapGestureRecognizer *)gestureRecognizer {
+    // Do nothing... This is dumb.
+}
+
+- (void) photoView:(PhotoView *)photoView tapSingleGestureRecognized:(UITapGestureRecognizer *)gestureRecognizer {
+    [self userTouchedForSectionIndex:photoView.tag];    
 }
 
 @end

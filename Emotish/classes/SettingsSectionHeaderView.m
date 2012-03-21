@@ -19,7 +19,7 @@ const CGFloat SSHV_PADDING_RIGHT_DEFAULT = 20.0;
 @implementation SettingsSectionHeaderView
 
 @synthesize borderBottomColor=_borderBottomColor, labelText=_labelText, labelTextColor=_labelTextColor;
-@synthesize borderBottomView=_borderBottomView, label=_label;
+@synthesize borderBottomView=_borderBottomView, label=_label, button=_button;
 @synthesize paddingLeft=_paddingLeft, paddingRight=_paddingRight;
 @synthesize borderBottomVisible=_borderBottomVisible;
 
@@ -45,6 +45,11 @@ const CGFloat SSHV_PADDING_RIGHT_DEFAULT = 20.0;
         self.label.adjustsFontSizeToFitWidth = NO;
         self.label.backgroundColor = [UIColor clearColor];
         [self addSubview:self.label];
+        
+        self.button = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.button.frame = self.bounds;
+        self.button.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self addSubview:self.button];
         
     }
     return self;

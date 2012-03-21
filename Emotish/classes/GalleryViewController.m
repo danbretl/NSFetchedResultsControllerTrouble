@@ -17,6 +17,7 @@
 #import "NSDateFormatter+EmotishTimeSpans.h"
 #import "SDNetworkActivityIndicator.h"
 #import "ProcessManager.h"
+#import "NotificationConstants.h"
 
 static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
@@ -40,7 +41,8 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 @property (nonatomic, strong) NSMutableSet * getPhotosRequests;
 - (void) cancelAllWebGetPhotos;
 - (BOOL) getPhotosRequestIsExecutingForFeelingServerID:(NSString *)feelingServerID;
-- (void)setVisibleCellLoadingIndicatorIsVisible:(BOOL)visible forFeelingServerID:(NSString *)feelingServerID animated:(BOOL)animated;
+- (void) setVisibleCellLoadingIndicatorIsVisible:(BOOL)visible forFeelingServerID:(NSString *)feelingServerID animated:(BOOL)animated;
+- (void) navToRootAndShowUserStripViewControllerForNotification:(NSNotification *)notification;
 @end
 
 @implementation GalleryViewController
@@ -80,6 +82,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
         [[NSUserDefaults standardUserDefaults] setInteger:self.galleryMode forKey:GALLERY_MODE_KEY];
 //        self.webManagerPrivate = [[WebManager alloc] init];
         self.getPhotosRequests = [NSMutableSet set];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(navToRootAndShowUserStripViewControllerForNotification:) name:NOTIFICATION_NAVIGATE_TO_USER_PHOTO object:nil];
+        
     }
     return self;
 }
@@ -979,6 +984,14 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     NSLog(@"Error when trying to get photos. Should report error?");
     [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
     [self setVisibleCellLoadingIndicatorIsVisible:NO forFeelingServerID:webGetPhotos.groupServerID animated:YES];
+}
+
+- (void) navToRootAndShowUserStripViewControllerForNotification:(NSNotification *)notification {
+    
+//    NSString * userServerID = [notification.userInfo objectForKey:NOTIFICATION_NAVIGATE_TO_USER_PHOTO_KEY_USER_SERVER_ID];
+    NSString * photoServerID = [notification.userInfo objectForKey:NOTIFICATION_NAVIGATE_TO_USER_PHOTO_KEY_PHOTO_SERVER_ID];
+    [self navToRootAndShowUserStripViewControllerForPhotoWithServerID:photoServerID];
+    
 }
 
 - (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID {

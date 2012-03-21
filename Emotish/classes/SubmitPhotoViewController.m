@@ -108,6 +108,7 @@ const CGFloat SPVC_FEELINGS_TABLE_VIEW_CAMERA_PADDING_VERTICAL = 10.0;
     self.photoView.photoCaptionTextField.textColor = [UIColor userColor];
     self.photoView.delegate = self;
     self.photoView.actionButtonsEnabled = NO;
+    self.photoView.tapDoubleGestureRecognizer.enabled = NO;
     [self.photoView showInfo:NO animated:NO];
     
 //    self.feelingTextField.frame = CGRectMake(self.photoView.frame.origin.x + PC_PHOTO_CELL_IMAGE_MARGIN_HORIZONTAL, CGRectGetMaxY(self.topBar.frame), PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, CGRectGetMinY(self.photoView.frame) - CGRectGetMaxY(self.topBar.frame));

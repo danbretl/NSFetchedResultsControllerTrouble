@@ -11,8 +11,9 @@
 #import "AboutBlurbView.h"
 #import "CoreDataManager.h"
 #import <MessageUI/MessageUI.h>
+#import "PhotoView.h"
 
-@interface AboutViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, MFMailComposeViewControllerDelegate>
+@interface AboutViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, MFMailComposeViewControllerDelegate, PhotoViewDelegate>
 
 @property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
 @property (unsafe_unretained, nonatomic) IBOutlet UITableView * tableView;
