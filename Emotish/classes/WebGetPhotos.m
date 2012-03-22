@@ -118,12 +118,6 @@ static NSString * WEB_GET_PHOTOS_DATE_KEY_DEFAULT = @"createdAt"; // (or @"updat
         self.datetimeExecuted = [NSDate date];
 
         [self.query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-    //        NSLog(@"  Found objects");
-    //        NSLog(@"    Error: %@ %@ %@", error, error.description, error.userInfo);
-    //        NSLog(@"    Objects: (%d)", objects.count);
-    //        for (PFObject * object in objects) {
-    //            NSLog(@"      %@ %@ %@", object.objectId, [[object objectForKey:@"feeling"] objectForKey:@"word"], [[object objectForKey:@"user"] objectForKey:@"username"]);
-    //        }
             if (!error) {
                 [self.delegate webGetPhotos:self succeededWithPhotos:objects];
             } else {

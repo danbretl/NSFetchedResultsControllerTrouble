@@ -9,7 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "CoreDataManager.h"
 #import "WebGetPhotos.h"
-#import "GalleryConstants.h"
+
+typedef enum {
+    GalleryAlphabetical = 1,
+    GalleryRecent = 2,
+} GalleryMode;
 
 @interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, WebGetPhotosDelegate>
 

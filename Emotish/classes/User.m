@@ -20,7 +20,6 @@
 @dynamic emotishTeamEmail;
 @dynamic emotishTeamOneLiner;
 @dynamic emotishTeamTwitterUsername;
-@dynamic isEmotishTeamMember;
 @dynamic emotishTeamPhoto;
 
 - (NSSet *)photosVisible {

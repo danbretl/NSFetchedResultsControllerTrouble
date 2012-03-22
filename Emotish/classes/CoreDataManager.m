@@ -85,12 +85,6 @@
     User * user = (User *)[self getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", userServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
     user.serverID = userServer.objectId;
     user.name = [userServer objectForKey:@"username"];
-    user.isEmotishTeamMember = [userServer objectForKey:@"isEmotishTeamMember"];
-    if (user.isEmotishTeamMember.boolValue) {
-        user.emotishTeamEmail = [userServer objectForKey:@"emotishTeamEmail"];
-        user.emotishTeamTwitterUsername = [userServer objectForKey:@"emotishTeamTwitterUsername"];
-        user.emotishTeamOneLiner = [userServer objectForKey:@"emotishTeamOneLiner"];
-    }
     return user;
 }
 
@@ -98,12 +92,7 @@
     BOOL newObjectMadeIndicator;
     Photo * photo = (Photo *)[self getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", photoServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
     photo.serverID = photoServer.objectId;
-    PFFile * imageFile = [photoServer objectForKey:@"image"];
-    photo.imageURL = imageFile.url;
-    PFFile * thumbFile = [photoServer objectForKey:@"thumb"];
-    photo.thumbURL = thumbFile.url;
     photo.datetime = photoServer.createdAt;
-    photo.likesCount = [photoServer objectForKey:@"likesCount"];
     photo.hiddenServer = [NSNumber numberWithBool:[[photoServer objectForKey:@"deleted"] boolValue] || [[photoServer objectForKey:@"flagged"] boolValue]];
     photo.hidden = [NSNumber numberWithBool:(photo.hiddenServer.boolValue || photo.hiddenLocal.boolValue)];
 //    photo.shouldHighlight = [NSNumber numberWithBool:newObjectMadeIndicator]; // This is unnecessary, for now. This value defaults to YES, which is what we want. Otherwise, it is set to NO when an image is viewed.

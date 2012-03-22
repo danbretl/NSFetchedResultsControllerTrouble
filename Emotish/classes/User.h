@@ -20,7 +20,6 @@
 @property (nonatomic, retain) NSString * emotishTeamEmail;
 @property (nonatomic, retain) NSString * emotishTeamOneLiner;
 @property (nonatomic, retain) NSString * emotishTeamTwitterUsername;
-@property (nonatomic, retain) NSNumber * isEmotishTeamMember;
 @property (nonatomic, retain) Photo *emotishTeamPhoto;
 @end
 

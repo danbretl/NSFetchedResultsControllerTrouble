@@ -67,7 +67,6 @@
 		3290AD9E150C6FDA001C9E74 /* Emotish 009.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 009.xcdatamodel"; sourceTree = "<group>"; };
 		32927EDE1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDateFormatter+EmotishTimeSpans.h"; path = "classes/NSDateFormatter+EmotishTimeSpans.h"; sourceTree = "<group>"; };
 		32927EDF1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDateFormatter+EmotishTimeSpans.m"; path = "classes/NSDateFormatter+EmotishTimeSpans.m"; sourceTree = "<group>"; };
-		3299A14214D095B20017FAEF /* GalleryConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GalleryConstants.h; path = classes/GalleryConstants.h; sourceTree = "<group>"; };
 		32E2F1E714D0929F00191C6F /* Emotish.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Emotish.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32E2F1EB14D0929F00191C6F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		32E2F1ED14D0929F00191C6F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -202,7 +201,6 @@
 		32E2F20A14D092B800191C6F /* GalleryViewController */ = {
 			isa = PBXGroup;
 			children = (
-				3299A14214D095B20017FAEF /* GalleryConstants.h */,
 				32E2F20B14D0931400191C6F /* GalleryViewController.h */,
 				32E2F20C14D0931400191C6F /* GalleryViewController.m */,
 				32E2F20D14D0931400191C6F /* GalleryViewController.xib */,

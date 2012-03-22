@@ -10,8 +10,8 @@
 #import "EmotishAppDelegate.h"
 #import <Parse/Parse.h>
 
-#define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
-#define emotish_parse_app_client_key @"14YPpATSB63ZrouAqkNfqOIxwdq5e6fjSTUk21Gr"
+#define emotish_parse_app_id @"WwDfbdJmqgaboDmX8IgFEx3l82cI9gEn0kW1PWlz"
+#define emotish_parse_app_client_key @"DZLeNpTwKFmqvw6bfbuByRs7tAjTxk6ZpixFy3vS"
 
 @implementation EmotishAppDelegate
 
