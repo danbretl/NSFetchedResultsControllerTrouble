@@ -14,12 +14,8 @@
 
 @implementation EmotishAppDelegate
 
-@synthesize coreDataManager=_coreDataManager;
-@synthesize rootNavController=_rootNavController, galleryViewController = _galleryViewController;
-@synthesize window = _window;
-@synthesize managedObjectContext = __managedObjectContext;
-@synthesize managedObjectModel = __managedObjectModel;
-@synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
+@synthesize rootNavController=_rootNavController, galleryViewController = _galleryViewController, window = _window;
+@synthesize coreDataManager=_coreDataManager, managedObjectContext = __managedObjectContext, managedObjectModel = __managedObjectModel, persistentStoreCoordinator = __persistentStoreCoordinator;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
