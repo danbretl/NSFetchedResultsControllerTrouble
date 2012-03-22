@@ -8,11 +8,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Parse/Parse.h>
 #import "Photo.h"
 #import "Feeling.h"
 #import "User.h"
-#import "Like.h"
-#import <Parse/Parse.h>
 
 @interface CoreDataManager : NSObject
 

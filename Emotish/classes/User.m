@@ -16,10 +16,6 @@
 @dynamic photos;
 @dynamic serverID;
 @dynamic webLoadDate;
-@dynamic emotishTeamEmail;
-@dynamic emotishTeamOneLiner;
-@dynamic emotishTeamTwitterUsername;
-@dynamic emotishTeamPhoto;
 
 - (NSSet *)photosVisible {
     return [self.photos filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"hidden == NO"]];

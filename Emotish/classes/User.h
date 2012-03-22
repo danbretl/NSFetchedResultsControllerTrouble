@@ -16,10 +16,6 @@
 @property (nonatomic, retain) NSSet * photos;
 @property (nonatomic, retain) NSString * serverID;
 @property (nonatomic, retain) NSDate * webLoadDate;
-@property (nonatomic, retain) NSString * emotishTeamEmail;
-@property (nonatomic, retain) NSString * emotishTeamOneLiner;
-@property (nonatomic, retain) NSString * emotishTeamTwitterUsername;
-@property (nonatomic, retain) Photo *emotishTeamPhoto;
 @end
 
 @interface User (CoreDataGeneratedAccessors)

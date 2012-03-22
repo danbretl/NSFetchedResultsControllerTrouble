@@ -13,19 +13,15 @@
 
 @implementation Photo
 
-@dynamic filename;
 @dynamic datetime;
 @dynamic feeling;
 @dynamic user;
 @dynamic serverID;
 @dynamic imageURL;
-@dynamic shouldHighlight;
 @dynamic hidden;
 @dynamic thumbURL;
 @dynamic hiddenLocal;
 @dynamic hiddenServer;
-@dynamic showInPhotosStrip;
-@dynamic userForMainPhoto;
 
 - (void)setHidden:(NSNumber *)hidden {
 //    NSLog(@"setHidden");
