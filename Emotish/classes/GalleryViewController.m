@@ -48,6 +48,8 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     [self.addPhotoButton setTitle:[NSString stringWithFormat:@"Add %@ Photo to Server", [self.addPhotoFeelingWords objectAtIndex:self.peekAtNextAddPhotoFeelingWordsIndex]] forState:UIControlStateNormal];
     [self.toggleModesButton setTitle:(self.galleryMode == GalleryAlphabetical) ? @"Toggle Gallery Mode to Recent" : @"Toggle Gallery Mode to Alphabetical" forState:UIControlStateNormal];
     
+    self.fetchedResultsController = [self fetchedResultsControllerForGalleryMode:self.galleryMode];
+    
     NSError * error;
 	if (![self.fetchedResultsController performFetch:&error]) {
 		// Handle the error appropriately...
@@ -249,11 +251,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 }
 
-- (NSFetchedResultsController *)fetchedResultsController {
-    
-    if (_fetchedResultsController != nil) {
-        return _fetchedResultsController;
-    }
+- (NSFetchedResultsController *)fetchedResultsControllerForGalleryMode:(GalleryMode)galleryMode {
     
     NSFetchRequest * fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [NSEntityDescription entityForName:@"Feeling" inManagedObjectContext:self.coreDataManager.managedObjectContext];
@@ -263,6 +261,16 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     
     _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
     _fetchedResultsController.delegate = self;
+    
+    return _fetchedResultsController;
+    
+}
+
+- (NSFetchedResultsController *)fetchedResultsController {
+    
+    if (_fetchedResultsController == nil) {
+        _fetchedResultsController = [self fetchedResultsControllerForGalleryMode:self.galleryMode];
+    }
     
     return _fetchedResultsController;
     
@@ -290,7 +298,8 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     [UIView animateWithDuration:0.25 animations:^{
         self.feelingsTableView.alpha = 0.0;
     } completion:^(BOOL finished) {
-        self.fetchedResultsController.fetchRequest.sortDescriptors = [NSArray arrayWithObject:[self sortDescriptorForGalleryMode:galleryMode]];
+        self.fetchedResultsController = [self fetchedResultsControllerForGalleryMode:galleryMode];
+//        self.fetchedResultsController.fetchRequest.sortDescriptors = [NSArray arrayWithObject:[self sortDescriptorForGalleryMode:galleryMode]];
         NSError * error;
         if (![self.fetchedResultsController performFetch:&error]) {
             // Handle the error appropriately...

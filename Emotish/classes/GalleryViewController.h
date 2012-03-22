@@ -21,6 +21,7 @@ typedef enum {
 @property (nonatomic) GalleryMode galleryMode;
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsController;
+- (NSFetchedResultsController *)fetchedResultsControllerForGalleryMode:(GalleryMode)galleryMode;
 @property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorAlphabetical;
 @property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorRecent;
 - (NSSortDescriptor *) sortDescriptorForGalleryMode:(GalleryMode)galleryMode;
