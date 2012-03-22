@@ -18,7 +18,6 @@
 		323B2FE014D77C4A0035BF74 /* User.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FDF14D77C4A0035BF74 /* User.m */; };
 		323B2FE314D77C4A0035BF74 /* Photo.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FE214D77C4A0035BF74 /* Photo.m */; };
 		323B2FE614D77C4A0035BF74 /* Feeling.m in Sources */ = {isa = PBXBuildFile; fileRef = 323B2FE514D77C4A0035BF74 /* Feeling.m */; };
-		3248245E14FC3F5F00BF5E65 /* Like.m in Sources */ = {isa = PBXBuildFile; fileRef = 3248245D14FC3F5F00BF5E65 /* Like.m */; };
 		326127CA14DCC25E001FD065 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 326127C914DCC25E001FD065 /* QuartzCore.framework */; };
 		32927EE01511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m in Sources */ = {isa = PBXBuildFile; fileRef = 32927EDF1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m */; };
 		32E2F1EC14D0929F00191C6F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32E2F1EB14D0929F00191C6F /* UIKit.framework */; };
@@ -56,8 +55,6 @@
 		323B2FE514D77C4A0035BF74 /* Feeling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Feeling.m; path = classes/Feeling.m; sourceTree = "<group>"; };
 		3246C2001505659B0077CAA9 /* Emotish 007.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 007.xcdatamodel"; sourceTree = "<group>"; };
 		3248244F14FC181700BF5E65 /* Emotish 005.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 005.xcdatamodel"; sourceTree = "<group>"; };
-		3248245C14FC3F5F00BF5E65 /* Like.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Like.h; path = classes/Like.h; sourceTree = "<group>"; };
-		3248245D14FC3F5F00BF5E65 /* Like.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Like.m; path = classes/Like.m; sourceTree = "<group>"; };
 		324C9DC1151A44FB00AF2166 /* Emotish 012.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 012.xcdatamodel"; sourceTree = "<group>"; };
 		3253338E151137C5000B1127 /* Emotish 010.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 010.xcdatamodel"; sourceTree = "<group>"; };
 		3256D17115139F20008313A7 /* Emotish 011.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Emotish 011.xcdatamodel"; sourceTree = "<group>"; };
@@ -191,8 +188,6 @@
 				323B2FE214D77C4A0035BF74 /* Photo.m */,
 				323B2FDE14D77C4A0035BF74 /* User.h */,
 				323B2FDF14D77C4A0035BF74 /* User.m */,
-				3248245C14FC3F5F00BF5E65 /* Like.h */,
-				3248245D14FC3F5F00BF5E65 /* Like.m */,
 				323B2FDB14D77B0E0035BF74 /* CoreDataManager.h */,
 				323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */,
 			);
@@ -280,7 +275,6 @@
 				323B2FE014D77C4A0035BF74 /* User.m in Sources */,
 				323B2FE314D77C4A0035BF74 /* Photo.m in Sources */,
 				323B2FE614D77C4A0035BF74 /* Feeling.m in Sources */,
-				3248245E14FC3F5F00BF5E65 /* Like.m in Sources */,
 				32927EE01511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m in Sources */,
 				3214333C1516D2950054E450 /* WebGetPhotos.m in Sources */,
 			);
