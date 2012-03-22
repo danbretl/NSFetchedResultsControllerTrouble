@@ -363,7 +363,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     }
     if (photosFromWeb && photosFromWeb.count > 0) {
         [self.coreDataManager processPhotosFromServer:photosFromWeb];
-//        [self.coreDataManager updateAllFeelingDatetimes];
+        [self.coreDataManager updateAllFeelingDatetimes];
         [self.coreDataManager saveCoreData];
     }
 }
