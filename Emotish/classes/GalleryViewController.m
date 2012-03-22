@@ -10,7 +10,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import <Parse/Parse.h>
 #import "NSDateFormatter+EmotishTimeSpans.h"
-#import "ProcessManager.h"
 
 static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
