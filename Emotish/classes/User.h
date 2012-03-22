@@ -15,7 +15,6 @@
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSSet * photos;
 @property (nonatomic, retain) NSString * serverID;
-@property (nonatomic, retain) NSSet * likes;
 @property (nonatomic, retain) NSDate * webLoadDate;
 @property (nonatomic, retain) NSString * emotishTeamEmail;
 @property (nonatomic, retain) NSString * emotishTeamOneLiner;
@@ -24,10 +23,6 @@
 @end
 
 @interface User (CoreDataGeneratedAccessors)
-- (void)addLikesObject:(Like *)value;
-- (void)removeLikesObject:(Like *)value;
-- (void)addLikes:(NSSet *)values;
-- (void)removeLikes:(NSSet *)values;
 - (void)addPhotosObject:(Photo *)value;
 - (void)removePhotosObject:(Photo *)value;
 - (void)addPhotos:(NSSet *)values;

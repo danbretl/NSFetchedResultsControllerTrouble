@@ -15,7 +15,6 @@
 @dynamic name;
 @dynamic photos;
 @dynamic serverID;
-@dynamic likes;
 @dynamic webLoadDate;
 @dynamic emotishTeamEmail;
 @dynamic emotishTeamOneLiner;
