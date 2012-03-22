@@ -1,3 +1,7 @@
+UPDATE: RESOLVED. I don't know why this was necessary exactly, but I've fixed the problem by explicitly recreating the NSFetchedResultsController when switching between Gallery modes (between "Alphabetical" and "Recent"). (I've committed this successful change to this sample project.) It seems to me, according to Apple docs, that my previous method should have been OK, but maybe there is some (undocumented) reason that it was not, based on my specific predicate or sort descriptors.
+
+--- --- --- --- ---
+
 UPDATE: I have narrowed the bug down and found that it now only occurs when the app is launched (not multitask-opened, but actually launched fresh) with the Gallery in "Alphabetical" mode. If it launches in "Recent" mode, the table view updates beautifully. But if it launches in "Alphabetical" mode, and you then switch to "Recent" mode, while the table view will be ordered correctly on the switch, it will not stay ordered correctly on data updates.
 
 --- --- --- --- ---
