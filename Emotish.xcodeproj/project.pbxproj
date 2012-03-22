@@ -106,17 +106,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		3299A14A14D097560017FAEF /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				32927EDE1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.h */,
-				32927EDF1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m */,
-				3214333A1516D2950054E450 /* WebGetPhotos.h */,
-				3214333B1516D2950054E450 /* WebGetPhotos.m */,
-			);
-			name = Shared;
-			sourceTree = "<group>";
-		};
 		32E2F1DC14D0929E00191C6F = {
 			isa = PBXGroup;
 			children = (
@@ -158,8 +147,13 @@
 			children = (
 				32E2F1FC14D0929F00191C6F /* EmotishAppDelegate.h */,
 				32E2F1FD14D0929F00191C6F /* EmotishAppDelegate.m */,
-				3299A14A14D097560017FAEF /* Shared */,
-				32E2F20A14D092B800191C6F /* GalleryViewController */,
+				32E2F20B14D0931400191C6F /* GalleryViewController.h */,
+				32E2F20C14D0931400191C6F /* GalleryViewController.m */,
+				32E2F20D14D0931400191C6F /* GalleryViewController.xib */,
+				32927EDE1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.h */,
+				32927EDF1511515C00EABA92 /* NSDateFormatter+EmotishTimeSpans.m */,
+				3214333A1516D2950054E450 /* WebGetPhotos.h */,
+				3214333B1516D2950054E450 /* WebGetPhotos.m */,
 				32E2F20714D092B100191C6F /* Data Models */,
 				32E2F1F414D0929F00191C6F /* Supporting Files */,
 			);
@@ -191,16 +185,6 @@
 				323B2FDC14D77B0E0035BF74 /* CoreDataManager.m */,
 			);
 			name = "Data Models";
-			sourceTree = "<group>";
-		};
-		32E2F20A14D092B800191C6F /* GalleryViewController */ = {
-			isa = PBXGroup;
-			children = (
-				32E2F20B14D0931400191C6F /* GalleryViewController.h */,
-				32E2F20C14D0931400191C6F /* GalleryViewController.m */,
-				32E2F20D14D0931400191C6F /* GalleryViewController.xib */,
-			);
-			name = GalleryViewController;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

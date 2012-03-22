@@ -9,7 +9,6 @@
 #import "User.h"
 #import "Photo.h"
 
-
 @implementation User
 
 @dynamic name;

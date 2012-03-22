@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Photo, Like;//, WebFetch;
+@class Photo;
 
 @interface User : NSManagedObject
 @property (nonatomic, retain) NSString * name;

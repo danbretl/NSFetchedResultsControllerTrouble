@@ -12,9 +12,7 @@
         <attribute name="hidden" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="hiddenLocal" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="hiddenServer" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
-        <attribute name="imageURL" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="serverID" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="thumbURL" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="feeling" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Feeling" inverseName="photos" inverseEntity="Feeling" syncable="YES"/>
         <relationship name="user" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="photos" inverseEntity="User" syncable="YES"/>
     </entity>
