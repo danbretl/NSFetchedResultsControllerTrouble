@@ -1,4 +1,4 @@
-UPDATE: RESOLVED. I don't know why this was necessary exactly, but I've fixed the problem by explicitly recreating the NSFetchedResultsController when switching between Gallery modes (between "Alphabetical" and "Recent"). (I've committed this successful change to this sample project.) I think actually I could get away with only resetting the FRC's NSFetchRequest rather than the entire controller, but either way, it's fixed now.
+UPDATE: RESOLVED. I've fixed the problem by explicitly recreating the NSFetchedResultsController when switching between Gallery modes (between "Alphabetical" and "Recent"). (I've committed this successful change to this sample project.) I think actually I could get away with only resetting the FRC's NSFetchRequest rather than the entire controller, but either way, it's fixed now.
 
 --- --- --- --- ---
 
