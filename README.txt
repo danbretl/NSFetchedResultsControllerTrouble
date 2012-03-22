@@ -1,5 +1,3 @@
-UPDATE: My problems may be solved... On NSFetchedResultsChangeUpdate, I was previously calling my own [GalleryViewController tableView:configureCell:atIndexPath] method, but if I replace that with a more standard [UITableView reloadRowsAtIndexPaths...] call, things seem to be updating exactly as they should, and with the right animations as well.
-
 This is a heavily stripped down version of a basic photo sharing app that I am currently developing. Each Photo is attached to a Feeling and a User. The most basic general view (the one visible in this version) is the Gallery. Here, you can view all Feelings, and for each Feeling, the 10 most recent Photos. There are two Gallery modes - "Alphabetical" and "Recent". When in "Alphabetical" mode, the Feelings are sorted alphabetically by the Feeling word. When in "Recent" mode, the Feelings are sorted by "most recently added to", meaning the Feeling that has had a Photo added to it most recently is at the top of the list.
 
 My trouble is that the table is not responding to updates properly, especially (perhaps exclusively, though I have not 100% verified that) in "Recent" mode. It seems that NSFetchedResultsController is not responding to data updates correctly. Rows are not reordered properly, and sometimes a row that just moved to the top will take up both the first and second rows. What is confusing is that while the NSFetchedResultsController data prints as it should (with the newly updated "most recently added to" dates for the Feelings), it did not send the right delegate callbacks. (Specifically, it often reports an "...Update" instead of a "...Move".)
@@ -11,3 +9,5 @@ I am not sure if I am fundamentally misunderstanding NSFetchedResultsController 
 The backend data is hosted and served up by Parse.com, though that shouldn't really effect anything. If you feel a peek into the Parse database is necessary, please let me know.
 
 You can reach me at dbretl@abextratech.com
+
+UPDATE: I thought my problems were solved... They were, for a moment, by replacing calls to my own [GalleryViewController tableView:configureCell:atIndexPath] method with more standard [UITableView reloadRowsAtIndexPaths...] calls. (This change has been kept in the current version above.) But now it's not working again! I am totally mystified. The battle goes on.
