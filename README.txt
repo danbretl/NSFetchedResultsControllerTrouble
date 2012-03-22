@@ -5,3 +5,5 @@ My trouble is that the table is not responding to updates properly, especially (
 I am not sure if I am fundamentally misunderstanding NSFetchedResultsController, or if there is a problem with its Fetch, or with my Data Model in general. Any assistance would be greatly appreciated. This bug is holding up an app which is otherwise generally ready for the App Store, so I'm very eager to get it fixed. I've used NSFetchedResultsController many times before and never had such trouble. Thank you in advance for any help you can give me! Feel free to fork and tinker.
 
 The backend data is hosted and served up by Parse.com, though that shouldn't really effect anything. If you feel a peek into the Parse database is necessary, please let me know.
+
+You can reach me at dbretl@abextratech.com
