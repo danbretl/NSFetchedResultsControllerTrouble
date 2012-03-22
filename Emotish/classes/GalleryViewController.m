@@ -197,7 +197,8 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
             
         case NSFetchedResultsChangeUpdate:
             NSLog(@"NSFetchedResultsChangeUpdate");
-            [self tableView:self.feelingsTableView configureCell:[self.feelingsTableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
+            [self.feelingsTableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+//            [self tableView:self.feelingsTableView configureCell:[self.feelingsTableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
             break;
             
         case NSFetchedResultsChangeMove:
@@ -362,7 +363,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     }
     if (photosFromWeb && photosFromWeb.count > 0) {
         [self.coreDataManager processPhotosFromServer:photosFromWeb];
-        [self.coreDataManager updateAllFeelingDatetimes];
+//        [self.coreDataManager updateAllFeelingDatetimes];
         [self.coreDataManager saveCoreData];
     }
 }
