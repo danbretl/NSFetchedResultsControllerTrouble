@@ -36,16 +36,6 @@
         } 
     }
     NSLog(@"saveCoreData finished");
-//    NSError * error;
-//    if (![self.managedObjectContext save:&error]) {
-//        NSLog(@"Error saving core data: %@", [error localizedDescription]);
-//        NSLog(@"%@", [error userInfo]);
-//        if ([[error userInfo] objectForKey:@"conflictList"]) {
-//            for (NSMergeConflict * mergeConflict in [[error userInfo] objectForKey:@"conflictList"]) {
-//                NSLog(@"\n\n%@\n%@\n%@\n%@\n\n", mergeConflict.sourceObject, mergeConflict.cachedSnapshot, mergeConflict.objectSnapshot, mergeConflict.persistedSnapshot);
-//            }
-//        }
-//    }
 }
 
 - (NSArray *) getAllObjectsForEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors {
@@ -76,67 +66,11 @@
     return matchingObject;
 }
 
-- (NSArray *)getEmotishTeamMembers {
-    return [self getAllObjectsForEntityName:@"User" predicate:[NSPredicate predicateWithFormat:@"isEmotishTeamMember == YES"] sortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES]]];
-}
-
-- (void)deleteAllLikes {
-    NSLog(@"Deleting all likes");
-    NSArray * allLikes = [self getAllObjectsForEntityName:@"Like" predicate:nil sortDescriptors:nil];
-    for (Like * like in allLikes) {
-        [self.managedObjectContext deleteObject:like];
-    }
-}
-
-- (void) deleteAllLikesNotAssociatedWithUserLocal:(User *)user {
-    NSArray * allOtherLikes = [self getAllObjectsForEntityName:@"Like" predicate:[NSPredicate predicateWithFormat:@"user != %@", user] sortDescriptors:nil];
-    for (Like * like in allOtherLikes) {
-        [self.managedObjectContext deleteObject:like];
-    }
-}
-
-- (void) deleteAllLikesNotAssociatedWithUserServer:(PFUser *)userServer {
-    User * userLocal = (User *)[self getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", userServer.objectId] usingSortDescriptors:nil];
-    [self deleteAllLikesNotAssociatedWithUserLocal:userLocal];
-}
-
-- (void) clearAllFlags {
-    NSArray * allFlaggedPhotos = [self getAllObjectsForEntityName:@"Photo" predicate:[NSPredicate predicateWithFormat:@"hiddenLocal == YES"] sortDescriptors:nil];
-    for (Photo * photo in allFlaggedPhotos) {
-        photo.hiddenLocal = [NSNumber numberWithBool:NO];
-        photo.hidden = photo.hiddenServer;
-    }
-    [self updateAllFeelingDatetimes];
-}
-
-- (void)clearAllShowInPhotosStripForFeeling:(Feeling *)feeling {
-    NSArray * allShowInPhotoStrip = [self getAllObjectsForEntityName:@"Photo" predicate:[NSPredicate predicateWithFormat:@"feeling == %@ && showInPhotosStrip == YES", feeling] sortDescriptors:nil];
-    for (Photo * photo in allShowInPhotoStrip) {
-        photo.showInPhotosStrip = [NSNumber numberWithBool:NO];
-    }
-}
-
-- (void)clearAllShowInPhotosStripForUser:(User *)user {
-    NSArray * allShowInPhotoStrip = [self getAllObjectsForEntityName:@"Photo" predicate:[NSPredicate predicateWithFormat:@"user == %@ && showInPhotosStrip == YES", user] sortDescriptors:nil];
-    for (Photo * photo in allShowInPhotoStrip) {
-        photo.showInPhotosStrip = [NSNumber numberWithBool:NO];
-    }
-}
-
 - (void) updateAllFeelingDatetimes {
     for (Feeling * feeling in [self getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil]) {
         [feeling updateDatetimeMostRecentPhoto];
     }
 }
-
-//- (NSManagedObject *) getOrMakeObjectForEntityName:(NSString *)entityName matchingPredicate:(NSPredicate *)predicate usingSortDescriptors:(NSArray *)sortDescriptors {
-//    NSArray * matchingObjects = [self getAllObjectsForEntityName:entityName predicate:predicate sortDescriptors:sortDescriptors];
-//    NSManagedObject * matchingObject = matchingObjects.count > 0 ? [matchingObjects objectAtIndex:0] : nil;
-//    if (matchingObject == nil) {
-//        matchingObject = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.managedObjectContext];
-//    }
-//    return matchingObject;
-//}
 
 - (Feeling *)addOrUpdateFeelingFromServer:(PFObject *)feelingServer {
     BOOL newObjectMadeIndicator;
@@ -186,39 +120,6 @@
     return photo;
 }
 
-- (Photo *) addOrUpdatePhotoFromServer:(PFObject *)photoServer withFlagFromServer:(PFObject *)flagServer {
-    Photo * photo = [self addOrUpdatePhotoFromServer:photoServer];
-    photo.hiddenLocal = [NSNumber numberWithBool:YES];
-    photo.hidden = [NSNumber numberWithBool:YES];
-    return photo;
-}
-
-- (Like *)addOrUpdateLikeFromServer:(PFObject *)likeServer {
-    BOOL newObjectMadeIndicator;
-    Like * like = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", likeServer.objectId] usingSortDescriptors:nil shouldMakeObjectIfNoMatch:YES newObjectMadeIndicator:&newObjectMadeIndicator];
-    like.serverID = likeServer.objectId;
-    return like;
-}
-
-- (Like *)addOrUpdateLikeFromServer:(PFObject *)likeServer photoFromServer:(PFObject *)photoServer userFromServer:(PFObject *)userServer {
-    NSLog(@"Add or update like from server, photo.serverID=%@, user.serverID=%@", photoServer.objectId, userServer.objectId);
-    Photo * photoLocal = [self addOrUpdatePhotoFromServer:photoServer];
-    User * userLocal = [self addOrUpdateUserFromServer:userServer];
-    Like * likeLocal = (Like *)[self getFirstObjectForEntityName:@"Like" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@ || (photo.serverID == %@ && user.serverID == %@) || (photoServerID == %@ && userServerID == %@)", likeServer.objectId, photoServer.objectId, userServer.objectId, photoServer.objectId, userServer.objectId] usingSortDescriptors:nil];
-    if (likeLocal == nil) {
-        NSLog(@"Like did not exist. Creating.");
-        likeLocal = [self addOrUpdateLikeFromServer:likeServer];
-    } else {
-        NSLog(@"Like already existed. Updating.");
-        likeLocal.serverID = likeServer.objectId;
-    }
-    likeLocal.userServerID = userServer.objectId;
-    likeLocal.photoServerID = photoServer.objectId;
-    likeLocal.photo = photoLocal;
-    likeLocal.user = userLocal;
-    return likeLocal;
-}
-
 - (void) debugLogAllFeelingsAlphabetically {
     NSLog(@"Debugging feelings alphabetically");
     for (Feeling * feeling in [self getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"word" ascending:YES]]]) {
@@ -230,6 +131,15 @@
     NSLog(@"Debugging feelings chronologically");
     for (Feeling * feeling in [self getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetimeMostRecentPhoto" ascending:NO]]]) {
         NSLog(@"  %@ - (%@) - %@", feeling.word, [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES], feeling.datetimeMostRecentPhoto);
+    }
+}
+
+- (void)processPhotosFromServer:(NSArray *)photosFromServer {
+    for (PFObject * photoServer in photosFromServer) {
+        PFObject * feelingServer = [photoServer objectForKey:@"feeling"];
+        PFObject * userServer    = [photoServer objectForKey:@"user"];
+        Photo * photoLocal = [self addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:userServer];
+        NSLog(@"Added or updated photo %@ (%@ %@)", photoLocal.serverID, photoLocal.user.name, photoLocal.feeling.word);
     }
 }
 

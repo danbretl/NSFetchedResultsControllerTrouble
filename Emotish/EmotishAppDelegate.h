@@ -23,8 +23,6 @@
 @property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-- (void) attemptNavigateToPhotoWithServerID:(NSString *)photoServerID;
-
 - (void)saveContext;
 - (NSURL *)applicationDocumentsDirectory;
 

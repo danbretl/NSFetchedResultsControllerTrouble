@@ -9,24 +9,9 @@
 
 #import "EmotishAppDelegate.h"
 #import <Parse/Parse.h>
-#import "PushConstants.h"
-#import "NotificationConstants.h"
-#import "SDImageCache.h"
-#import "EmotishAlertViews.h"
 
-//#ifdef DEBUG
-//#define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
-//#define emotish_parse_app_client_key @"14YPpATSB63ZrouAqkNfqOIxwdq5e6fjSTUk21Gr"
-//#else
-#define emotish_parse_app_id @"8VoQU9OtiIDLKAtVhUFEhfa4mnnEbNcLgl3BeOYC"
-#define emotish_parse_app_client_key @"j06nZDbhyjKesivCFrTgciBfxuPVVwoQCxV95I9P"
-//#endif
-
-@interface EmotishAppDelegate()
-@property (nonatomic) BOOL appOpenedURLFlag;
-@property (strong, nonatomic) UIAlertView * notificationAlertView;
-@property (strong, nonatomic) NSString * notificationPhotoServerID;
-@end
+#define emotish_parse_app_id @"hjswq9OOy3tYZ7xamNGeAF1paOSYfnXK1OyFcdEe"
+#define emotish_parse_app_client_key @"14YPpATSB63ZrouAqkNfqOIxwdq5e6fjSTUk21Gr"
 
 @implementation EmotishAppDelegate
 
@@ -36,124 +21,30 @@
 @synthesize managedObjectContext = __managedObjectContext;
 @synthesize managedObjectModel = __managedObjectModel;
 @synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
-@synthesize notificationAlertView=_notificationAlertView, notificationPhotoServerID=_notificationPhotoServerID;
-@synthesize appOpenedURLFlag=_appOpenedURLFlag;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
-    NSLog(@"application:didFinishLaunchingWithOptions:%@", launchOptions);
-
-    NSLog(@"emotish_parse_app_id=%@", emotish_parse_app_id);
-    NSLog(@"emotish_parse_app_client_key=%@", emotish_parse_app_client_key);
     [Parse setApplicationId:emotish_parse_app_id
                   clientKey:emotish_parse_app_client_key];
-    [PFFacebookUtils initializeWithApplicationId:@"247509625333388"];
-    [PFTwitterUtils initializeWithConsumerKey:@"mWfvpMuJ480juFn64Ejc1Q" consumerSecret:@"qPdtbIQCcMQdCjte4CVEfzFhjPC7tSEGuOsF8WbYo"];
 
     self.coreDataManager = [[CoreDataManager alloc] initWithManagedObjectContext:self.managedObjectContext];
     
-//    NSLog(@"TEAM MEMBERS UTIL BEGIN");
-//    NSLog(@"TEAM MEMBERS UTIL BEGIN");
-//    NSLog(@"TEAM MEMBERS UTIL BEGIN");
-//    PFQuery * teamMembersQuery = [PFQuery queryForUser];
-//    [teamMembersQuery whereKey:@"isEmotishTeamMember" equalTo:[NSNumber numberWithBool:YES]];
-//    [teamMembersQuery includeKey:@"emotishTeamPhoto"];
-//    NSArray * teamMembers = [teamMembersQuery findObjects];
-//    NSLog(@"  FOUND %d TEAM MEMBERS", teamMembers.count);
-//    for (PFUser * teamMember in teamMembers) {
-//        NSLog(@"    %@", teamMember.username);
-//        PFObject * teamPhoto = [teamMember objectForKey:@"emotishTeamPhoto"];
-//        [teamPhoto setObject:[NSNumber numberWithBool:YES] forKey:@"isEmotishTeamPhoto"];
-//        [teamPhoto save];
-//    }
-//    NSLog(@"TEAM MEMBERS UTIL END");
-//    NSLog(@"TEAM MEMBERS UTIL END");
-//    NSLog(@"TEAM MEMBERS UTIL END");
-
-    
-//    NSLog(@"Debugging at start up...");
-    
-//    BOOL SHOULD_START_FRESH = YES; // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
-//    
-//    // Debugging...
-//    BOOL SHOULD_FLUSH_DATABASE = SHOULD_START_FRESH;
-//    if (SHOULD_FLUSH_DATABASE) {
-//        NSLog(@"Flushing database");
-//        NSArray * photos = [self.coreDataManager getAllObjectsForEntityName:@"Photo" predicate:nil sortDescriptors:nil];
-//        NSLog(@"  Deleting %d photos", photos.count);
-//        for (Photo * photo in photos) {
-//            [self.coreDataManager.managedObjectContext deleteObject:photo];
-//        }
-//        NSArray * feelings = [self.coreDataManager getAllObjectsForEntityName:@"Feeling" predicate:nil sortDescriptors:nil];
-//        NSLog(@"  Deleting %d feelings", feelings.count);
-//        for (Feeling * feeling in feelings) {
-//            [self.coreDataManager.managedObjectContext deleteObject:feeling];
-//        }
-//        NSArray * users = [self.coreDataManager getAllObjectsForEntityName:@"User" predicate:nil sortDescriptors:nil];
-//        NSLog(@"  Deleting %d users", users.count);
-//        for (User * user in users) {
-//            [self.coreDataManager.managedObjectContext deleteObject:user];
-//        }
-//        NSArray * likes = [self.coreDataManager getAllObjectsForEntityName:@"Like" predicate:nil sortDescriptors:nil];
-//        NSLog(@"  Deleting %d likes", likes.count);
-//        for (Like * like in likes) {
-//            [self.coreDataManager.managedObjectContext deleteObject:like];
-//        }
-//        [[NSUserDefaults standardUserDefaults] setObject:nil forKey:WEB_RELOAD_ALL_DATE_KEY];
-//    }
-////    [self.coreDataManager saveCoreData];
-//    BOOL SHOULD_LOG_OUT = SHOULD_START_FRESH;
-//    if (SHOULD_LOG_OUT) {
-//        NSLog(@"Forcing logout");
-//        [PFUser logOut];
-//    }
-    
-    [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge|UIRemoteNotificationTypeAlert|UIRemoteNotificationTypeSound];
-    
-    // Cleanup...
-    // Should delete all likes not associated with currentUser (if there is one), and we should unsubscribe from all push notification channels except for the general one, and the one associated with currentUser (if there is one). The latter is handled in didRegisterForRemoteNotification...
-    // Likes
-    if ([PFUser currentUser] == nil) {
-        [self.coreDataManager deleteAllLikes];
-        [self.coreDataManager clearAllFlags];
-    } else {
-        [self.coreDataManager deleteAllLikesNotAssociatedWithUserServer:[PFUser currentUser]];
+    if (![PFUser currentUser] || !((PFUser *)[PFUser currentUser]).isAuthenticated) {
+        [PFUser logInWithUsername:@"dan" password:@"dan"];
     }
-    [self.coreDataManager saveCoreData];
+    [self.coreDataManager addOrUpdateUserFromServer:[PFUser currentUser]];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     
     self.galleryViewController = [[GalleryViewController alloc] initWithNibName:@"GalleryViewController" bundle:[NSBundle mainBundle]];
     self.galleryViewController.coreDataManager = self.coreDataManager;
-    
-//    BOOL allTimeCacheFlush = YES;
-//    if (allTimeCacheFlush) {
-//        [[SDImageCache sharedImageCache] clearMemory];
-//        [[SDImageCache sharedImageCache] clearDisk];        
-//    }
-    
-//    BOOL oneTimeImagesRefreshComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeImagesRefreshComplete"];
-//    if (!oneTimeImagesRefreshComplete) {
-//        [[SDImageCache sharedImageCache] clearMemory];
-//        [[SDImageCache sharedImageCache] clearDisk];
-//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeImagesRefreshComplete"];
-//    }
     
     self.rootNavController = [[UINavigationController alloc] initWithRootViewController:self.galleryViewController];
     self.rootNavController.navigationBarHidden = YES;
 
     self.window.rootViewController = self.rootNavController;
     [self.window makeKeyAndVisible];
-    
-    NSDictionary * remoteNotificationDictionary = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
-    if (remoteNotificationDictionary != nil) {
-        self.notificationPhotoServerID = [remoteNotificationDictionary objectForKey:PUSH_LIKED_PHOTO_SERVER_ID];
-        if (self.notificationPhotoServerID != nil) {
-            [self attemptNavigateToPhotoWithServerID:self.notificationPhotoServerID];
-        }
-    }
         
     return YES;
 }
@@ -171,7 +62,6 @@
     [self saveContext];
     /* Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
      If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits. */
-    self.appOpenedURLFlag = NO;
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -183,74 +73,12 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     NSLog(@"applicationDidBecomeActive");
     /* Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface. */
-    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_APPLICATION_DID_BECOME_ACTIVE object:self userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:self.appOpenedURLFlag] forKey:NOTIFICATION_USER_INFO_KEY_APPLICATION_OPENED_URL]];
-    self.appOpenedURLFlag = NO;
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     NSLog(@"applicationWillTerminate");
     // Saves changes in the application's managed object context before the application terminates.
     [self saveContext];
-}
-
-- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
-    NSLog(@"application:handleOpenURL:");
-    self.appOpenedURLFlag = YES;
-    return [PFFacebookUtils handleOpenURL:url];
-}
-
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    self.appOpenedURLFlag = YES;
-    NSLog(@"application:openURL:sourceApplication:annotation:");
-    return [PFFacebookUtils handleOpenURL:url];
-}
-
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken {
-    NSLog(@"application:didRegisterForRemoteNotificationsWithDeviceToken:");
-    // Tell Parse about the device token.
-    [PFPush storeDeviceToken:newDeviceToken];
-    // Update push notification subscription channels
-    [PushConstants updatePushNotificationSubscriptionsGivenCurrentUserServerID:((PFUser *)[PFUser currentUser]).objectId];
-    
-}
-
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    NSLog(@"EmotishAppDelegate application didReceiveRemoteNotification %@", userInfo);
-    self.notificationPhotoServerID = [userInfo objectForKey:PUSH_LIKED_PHOTO_SERVER_ID];
-    if (self.notificationPhotoServerID == nil) {
-        [PFPush handlePush:userInfo];
-    } else {
-        if (application.applicationState == UIApplicationStateActive) {
-            NSLog(@"Application is active");
-            self.notificationAlertView = [EmotishAlertViews photoLikedAlertViewWithRemoteNotificationUserInfo:userInfo delegate:self];
-            [self.notificationAlertView show];
-        } else {
-            NSLog(@"Application was inactive");
-            // Should navigate user to photo...
-            [self attemptNavigateToPhotoWithServerID:self.notificationPhotoServerID];
-        }
-    }
-}
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (alertView == self.notificationAlertView && 
-        buttonIndex != self.notificationAlertView.cancelButtonIndex) {
-        // Should navigate user to photo...
-        [self attemptNavigateToPhotoWithServerID:self.notificationPhotoServerID];
-    }
-    self.notificationAlertView = nil;
-}
-
-- (void)attemptNavigateToPhotoWithServerID:(NSString *)photoServerID {
-    
-    if (self.rootNavController.visibleViewController == self.galleryViewController) {
-        NSLog(@"Gallery is visible.");
-    } else {
-        NSLog(@"%@ is visible.", [self.rootNavController.visibleViewController class]);
-    }
-
-    [self.galleryViewController navToRootAndShowUserStripViewControllerForPhotoWithServerID:photoServerID];
-    
 }
 
 - (void)saveContext {

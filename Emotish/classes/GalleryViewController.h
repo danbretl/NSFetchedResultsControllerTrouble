@@ -7,40 +7,36 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "GalleryFeelingCell.h"
-#import "GalleryFeelingImageCell.h"
 #import "CoreDataManager.h"
-#import "PhotosStripViewController.h"
-#import "FlagStretchView.h"
-#import "TopBarView.h"
-#import "SubmitPhotoViewController.h"
-#import "AccountViewController.h"
-#import "SettingsViewController.h"
-#import "CameraButtonView.h"
 #import "WebGetPhotos.h"
+#import "GalleryConstants.h"
 
-@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, UIScrollViewDelegate, GalleryFeelingCellDelegate, PhotosStripViewControllerDelegate, SubmitPhotoViewControllerDelegate, AccountViewControllerDelegate, SettingsViewControllerDelegate/*, WebTaskDelegate*/, WebGetPhotosDelegate> {
-    
-    BOOL debugging;
-    
-}
+@interface GalleryViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate, WebGetPhotosDelegate>
 
+@property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton * addPhotoButton;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton * pullPhotosButton;
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton *toggleModesButton;
+- (IBAction) buttonTouched:(UIButton *)button;
 @property (strong, nonatomic) CoreDataManager * coreDataManager;
 @property (strong, nonatomic) NSFetchedResultsController * fetchedResultsController;
 
-@property (nonatomic) CGPoint feelingsTableViewContentOffsetPreserved;
-@property (unsafe_unretained, nonatomic) GalleryFeelingCell * activeFeelingCell;
-@property (nonatomic) NSInteger activeFeelingCellIndexRow;
-@property (nonatomic) CGPoint activeFeelingCellContentOffsetPreserved;
-@property (strong, nonatomic) FlagStretchView * flagStretchView;
-@property (strong, nonatomic) FlagStretchView * flagStretchViewTransitions;
-@property (strong, nonatomic) UIImageView * floatingImageView;
-@property (unsafe_unretained, nonatomic) IBOutlet TopBarView * topBar;
-@property (unsafe_unretained, nonatomic) IBOutlet UIImageView * bottomBar;
-@property (unsafe_unretained, nonatomic) IBOutlet CameraButtonView *cameraButtonView;
-//@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *activityIndicatorView;
+- (void)tableView:(UITableView *)tableView configureCell:(UITableViewCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
 
-//- (void) getFeelingsFromServer;
-- (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID;
+- (void) getPhotosFromServer;
+- (void) getPhotosFromServerWithLimit:(NSNumber *)limit;
+- (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
+@property (nonatomic, strong) NSMutableSet * getPhotosRequests;
+- (void) cancelAllWebGetPhotos;
+- (BOOL) getPhotosRequestIsExecutingForFeelingServerID:(NSString *)feelingServerID;
+- (void) addPhoto;
+@property (nonatomic, strong, readonly) NSArray * addPhotoFeelingWords;
+@property (nonatomic, readonly) int addPhotoFeelingWordsNextIndex;
+@property (nonatomic, readonly) int peekAtNextAddPhotoFeelingWordsIndex;
+
+@property (nonatomic) GalleryMode galleryMode;
+@property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorAlphabetical;
+@property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorRecent;
+- (NSSortDescriptor *) sortDescriptorForGalleryMode:(GalleryMode)galleryMode;
 
 @end

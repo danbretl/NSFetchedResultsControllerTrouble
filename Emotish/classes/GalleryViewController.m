@@ -7,72 +7,29 @@
 //
 
 #import "GalleryViewController.h"
-#import "ViewConstants.h"
-#import "GalleryConstants.h"
-#import "GalleryFeelingCell.h"
-#import "GalleryFeelingImageCell.h"
 #import <QuartzCore/QuartzCore.h>
-#import "CameraOverlayView.h"
 #import <Parse/Parse.h>
 #import "NSDateFormatter+EmotishTimeSpans.h"
-#import "SDNetworkActivityIndicator.h"
 #import "ProcessManager.h"
-#import "NotificationConstants.h"
 
 static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
-@interface GalleryViewController()
-@property (strong, nonatomic) IBOutlet UITableView * feelingsTableView;
-- (void) emotishLogoTouched:(UIButton *)button;
-- (void) profileButtonTouched:(UIButton *)button;
-- (void)cameraButtonTouched:(id)sender;
-- (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
-- (void)tableView:(UITableView *)tableView updateTimestampLabelForCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath;
-- (void) getPhotosFromServer;
-- (void) getPhotosFromServerWithLimit:(NSNumber *)limit;
-- (void) getPhotosFromServerForFeeling:(Feeling *)feeling;
-- (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer;
-- (void) showPhotosStripViewControllerFocusedOnUser:(User *)user photo:(Photo *)photo updatePhotoData:(BOOL)updatePhotoData animated:(BOOL)animated; // The parameter updatePhotoData is currently ignored. Need to come up with a better solution later.
-- (void) navToRoot;
-@property (nonatomic) GalleryMode galleryMode;
-@property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorAlphabetical;
-@property (nonatomic, strong, readonly) NSSortDescriptor * sortDescriptorRecent;
-- (NSSortDescriptor *) sortDescriptorForGalleryMode:(GalleryMode)galleryMode;
-@property (nonatomic, strong) NSMutableSet * getPhotosRequests;
-- (void) cancelAllWebGetPhotos;
-- (BOOL) getPhotosRequestIsExecutingForFeelingServerID:(NSString *)feelingServerID;
-- (void) setVisibleCellLoadingIndicatorIsVisible:(BOOL)visible forFeelingServerID:(NSString *)feelingServerID animated:(BOOL)animated;
-- (void) navToRootAndShowUserStripViewControllerForNotification:(NSNotification *)notification;
-@end
-
 @implementation GalleryViewController
 
-@synthesize coreDataManager=_coreDataManager;
-@synthesize fetchedResultsController=_fetchedResultsController, sortDescriptorAlphabetical=_sortDescriptorAlphabetical, sortDescriptorRecent=_sortDescriptorRecent;
+@synthesize addPhotoButton = _addPhotoButton;
+@synthesize pullPhotosButton = _pullPhotosButton;
 @synthesize feelingsTableView=_feelingsTableView;
-@synthesize feelingsTableViewContentOffsetPreserved=_feelingsTableViewContentOffsetPreserved;
-@synthesize activeFeelingCell=_activeFeelingCell;
-@synthesize activeFeelingCellIndexRow=_activeFeelingCellIndexRow;
-@synthesize activeFeelingCellContentOffsetPreserved=_activeFeelingCellContentOffsetPreserved;
-@synthesize flagStretchView = _flagStretchView, flagStretchViewTransitions=_flagStretchViewTransitions;
-@synthesize floatingImageView=_floatingImageView;
-@synthesize topBar=_topBar;
-@synthesize bottomBar = _bottomBar;
-@synthesize cameraButtonView = _cameraButtonView;
-//@synthesize activityIndicatorView = _activityIndicatorView, activityCount=_activityCount;
+@synthesize toggleModesButton = _toggleModesButton;
+@synthesize coreDataManager=_coreDataManager;
+@synthesize fetchedResultsController=_fetchedResultsController;
+@synthesize sortDescriptorAlphabetical=_sortDescriptorAlphabetical, sortDescriptorRecent=_sortDescriptorRecent;
 @synthesize galleryMode=_galleryMode;
-//@synthesize /*getPhotosWebTask=_getPhotosWebTask, */ getPhotosDate=_getPhotosDate, getPhotosFeeling=_getPhotosFeeling;
-//@synthesize getPhotosAllDate=_getPhotosAllDate, getPhotosAllGroupIdentifier=_getPhotosAllGroupIdentifier, getPhotosFeelingDate=_getPhotosFeelingDate, getPhotosFeelingGroupIdentifier=_getPhotosFeelingGroupIdentifier, getPhotosFeeling=_getPhotosFeeling;
-//@synthesize webManagerPrivate=_webManagerPrivate;
 @synthesize getPhotosRequests=_getPhotosRequests;
+@synthesize addPhotoFeelingWords=_addPhotoFeelingWords, addPhotoFeelingWordsNextIndex=_addPhotoFeelingWordsNextIndex;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        debugging = NO;
-        self.feelingsTableViewContentOffsetPreserved = CGPointMake(0, -VC_TOP_BAR_HEIGHT);
-        self.activeFeelingCellIndexRow = -1;
-        self.activeFeelingCellContentOffsetPreserved = CGPointZero;
         NSNumber * galleryModeLast = [[NSUserDefaults standardUserDefaults] objectForKey:GALLERY_MODE_KEY];
         if (galleryModeLast != nil) {
             self.galleryMode = galleryModeLast.intValue;
@@ -80,82 +37,17 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
             self.galleryMode = GalleryAlphabetical;
         }
         [[NSUserDefaults standardUserDefaults] setInteger:self.galleryMode forKey:GALLERY_MODE_KEY];
-//        self.webManagerPrivate = [[WebManager alloc] init];
         self.getPhotosRequests = [NSMutableSet set];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(navToRootAndShowUserStripViewControllerForNotification:) name:NOTIFICATION_NAVIGATE_TO_USER_PHOTO object:nil];
-        
+        _addPhotoFeelingWordsNextIndex = -1;
     }
     return self;
 }
 
-- (void)didReceiveMemoryWarning {
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-    // Release any cached data, images, etc that aren't in use.
-}
-
-#pragma mark - View lifecycle
-
 - (void)viewDidLoad {
     [super viewDidLoad];
-//    NSLog(@"GalleryViewController self.view.frame = %@", NSStringFromCGRect(self.view.frame));
     
-    [self.cameraButtonView positionInSuperview:self.view];
-    [self.cameraButtonView.button addTarget:self action:@selector(cameraButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self.topBar.buttonBranding addTarget:self action:@selector(emotishLogoTouched:) forControlEvents:UIControlEventTouchUpInside];
-    [self.topBar showButtonType:ProfileButton inPosition:LeftSpecial animated:NO];
-//    NSLog(@"self.topBar.buttonLeftSpecial = %@", self.topBar.buttonLeftSpecial);
-    [self.topBar.buttonLeftSpecial addTarget:self action:@selector(profileButtonTouched:) forControlEvents:UIControlEventTouchUpInside];
-    if (self.galleryMode == GalleryRecent) {
-        [self.topBar setBrandingStamp:StampRecent animated:NO];
-    }
-        
-    self.feelingsTableView.rowHeight = GC_FEELING_IMAGE_SIDE_LENGTH + 2 * GC_FEELING_IMAGE_MARGIN_VERTICAL;
-    self.feelingsTableView.contentInset = UIEdgeInsetsMake(VC_TOP_BAR_HEIGHT, 0, GC_FEELING_IMAGE_MARGIN_VERTICAL + VC_BOTTOM_BAR_HEIGHT, 0);
-    self.feelingsTableView.scrollsToTop = YES;
-
-    UIView * tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, GC_TABLE_HEADER_VIEW_FLAG_VISIBLE_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL)];
-    
-    self.feelingsTableView.tableHeaderView = tableHeaderView;
-    
-    self.flagStretchView = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, GC_TABLE_HEADER_VIEW_FLAG_VISIBLE_HEIGHT - [UIScreen mainScreen].bounds.size.height, self.feelingsTableView.frame.size.width, [UIScreen mainScreen].bounds.size.height)];
-    self.flagStretchView.icon.opacity = 0.75;
-    self.flagStretchView.iconDistanceFromBottom = floorf(self.feelingsTableView.rowHeight / 3.0);
-    self.flagStretchView.activationDistanceEnd = 2 * self.flagStretchView.iconDistanceFromBottom + self.flagStretchView.icon.frame.size.height;
-    self.flagStretchView.angledShapes = NO;
-    self.flagStretchView.activationAffectsIcon = YES;
-    self.flagStretchView.activationAffectsAlpha = NO;
-    [tableHeaderView addSubview:self.flagStretchView];
-    self.flagStretchView.overlayImageViewVisibleHangOutDistance = 4.0;
-    
-    self.flagStretchViewTransitions = [[FlagStretchView alloc] initWithFrame:CGRectMake(0, 0, self.feelingsTableView.frame.size.width, VC_TOP_BAR_HEIGHT + GC_TABLE_HEADER_VIEW_FLAG_VISIBLE_HEIGHT)];
-    self.flagStretchViewTransitions.userInteractionEnabled = NO;
-    self.flagStretchViewTransitions.angledShapes = NO;
-    self.flagStretchViewTransitions.alpha = 0.0;
-    [self.view insertSubview:self.flagStretchViewTransitions belowSubview:self.topBar];
-    
-    self.floatingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    self.floatingImageView.contentMode = UIViewContentModeScaleAspectFill;
-    [self.view insertSubview:self.floatingImageView belowSubview:self.topBar];
-    self.floatingImageView.alpha = 0.0;
-    self.floatingImageView.userInteractionEnabled = NO;
-    self.floatingImageView.backgroundColor = [UIColor clearColor];
-    self.floatingImageView.clipsToBounds = YES;
-    
-//    self.activityIndicatorView.contentMode = UIViewContentModeCenter;
-//    self.activityIndicatorView.animationImages = [NSArray arrayWithObjects:[UIImage imageNamed:@"activityIndicator_01.png"], [UIImage imageNamed:@"activityIndicator_02.png"], [UIImage imageNamed:@"activityIndicator_03.png"], nil];
-//    self.activityIndicatorView.animationDuration = 0.5;
-//    self.activityIndicatorView.alpha = 0.0;
-//    self.activityIndicatorView.userInteractionEnabled = NO;
-//    if (self.activityCount > 0) {
-//        [self showActivityIndicator];
-//    }
-    
-    if (debugging) {
-        self.feelingsTableView.backgroundColor = [UIColor greenColor];
-    }
+    [self.addPhotoButton setTitle:[NSString stringWithFormat:@"Add %@ Photo to Server", [self.addPhotoFeelingWords objectAtIndex:self.peekAtNextAddPhotoFeelingWordsIndex]] forState:UIControlStateNormal];
+    [self.toggleModesButton setTitle:(self.galleryMode == GalleryAlphabetical) ? @"Toggle Gallery Mode to Recent" : @"Toggle Gallery Mode to Alphabetical" forState:UIControlStateNormal];
     
     NSError * error;
 	if (![self.fetchedResultsController performFetch:&error]) {
@@ -167,68 +59,32 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 }
 
 - (void)viewDidUnload {
-    [self setFlagStretchView:nil];
-    [self setBottomBar:nil];
-    [self setCameraButtonView:nil];
-//    [self setActivityIndicatorView:nil];
+    [self setAddPhotoButton:nil];
+    [self setPullPhotosButton:nil];
+    [self setToggleModesButton:nil];
+    [self setFeelingsTableView:nil];
+    [self setFetchedResultsController:nil];
     [super viewDidUnload];
-    self.feelingsTableView = nil;
-    self.activeFeelingCell = nil; // Not retained, but should nil this pointer.
-    self.floatingImageView = nil;
-    self.topBar = nil;
-    self.fetchedResultsController = nil;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    self.feelingsTableViewContentOffsetPreserved = self.feelingsTableView.contentOffset;
-    self.activeFeelingCellContentOffsetPreserved = self.activeFeelingCell != nil ? self.activeFeelingCell.imagesTableView.contentOffset : CGPointZero;
-//    if (self.getPhotosAllGroupIdentifier || self.getPhotosFeelingGroupIdentifier) {
-        [self cancelAllWebGetPhotos];
-//    }
-//    if (self.getPhotosWebTask) {
-//        [[WebManager sharedManager] performSelectorOnMainThread:@selector(cancelWebTask:) withObject:self.getPhotosWebTask waitUntilDone:YES];
-////        [[WebManager sharedManager] cancelWebTask:self.getPhotosWebTask];
-//    }
+    [self cancelAllWebGetPhotos];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    NSLog(@"GalleryViewController viewWillAppear");
     [super viewWillAppear:animated];
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque animated:NO];
-    self.feelingsTableView.contentOffset = self.feelingsTableViewContentOffsetPreserved;
-    for (GalleryFeelingCell * cell in self.feelingsTableView.visibleCells) {
-        NSIndexPath * indexPath = [self.feelingsTableView indexPathForCell:cell];
-        [self tableView:self.feelingsTableView updateTimestampLabelForCell:cell atIndexPath:indexPath];
-    }
-    for (int i=0; i<self.feelingsTableView.visibleCells.count; i++) { // This is no longer necessary since we are reloading the entire table up above. Blahhh lame.
-        GalleryFeelingCell * galleryFeelingCell = [self.feelingsTableView.visibleCells objectAtIndex:i];
-        NSIndexPath * indexPath = [self.feelingsTableView.indexPathsForVisibleRows objectAtIndex:i];
-        [self tableView:self.feelingsTableView updateTimestampLabelForCell:galleryFeelingCell atIndexPath:indexPath];
-    }
-    BOOL oneTimeForceReloadComplete = [[NSUserDefaults standardUserDefaults] boolForKey:@"oneTimeForceReload-201203150012"];
+    
     int photosCount = [self tableView:self.feelingsTableView numberOfRowsInSection:0];
-    NSLog(@"photosCount = %d", photosCount);
-    int photosCountGoal = photosCount == 0 ? 100 : 1000;// MIN(1000, ((photosCount / 100) + 1) * 100);
-    NSLog(@"photosCountGoal = %d", photosCountGoal);
-    if (photosCount == 0 || !oneTimeForceReloadComplete) {
-        [self getPhotosFromServerWithLimit:[NSNumber numberWithInt:photosCountGoal]];
-        //        [self getPhotosFromServer]; // This will hopefully asynchronously update the table view... The updates may not look too pretty!
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"oneTimeForceReload-201203150012"];
+    if (photosCount == 0) {
+        [self getPhotosFromServerWithLimit:[NSNumber numberWithInt:100]];
     }
     
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-//    NSLog(@"GalleryViewController viewDidAppear");
     [super viewDidAppear:animated];
-    self.view.userInteractionEnabled = YES;
-    self.feelingsTableView.userInteractionEnabled = YES;
-//    for (GalleryFeelingCell * galleryFeelingCell in self.feelingsTableView.visibleCells) {
-//        for (GalleryFeelingImageCell * galleryFeelingImageCell in galleryFeelingCell.imagesTableView.visibleCells) {
-//            [galleryFeelingImageCell setHighlightTabVisible:((Photo *)[galleryFeelingCell.photos objectAtIndex:galleryFeelingImageCell.imageIndex]).shouldHighlight.boolValue animated:YES];
-//        }
-//    }
+
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
@@ -260,260 +116,106 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
 }
 
-- (void) viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
-    self.floatingImageView.alpha = 0.0;
-    self.feelingsTableView.alpha = 1.0;
-    self.flagStretchViewTransitions.alpha = 0.0;
-    self.floatingImageView.userInteractionEnabled = NO;
-    self.feelingsTableView.userInteractionEnabled = YES;
-    self.view.userInteractionEnabled = YES;
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    // Return YES for supported orientations
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
-}
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    NSInteger rowCount = 0;
-    if (tableView == self.feelingsTableView) {
-        id <NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
-        rowCount = [sectionInfo numberOfObjects];
-    }
-    return rowCount;
+    id <NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
+    return [sectionInfo numberOfObjects];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    if (tableView == self.feelingsTableView) {
-        
-//        NSLog(@"feelingCell forIndexPath.row:%d", indexPath.row);
-        
-        // Get / Create the cell
-        static NSString * FeelingCellID = @"FeelingCellID";
-        GalleryFeelingCell * cell = (GalleryFeelingCell *)[tableView dequeueReusableCellWithIdentifier:FeelingCellID];
-        if (cell == nil) {
-//            NSLog(@"Brand new cell");
-            cell = [[GalleryFeelingCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:FeelingCellID];
-            cell.imagesTableView.delegate = self;
-//            cell.imagesTableView.dataSource = self;
-            cell.delegate = self;
-            cell.flagStretchView.overlayImageViewVisibleHangOutDistance = 3.0;
-        } else {
-            if (cell.feelingIndex == self.activeFeelingCellIndexRow) {
-                self.activeFeelingCellContentOffsetPreserved = cell.imagesTableView.contentOffset;
-                self.activeFeelingCell = nil;
-            }
-        }
-        
-        // Configure the cell
-        [self tableView:tableView configureCell:cell atIndexPath:indexPath];
-
-        // Update active cell view object
-        if (indexPath.row == self.activeFeelingCellIndexRow) {
-            self.activeFeelingCell = cell;
-            [cell highlightLabel:YES];
-            [cell.imagesTableView setContentOffset:self.activeFeelingCellContentOffsetPreserved animated:NO];
-        } else {
-            [cell scrollToOriginAnimated:NO]; // Can not figure out how to fix the problem where if a row is scrolling horizontally while it goes off screen, then when that row is reused, the starting content offset is all messed up.            
-        }
-        
-        // Return the cell
-        return cell;
-        
+    static NSString * FeelingCellID = @"FeelingCellID";
+    UITableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:FeelingCellID];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:FeelingCellID];
     }
     
-    return nil;
+    [self tableView:tableView configureCell:cell atIndexPath:indexPath];
+    
+    return cell;
     
 }
 
-- (void)tableView:(UITableView *)tableView configureCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView configureCell:(UITableViewCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath {
     
     // Configure the cell
     Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    feelingCell.feelingLabel.text = feeling.word;//.lowercaseString;
-    feelingCell.feelingIndex = indexPath.row;
-    feelingCell.photos = feeling.mostRecentPhotosVisible;
-    [feelingCell.imagesTableView reloadData];
-    feelingCell.timestampLabel.text = self.galleryMode == GalleryRecent ? [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES] : nil;
-    [feelingCell.flagStretchView setOverlayImageViewVisible:[self getPhotosRequestIsExecutingForFeelingServerID:feeling.serverID] animated:NO];
+    feelingCell.textLabel.text = feeling.word;
+    feelingCell.detailTextLabel.text = [NSString stringWithFormat:@"%@ --- %@", [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES], feeling.datetimeMostRecentPhoto];
     
 }
-
-- (void)tableView:(UITableView *)tableView updateTimestampLabelForCell:(GalleryFeelingCell *)feelingCell atIndexPath:(NSIndexPath *)indexPath {
-    Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    feelingCell.timestampLabel.text = self.galleryMode == GalleryRecent ? [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES] : nil;
-}
-
-//- (void)tableView:(UITableView *)tableView setLoading:(BOOL)loading forCell:(GalleryFeelingCell *)feelingCell animated:(BOOL)animated {
-//    [feelingCell.flagStretchView setOverlayImageViewVisible:loading animated:animated];
-//}
-//
-//- (void) updateVisibleCellsLoading {
-//    for (int i=0; i<self.feelingsTableView.visibleCells.count; i++) {
-//        
-//        GalleryFeelingCell * galleryFeelingCell = [self.feelingsTableView.visibleCells objectAtIndex:i];
-//        NSIndexPath * indexPath = [self.feelingsTableView.indexPathsForVisibleRows objectAtIndex:i];
-//        [self tableView:self.feelingsTableView updateTimestampLabelForCell:galleryFeelingCell atIndexPath:indexPath];
-//    }
-//}
-
-- (void) feelingCellSelected:(GalleryFeelingCell *)feelingCell fromImageCell:(GalleryFeelingImageCell *)imageCell {
-    
-    if (!(self.activeFeelingCell != nil &&
-          self.activeFeelingCell.imagesTableView.isTracking) &&
-        feelingCell.photos.count > 0) {
-        NSLog(@"Feeling button touched, should push view controller for feeling '%@', focused on %@.", feelingCell.feelingLabel.text, imageCell != nil ? [NSString stringWithFormat:@"the image that was located at index %d)",  imageCell.imageIndex] : @"the first image");
-            
-        // Old behavior, arguably 'slicker' - if a feeling cell is pulled out (and is thus the active feeling cell), but the user then taps the label or image from a different (not pulled out) feeling cell, while that new tapped feeling cell is being pushed to a view controller etc, the old active cell is deactivated (and starts to scroll towards the origin), and the new tapped cell is offically the new active one.
-        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-        GalleryFeelingCell * newActiveFeelingCell = feelingCell;
-        if (oldActiveFeelingCell != newActiveFeelingCell) {
-            self.activeFeelingCell = nil;
-            if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-                [oldActiveFeelingCell scrollToOriginAnimated:YES];
-            } else {
-                [oldActiveFeelingCell highlightLabel:NO];
-            }
-            self.activeFeelingCell = newActiveFeelingCell;
-            self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
-            [self.activeFeelingCell highlightLabel:YES];
-        }
-        
-        // New behavior, works with my galleryScreenshot technique - in the situation described above, the new tapped feeling cell does not become the new official active cell. In all other situations, it does. (The problem was that the screenshot would be taken before the potentially old active feeling cell was finished scrolling back to its origin, and thus the transition back to the Gallery, whenever that might happen, would not look right.) // GOING BACK to the old 'slicker' behavior, because we are no longer using the ridiculous Gallery Screenshots.
-//        GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-//        GalleryFeelingCell * newActiveFeelingCell = feelingCell;
-//        if (oldActiveFeelingCell != newActiveFeelingCell) {
-//            if (oldActiveFeelingCell.imagesTableView.isDecelerating) {
-//                NSLog(@"oldActiveFeelingCell.imagesTableView.isDecelerating");
-//                [oldActiveFeelingCell.imagesTableView scrollRectToVisible:CGRectMake(0, oldActiveFeelingCell.imagesTableView.contentOffset.y-1, 1, 1) animated:NO];
-//            }
-//            if (oldActiveFeelingCell.imagesTableView.contentOffset.y <= 0) {
-//                self.activeFeelingCell = nil;
-//                [oldActiveFeelingCell highlightLabel:NO];
-//                self.activeFeelingCell = newActiveFeelingCell;
-//                self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
-//                [self.activeFeelingCell highlightLabel:YES];
-//            }
-//        }
-    
-        if (imageCell == nil) {   
-            imageCell = [feelingCell.imagesTableView.visibleCells objectAtIndex:0];
-        }
-        
-        PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-        feelingStripViewController.delegate = self;
-        feelingStripViewController.coreDataManager = self.coreDataManager;
-        feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-        feelingStripViewController.galleryMode = self.galleryMode;
-        Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:[self.feelingsTableView indexPathForCell:feelingCell]];
-        [feelingStripViewController setFocusToFeeling:feeling photo:[feelingCell.photos objectAtIndex:(imageCell != nil ? imageCell.imageIndex : 0)]];
-        [feelingStripViewController setShouldAnimateIn:YES fromSource:Gallery withPersistentImage:imageCell.button.imageView.image];
-                        
-        self.floatingImageView.frame = [imageCell.button convertRect:imageCell.button.imageView.frame toView:self.floatingImageView.superview];
-        self.floatingImageView.image = imageCell.button.imageView.image;
-        self.floatingImageView.alpha = 1.0;
-        self.floatingImageView.clipsToBounds = YES;
-        imageCell.alpha = 0.0;
-        
-        if (self.feelingsTableView.contentOffset.y == -self.feelingsTableView.contentInset.top) {
-            self.flagStretchViewTransitions.alpha = 1.0;
-        }
-        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            if (self.topBar.brandingStamp == StampAlphabetical) {
-                [self.topBar.brandingStampFadeTimer invalidate];
-                [self.topBar setBrandingStamp:StampNone animated:NO];
-            }
-            self.flagStretchViewTransitions.alpha = 1.0;
-            self.floatingImageView.frame = /*[self.floatingImageView.superview convertRect:*/CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH)/* fromView:nil]*/;
-//            NSLog(@"self.floatingImageView.frame = %@", NSStringFromCGRect(self.floatingImageView.frame));
-//            NSLog(@"galleryViewController.view.frame = %@", NSStringFromCGRect(self.view.frame));
-            self.feelingsTableView.alpha = 0.0;
-            self.floatingImageView.userInteractionEnabled = YES;
-            self.feelingsTableView.userInteractionEnabled = NO;
-        } completion:^(BOOL finished){
-            [self.navigationController pushViewController:feelingStripViewController animated:NO];
-            imageCell.alpha = 1.0;
-        }];
-    
-    }
-    
-}
-
-//- (void) updateConfigureVisibleCells {
-//    NSLog(@"updateConfigureVisibleCells");
-//    NSArray * visibleCells = self.feelingsTableView.visibleCells;
-//    NSArray * visibleIndexPaths = self.feelingsTableView.indexPathsForVisibleRows;
-//    for (int i=0; i<visibleCells.count; i++) {
-//        [self tableView:self.feelingsTableView configureCell:[visibleCells objectAtIndex:i] atIndexPath:[visibleIndexPaths objectAtIndex:i]];
-//    }
-//}
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
-//    if (self.view.window) {
-    NSLog(@"GalleryViewController controllerWillChangeContent");
+    NSLog(@"GalleryViewController.fetchedResultsController controllerWillChangeContent");
+    
+    // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+    // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+    // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+    NSLog(@"PRINTOUT OF DATA ACCORDING TO FETCHED RESULTS CONTROLLER");
+    for (int i=0; i<[[[self.fetchedResultsController sections] objectAtIndex:0] numberOfObjects]; i++) {
+        Feeling * feeling = (Feeling *)[self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
+        NSLog(@"  %@ (%@) %@", feeling.word, [NSDateFormatter emotishTimeSpanStringForDatetime:feeling.datetimeMostRecentPhoto countSeconds:YES], feeling.datetimeMostRecentPhoto);
+    }
+    
+    NSLog(@"RESULTS FROM SEPARATE FETCH ON MAIN MOC");
     if (self.galleryMode == GalleryAlphabetical) {
         [self.coreDataManager debugLogAllFeelingsAlphabetically];
     } else {
         [self.coreDataManager debugLogAllFeelingsChronologicallyDatetimeMostRecentPhoto];
     }
-    if (controller == self.fetchedResultsController) {
-        [self.feelingsTableView beginUpdates];
+    
+    NSLog(@"RESULTS FROM SEPARATE FETCH ON NEW MOC BASED ON PERSISTENT STORE COORDINATOR");
+    NSManagedObjectContext * moc = [[NSManagedObjectContext alloc] init];
+    moc.undoManager = nil;
+    moc.persistentStoreCoordinator = self.coreDataManager.managedObjectContext.persistentStoreCoordinator;
+    CoreDataManager * cdm = [[CoreDataManager alloc] initWithManagedObjectContext:moc];
+    if (self.galleryMode == GalleryAlphabetical) {
+        [cdm debugLogAllFeelingsAlphabetically];
+    } else {
+        [cdm debugLogAllFeelingsChronologicallyDatetimeMostRecentPhoto];
     }
-//    }
+    // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+    // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+    // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+    
+    [self.feelingsTableView beginUpdates];
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
     
-//    if (self.view.window) {
-    if (controller == self.fetchedResultsController) {
+    NSLog(@"GalleryViewController.fetchedResultsController didChangeObject:%@ atIndexPath:%d-%d newIndexPath:%d-%d", anObject, indexPath.section, indexPath.row, newIndexPath.section, newIndexPath.row);
     
-        NSLog(@"GalleryViewController.fetchedResultsController didChangeObject:%@ atIndexPath:%d-%d newIndexPath:%d-%d", anObject, indexPath.section, indexPath.row, newIndexPath.section, newIndexPath.row);
-        
-        switch(type) {
-                
-            case NSFetchedResultsChangeInsert:
-                NSLog(@"NSFetchedResultsChangeInsert");
-                [self.feelingsTableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-                // Need to update feelingIndex for visible cells
-    //            [self updateConfigureVisibleCells];
-                break;
-                
-            case NSFetchedResultsChangeDelete:
-                NSLog(@"NSFetchedResultsChangeDelete");
-                [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-                // Need to update feelingIndex for visible cells
-    //            [self updateConfigureVisibleCells];
-                break;
-                
-            case NSFetchedResultsChangeUpdate:
-                NSLog(@"NSFetchedResultsChangeUpdate");
-                [self tableView:self.feelingsTableView configureCell:(GalleryFeelingCell *)[self.feelingsTableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
-                break;
-                
-            case NSFetchedResultsChangeMove:
-                NSLog(@"NSFetchedResultsChangeMove %d to %d", indexPath.row, newIndexPath.row);
-                [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray
-                                                   arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-                [self.feelingsTableView insertRowsAtIndexPaths:[NSArray
-                                                   arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-                break;
-        }
-        
+    switch(type) {
+            
+        case NSFetchedResultsChangeInsert:
+            NSLog(@"NSFetchedResultsChangeInsert");
+            [self.feelingsTableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+            
+        case NSFetchedResultsChangeDelete:
+            NSLog(@"NSFetchedResultsChangeDelete");
+            [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+            
+        case NSFetchedResultsChangeUpdate:
+            NSLog(@"NSFetchedResultsChangeUpdate");
+            [self tableView:self.feelingsTableView configureCell:[self.feelingsTableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
+            break;
+            
+        case NSFetchedResultsChangeMove:
+            NSLog(@"NSFetchedResultsChangeMove %d to %d", indexPath.row, newIndexPath.row);
+            [self.feelingsTableView deleteRowsAtIndexPaths:[NSArray
+                                               arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            [self.feelingsTableView insertRowsAtIndexPaths:[NSArray
+                                               arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
     }
-//    }
     
 }
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-//    if (self.view.window) {
-    if (controller == self.fetchedResultsController) {
-        // The fetch controller has sent all current change notifications, so tell the table view to process all updates.
-        [self.feelingsTableView endUpdates];
-    }
-    NSLog(@"GalleryViewController controllerDidChangeContent");
+    NSLog(@"GalleryViewController.fetchedResultsController controllerDidChangeContent");
+
+    [self.feelingsTableView endUpdates];
     
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
@@ -545,137 +247,6 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
     // DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
 
-//    }
-}
-
-- (void)photosStripViewControllerFinished:(PhotosStripViewController *)photosStripViewController withNoMorePhotos:(BOOL)noMorePhotos {
-    
-    self.floatingImageView.alpha = 1.0;
-    self.floatingImageView.image = photosStripViewController.floatingImageView.image;
-    self.floatingImageView.frame = CGRectMake(PC_PHOTO_CELL_IMAGE_WINDOW_ORIGIN_X, PC_PHOTO_CELL_IMAGE_ORIGIN_Y, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH, PC_PHOTO_CELL_IMAGE_SIDE_LENGTH);
-    
-    photosStripViewController.floatingImageView.alpha = 0.0;
-    
-    CABasicAnimation * floatingSizeAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
-    floatingSizeAnimation.duration = 0.25;
-    floatingSizeAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    CGRect oldBounds = self.floatingImageView.layer.bounds;
-    CGRect newBounds = CGRectInset(oldBounds, 0.1 * oldBounds.size.width, 0.1 * oldBounds.size.height);
-    floatingSizeAnimation.fromValue = [NSValue valueWithCGRect:oldBounds];
-    floatingSizeAnimation.toValue = [NSValue valueWithCGRect:newBounds];
-    [self.floatingImageView.layer addAnimation:floatingSizeAnimation forKey:@"bounds"];
-    self.floatingImageView.layer.bounds = newBounds;
-    
-    CABasicAnimation * floatingAlphaAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    floatingAlphaAnimation.duration = 0.25;
-    floatingAlphaAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    floatingAlphaAnimation.fromValue = [NSNumber numberWithFloat:1.0];
-    floatingAlphaAnimation.toValue = [NSNumber numberWithFloat:0.0];
-    [self.floatingImageView.layer addAnimation:floatingAlphaAnimation forKey:@"opacity"];
-    self.floatingImageView.layer.opacity = 0.0;
-    
-    CATransition * viewTransition = [CATransition animation];
-    viewTransition.duration = 0.25;
-    viewTransition.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    viewTransition.type = kCATransitionFade; //kCATransitionMoveIn; //, kCATransitionPush, kCATransitionReveal, kCATransitionFade
-    //transition.subtype = kCATransitionFromTop; //kCATransitionFromLeft, kCATransitionFromRight, kCATransitionFromTop, kCATransitionFromBottom
-    [self.navigationController.view.layer addAnimation:viewTransition forKey:nil];
-    [self.navigationController popViewControllerAnimated:NO];
-    
-//    [self dismissModalViewControllerAnimated:YES];
-}
-
-- (void)photosStripViewController:(PhotosStripViewController *)photosStripViewController requestedReplacementWithPhotosStripViewController:(PhotosStripViewController *)replacementPhotosStripViewController {
-    NSLog(@"photosStripViewController:requestedReplacementWithPhotosStripViewController:");
-    NSLog(@"GalleryViewController [self.navigationController popToRootViewControllerAnimated:NO];");
-    [self.navigationController popToRootViewControllerAnimated:NO];
-    NSLog(@"GalleryViewController [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];");
-    [self.navigationController pushViewController:replacementPhotosStripViewController animated:NO];
-}
-
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
-    if (scrollView != self.feelingsTableView &&
-        self.activeFeelingCell.imagesTableView != scrollView &&
-        scrollView.contentOffset.y > 0) {
-        GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-        [cell scrollToOriginAnimated:YES];
-    }
-}
-
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-    if (scrollView != self.feelingsTableView) {
-        if (self.activeFeelingCell.imagesTableView != scrollView) {
-            if (!decelerate && scrollView.contentOffset.y > 0) {
-                GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-                [cell scrollToOriginAnimated:YES];
-            }
-        }
-        GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-        if (cell.flagStretchView.activated) {
-            [self getPhotosFromServerForFeeling:[self.fetchedResultsController objectAtIndexPath:[self.feelingsTableView indexPathForCell:cell]]];
-        }
-    } else {
-        if (self.flagStretchView.activated) {
-//            UIEdgeInsets contentInset = self.feelingsTableView.contentInset;
-//            contentInset.top = VC_TOP_BAR_HEIGHT + 8.0;
-//            self.feelingsTableView.contentInset = contentInset;
-            if (self.activeFeelingCell) {
-                [self.activeFeelingCell scrollToOriginAnimated:YES];
-            }
-            [self getPhotosFromServer];
-        }
-    }
-}
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (scrollView != self.feelingsTableView) {
-        GalleryFeelingCell * feelingCell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-        feelingCell.flagStretchView.pulledOutDistance = MAX(0, -scrollView.contentOffset.y);
-        [feelingCell.flagStretchView setActivated:scrollView.isTracking && feelingCell.flagStretchView.pulledOutDistance >= feelingCell.flagStretchView.activationDistanceEnd animated:YES];
-        if (scrollView == self.activeFeelingCell.imagesTableView) {
-            // ...
-            // ...
-            // ...
-        } else {
-            if (scrollView.isTracking) {
-                if (!(self.activeFeelingCell != nil &&
-                      self.activeFeelingCell.imagesTableView.isTracking)) {
-                    GalleryFeelingCell * oldActiveFeelingCell = self.activeFeelingCell;
-                    GalleryFeelingCell * newActiveFeelingCell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-                    self.activeFeelingCell = nil;
-                    if (oldActiveFeelingCell.imagesTableView.contentOffset.y > 0) {
-                        [oldActiveFeelingCell scrollToOriginAnimated:YES];
-                    } else {
-                        [oldActiveFeelingCell highlightLabel:NO];
-                    }
-                    self.activeFeelingCell = newActiveFeelingCell;
-                    self.activeFeelingCellIndexRow = newActiveFeelingCell.feelingIndex;
-                    [self.activeFeelingCell highlightLabel:YES];
-                }
-            }
-        }
-    } else {
-//        if (self.getPhotosWebTask) {
-//
-//        } else {
-            BOOL pastActivationPoint = -scrollView.contentOffset.y >= VC_TOP_BAR_HEIGHT + self.flagStretchView.activationDistanceEnd;
-            [self.flagStretchView setActivated:scrollView.isTracking && pastActivationPoint && ![self getPhotosRequestIsExecutingForFeelingServerID:nil] animated:YES];
-//        }
-    }
-}
-
-- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
-    if (scrollView != self.feelingsTableView) {
-        if (/*self.activeFeelingCell.imagesTableView != scrollView &&*/
-            scrollView.contentOffset.y != 0) {
-            GalleryFeelingCell * cell = (GalleryFeelingCell *)scrollView.superview.superview; // Totally unsafe, based on insider knowledge that might become untrue at some point.
-            if (self.activeFeelingCell == cell) { 
-                self.activeFeelingCell = nil;
-                self.activeFeelingCellIndexRow = -1;
-            }
-            [cell scrollToOriginAnimated:YES];
-        }
-    }
 }
 
 - (NSFetchedResultsController *)fetchedResultsController {
@@ -690,7 +261,7 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     fetchRequest.sortDescriptors = [NSArray arrayWithObject:[self sortDescriptorForGalleryMode:self.galleryMode]];
     fetchRequest.fetchBatchSize = 20;
     
-    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:nil/*@"Gallery"*/]; // Not using a cache anymore
+    _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.coreDataManager.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
     _fetchedResultsController.delegate = self;
     
     return _fetchedResultsController;
@@ -719,10 +290,6 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     [UIView animateWithDuration:0.25 animations:^{
         self.feelingsTableView.alpha = 0.0;
     } completion:^(BOOL finished) {
-        self.activeFeelingCell = nil;
-        self.activeFeelingCellIndexRow = -1;
-        self.activeFeelingCellContentOffsetPreserved = CGPointZero;
-//        [NSFetchedResultsController deleteCacheWithName:@"Gallery"]; // Not using a cache anymore
         self.fetchedResultsController.fetchRequest.sortDescriptors = [NSArray arrayWithObject:[self sortDescriptorForGalleryMode:galleryMode]];
         NSError * error;
         if (![self.fetchedResultsController performFetch:&error]) {
@@ -730,9 +297,9 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
             NSLog(@"GalleryViewController - Unresolved error %@, %@", error, [error userInfo]);
             exit(-1);  // Fail
         }
-        // Does the UITableView get reloaded automatically? We shall see... Nope, it doesn't!
         [self.feelingsTableView reloadData];
-        [self.feelingsTableView setContentOffset:CGPointMake(0, -VC_TOP_BAR_HEIGHT) animated:NO];
+        [self.feelingsTableView setContentOffset:CGPointZero animated:NO];
+        [self.toggleModesButton setTitle:(self.galleryMode == GalleryAlphabetical) ? @"Toggle Gallery Mode to Recent" : @"Toggle Gallery Mode to Alphabetical" forState:UIControlStateNormal];
         [UIView animateWithDuration:0.25 animations:^{
             self.feelingsTableView.alpha = 1.0;
         }];
@@ -740,164 +307,12 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
 
 }
 
-- (void)emotishLogoTouched:(UIButton *)button {
-    if (self.galleryMode == GalleryAlphabetical) {
-        self.galleryMode = GalleryRecent;
-    } else {
-        self.galleryMode = GalleryAlphabetical;
-    }
-    [self.topBar setBrandingStamp:(self.galleryMode == GalleryAlphabetical ? StampAlphabetical : StampRecent) animated:YES delayedFadeToNone:(self.galleryMode == GalleryAlphabetical)];
-    [self adjustFetchRequestForGalleryMode:self.galleryMode];
-    [[NSUserDefaults standardUserDefaults] setInteger:self.galleryMode forKey:GALLERY_MODE_KEY];
-//    if ([self tableView:self.feelingsTableView numberOfRowsInSection:0] > 0) {
-//        [self.feelingsTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
-//    } else {
-//        [self.feelingsTableView setContentOffset:CGPointMake(0, -(VC_TOP_BAR_HEIGHT + GC_FEELING_IMAGE_MARGIN_VERTICAL)) animated:YES];
-//    }
-}
-
-- (void)showSettingsViewControllerForUserLocal:(User *)userLocal userServer:(PFUser *)userServer {
-    NSLog(@"Settings button touched...");
-    SettingsViewController * settingsViewController = [[SettingsViewController alloc] initWithNibName:@"SettingsViewController" bundle:[NSBundle mainBundle]];
-    settingsViewController.delegate = self;
-    settingsViewController.coreDataManager = self.coreDataManager;
-    UINavigationController * settingsNavController = [[UINavigationController alloc] initWithRootViewController:settingsViewController];
-    settingsNavController.navigationBarHidden = YES;
-    [self presentModalViewController:settingsNavController animated:YES];
-}
-
-- (void) settingsViewControllerFinished:(SettingsViewController *)settingsViewController {
-    [self dismissModalViewControllerAnimated:YES];
-}
-
-- (void)profileButtonTouched:(UIButton *)button {
-    NSLog(@"profileButtonTouched");
-    PFUser * currentUser = [PFUser currentUser];
-    User * currentUserLocal = currentUser == nil ? nil : (User *)[self.coreDataManager getFirstObjectForEntityName:@"User" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", currentUser.objectId]  usingSortDescriptors:nil];
-    if (currentUser == nil) {
-        AccountViewController * accountViewController = [[AccountViewController alloc] initWithNibName:@"AccountViewController" bundle:[NSBundle mainBundle]];
-        accountViewController.delegate = self;
-        accountViewController.coreDataManager = self.coreDataManager;
-        accountViewController.swipeDownToCancelEnabled = YES;
-        [self presentModalViewController:accountViewController animated:YES];
-    } else {
-        if (!currentUserLocal.photosVisibleExist.boolValue) {
-            [self showSettingsViewControllerForUserLocal:currentUserLocal userServer:currentUser];
-        } else {
-            [self showPhotosStripViewControllerFocusedOnUser:currentUserLocal photo:nil updatePhotoData:NO animated:YES];
-        }
-    }
-}
-
-- (void) showPhotosStripViewControllerFocusedOnUser:(User *)user photo:(Photo *)photo updatePhotoData:(BOOL)updatePhotoData animated:(BOOL)animated {
-    PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-    feelingStripViewController.delegate = self;
-    feelingStripViewController.coreDataManager = self.coreDataManager;
-    feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-    feelingStripViewController.galleryMode = self.galleryMode;
-    Photo * photoFocus = photo != nil ? photo : (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"user == %@ && hidden == NO", user] usingSortDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"datetime" ascending:NO]]];
-    [feelingStripViewController setFocusToUser:user photo:photoFocus];
-    [feelingStripViewController setShouldAnimateIn:animated fromSource:Gallery withPersistentImage:nil];
-    
-    self.feelingsTableView.userInteractionEnabled = NO;
-    
-    if (self.feelingsTableView.contentOffset.y == -self.feelingsTableView.contentInset.top) {
-        self.flagStretchViewTransitions.alpha = 1.0;
-    }
-    if (animated) {
-        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            if (self.topBar.brandingStamp == StampAlphabetical) {
-                [self.topBar.brandingStampFadeTimer invalidate];
-                [self.topBar setBrandingStamp:StampNone animated:NO];
-            }
-            self.feelingsTableView.alpha = 0.0;
-            self.flagStretchViewTransitions.alpha = 1.0;
-        } completion:^(BOOL finished){
-            [self.navigationController pushViewController:feelingStripViewController animated:NO];
-//            if (updatePhotoData) {
-//                [feelingStripViewController getUpdateFromServerForPhoto:photoFocus];
-//            }
-        }];
-    } else {
-        [self.navigationController pushViewController:feelingStripViewController animated:NO];
-//        if (updatePhotoData) {
-//            [feelingStripViewController getUpdateFromServerForPhoto:photoFocus];
-//        }
-    }
-
-}
-
-- (void)accountViewController:(AccountViewController *)accountViewController didFinishWithConnection:(BOOL)finishedWithConnection viaConnectMethod:(AccountConnectMethod)connectMethod {
-    [self dismissModalViewControllerAnimated:YES];
-    if (finishedWithConnection) {
-        UIAlertView * loggedInAlertView = [[UIAlertView alloc] initWithTitle:@"Logged In" message:@"Have fun expressing yourself!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [loggedInAlertView show];
-    }
-}
-
-- (void)cameraButtonTouched:(id)sender {
-    SubmitPhotoViewController * submitPhotoViewController = [[SubmitPhotoViewController alloc] initWithNibName:@"SubmitPhotoViewController" bundle:[NSBundle mainBundle]];
-    submitPhotoViewController.shouldPushImagePicker = YES;
-    submitPhotoViewController.delegate = self;
-    submitPhotoViewController.coreDataManager = self.coreDataManager;
-    [self presentModalViewController:submitPhotoViewController animated:NO];
-}
-
-- (void)submitPhotoViewControllerDidCancel:(SubmitPhotoViewController *)submitPhotoViewController {
-    NSLog(@"submitPhotoViewControllerDidCancel");
-    [self dismissModalViewControllerAnimated:NO];
-}
-
-- (void)submitPhotoViewController:(SubmitPhotoViewController *)submitPhotoViewController didSubmitPhoto:(Photo *)photo withImage:(UIImage *)image {
-        
-    [self.feelingsTableView reloadData];
-        
-    NSLog(@"submitPhotoViewControllerDidSubmitPhoto");
-
-    PhotosStripViewController * feelingStripViewController = [[PhotosStripViewController alloc] initWithNibName:@"PhotosStripViewController" bundle:[NSBundle mainBundle]];
-    feelingStripViewController.delegate = self;
-    feelingStripViewController.coreDataManager = self.coreDataManager;
-    feelingStripViewController.fetchedResultsControllerFeelings = self.fetchedResultsController;
-    feelingStripViewController.galleryMode = self.galleryMode;
-    [feelingStripViewController setFocusToFeeling:photo.feeling photo:photo];
-    [feelingStripViewController setShouldAnimateIn:YES fromSource:SubmitPhoto withPersistentImage:image];
-        
-    [self navToRoot];
-    
-    [self.navigationController pushViewController:feelingStripViewController animated:NO];
-        
-}
-
-//- (void) showActivityIndicator {
-//    self.activityIndicatorView.userInteractionEnabled = YES;
-//    self.topBar.userInteractionEnabled = NO;
-//    [self.activityIndicatorView startAnimating];
-//    [UIView animateWithDuration:0.25 animations:^{
-//        self.activityIndicatorView.alpha = 1.0;
-//    }];
-//}
-//
-//- (void) hideActivityIndicator {
-//    self.activityIndicatorView.userInteractionEnabled = NO;
-//    self.topBar.userInteractionEnabled = YES;
-//    [UIView animateWithDuration:0.25 animations:^{
-//        self.activityIndicatorView.alpha = 1.0;
-//    } completion:^(BOOL finished) {
-//        [self.activityIndicatorView stopAnimating];
-//    }];
-//}
-
 - (void) cancelAllWebGetPhotos {
     for (WebGetPhotos * request in self.getPhotosRequests) {
         [request cancelWebGetPhotos];
         request.delegate = nil;
     }
     [self.getPhotosRequests removeAllObjects];
-    [[SDNetworkActivityIndicator sharedActivityIndicator] stopAllActivity];
-    [self.flagStretchView setOverlayImageViewVisible:NO animated:YES];
-    for (GalleryFeelingCell * visibleCell in self.feelingsTableView.visibleCells) {
-        [visibleCell.flagStretchView setOverlayImageViewVisible:NO animated:YES];
-    }
 }
 
 - (void) getPhotosFromServer {
@@ -916,9 +331,6 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     
     if (!ignore) {
         
-        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-        [self setVisibleCellLoadingIndicatorIsVisible:YES forFeelingServerID:nil animated:YES];
-        
         NSDate * lastReloadDate = [[NSUserDefaults standardUserDefaults] objectForKey: WEB_RELOAD_ALL_DATE_KEY];
         
         WebGetPhotos * request = [[WebGetPhotos alloc] initForPhotosAllWithOptionsVisibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:lastReloadDate dateKey:@"createdAt" limit:limit delegate:self];
@@ -933,9 +345,6 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     
     if (![self getPhotosRequestIsExecutingForFeelingServerID:feeling.serverID]) {
     
-        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-        [self setVisibleCellLoadingIndicatorIsVisible:YES forFeelingServerID:feeling.serverID animated:YES];
-        
         WebGetPhotos * request = [[WebGetPhotos alloc] initForPhotosWithFeelingServerID:feeling.serverID visibleOnly:[NSNumber numberWithBool:YES] beforeEndDate:nil afterStartDate:feeling.webLoadDate dateKey:@"createdAt" limit:[NSNumber numberWithInt:10] delegate:self];
         [self.getPhotosRequests addObject:request];
         [request startWebGetPhotos];
@@ -944,118 +353,117 @@ static NSString * GALLERY_MODE_KEY = @"GALLERY_MODE_KEY";
     
 }
 
-- (void)setVisibleCellLoadingIndicatorIsVisible:(BOOL)visible forFeelingServerID:(NSString *)feelingServerID animated:(BOOL)animated {
-    FlagStretchView * flagStretchView = nil;
-    if (feelingServerID == nil) {
-        flagStretchView = self.flagStretchView;
-    } else {
-        for (GalleryFeelingCell * visibleCell in self.feelingsTableView.visibleCells) {
-            NSIndexPath * indexPath = [self.feelingsTableView indexPathForCell:visibleCell];
-            Feeling * feeling = [self.fetchedResultsController objectAtIndexPath:indexPath];
-            if ([feeling.serverID isEqualToString:feelingServerID]) {
-                flagStretchView = visibleCell.flagStretchView;
-                break;
-            }
-        }
-    }
-    [flagStretchView setOverlayImageViewVisible:visible animated:animated];
-}
-
 - (void)webGetPhotos:(WebGetPhotos *)webGetPhotos succeededWithPhotos:(NSArray *)photosFromWeb {
     [self.getPhotosRequests removeObject:webGetPhotos];
     NSLog(@"GalleryViewController got %d photos", photosFromWeb.count);
-    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-    [self setVisibleCellLoadingIndicatorIsVisible:NO forFeelingServerID:webGetPhotos.groupServerID animated:YES];
     if (webGetPhotos.isGeneral && 
         webGetPhotos.limit.intValue == 1000 && 
         photosFromWeb.count > 0) {
         [[NSUserDefaults standardUserDefaults] setObject:webGetPhotos.datetimeExecuted forKey:WEB_RELOAD_ALL_DATE_KEY];
     }
     if (photosFromWeb && photosFromWeb.count > 0) {
-        [ProcessPhotosOperation processPhotos:photosFromWeb withCoreDataManager:self.coreDataManager];
+        [self.coreDataManager processPhotosFromServer:photosFromWeb];
         [self.coreDataManager updateAllFeelingDatetimes];
         [self.coreDataManager saveCoreData];
-//        [[ProcessManager sharedManager] addOperationToProcessPhotos:photosFromWeb];
     }
 }
 
 - (void)webGetPhotos:(WebGetPhotos *)webGetPhotos failedWithError:(NSError *)error {
     [self.getPhotosRequests removeObject:webGetPhotos];
     NSLog(@"Error when trying to get photos. Should report error?");
-    [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-    [self setVisibleCellLoadingIndicatorIsVisible:NO forFeelingServerID:webGetPhotos.groupServerID animated:YES];
-}
-
-- (void) navToRootAndShowUserStripViewControllerForNotification:(NSNotification *)notification {
-    
-//    NSString * userServerID = [notification.userInfo objectForKey:NOTIFICATION_NAVIGATE_TO_USER_PHOTO_KEY_USER_SERVER_ID];
-    NSString * photoServerID = [notification.userInfo objectForKey:NOTIFICATION_NAVIGATE_TO_USER_PHOTO_KEY_PHOTO_SERVER_ID];
-    [self navToRootAndShowUserStripViewControllerForPhotoWithServerID:photoServerID];
-    
-}
-
-- (void) navToRootAndShowUserStripViewControllerForPhotoWithServerID:(NSString *)photoServerID {
-    
-//    self.navigationController.visibleViewController.view.userInteractionEnabled = NO;
-    
-    Photo * photoLocal = (Photo *)[self.coreDataManager getFirstObjectForEntityName:@"Photo" matchingPredicate:[NSPredicate predicateWithFormat:@"serverID == %@", photoServerID] usingSortDescriptors:nil];
-    if (photoLocal != nil &&
-        photoLocal.user != nil &&
-        photoLocal.feeling != nil) {
-        [self navToRoot];
-        [self showPhotosStripViewControllerFocusedOnUser:photoLocal.user photo:photoLocal updatePhotoData:YES animated:NO];
-//        self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
-    } else {
-        [[SDNetworkActivityIndicator sharedActivityIndicator] startActivity];
-        PFQuery * photoQuery = [PFQuery queryWithClassName:@"Photo"];
-        [photoQuery includeKey:@"user"];
-        [photoQuery includeKey:@"feeling"];
-        [photoQuery getObjectInBackgroundWithId:photoServerID block:^(PFObject * object, NSError * error){
-            if (!error && object != nil) {
-                PFObject * userServer = [object objectForKey:@"user"];
-                PFObject * feelingServer = [object objectForKey:@"feeling"];
-                Photo * photoLocalFromRetrieved = (Photo *)[self.coreDataManager addOrUpdatePhotoFromServer:object feelingFromServer:feelingServer userFromServer:userServer];
-                [self.coreDataManager saveCoreData];
-                [self navToRoot];
-                [self showPhotosStripViewControllerFocusedOnUser:photoLocalFromRetrieved.user photo:photoLocalFromRetrieved updatePhotoData:YES animated:NO];
-            } else {
-                UIAlertView * photoTroubleAlertView = [[UIAlertView alloc] initWithTitle:@"Hmmm..." message:@"Something went wrong, and we can't seem to find that particular Photo right now. Sorry! We'll work on this." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [photoTroubleAlertView show];
-            }
-            [[SDNetworkActivityIndicator sharedActivityIndicator] stopActivity];
-//            self.navigationController.visibleViewController.view.userInteractionEnabled = YES;
-        }];
-    }
-        
-}
-
-// This method is completely ridiculous... There must be a better way.
-- (void) navToRoot {
-    
-    self.floatingImageView.alpha = 0.0;
-    self.feelingsTableView.alpha = 1.0;
-    self.floatingImageView.userInteractionEnabled = NO;
-    self.feelingsTableView.userInteractionEnabled = YES;
-    
-    if (self.modalViewController != nil) {
-        [self.modalViewController.navigationController popToRootViewControllerAnimated:NO];
-        [self dismissModalViewControllerAnimated:NO];
-    }
-    if (self.navigationController.visibleViewController != self) {
-        if (self.navigationController.visibleViewController.modalViewController != nil) {
-            [self.navigationController.visibleViewController.modalViewController.navigationController popToRootViewControllerAnimated:NO]; // THIS IS RIDICULOUS...
-            [self.navigationController.visibleViewController dismissModalViewControllerAnimated:NO];
-        }
-    }
-
-    [self.navigationController popToRootViewControllerAnimated:NO];
-    self.view.userInteractionEnabled = YES;
-    
 }
 
 - (BOOL) getPhotosRequestIsExecutingForFeelingServerID:(NSString *)feelingServerID {
     NSSet * filteredSet = [self.getPhotosRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"SELF.groupServerID == %@", feelingServerID]];
     return filteredSet.count > 0;
+}
+
+- (void)buttonTouched:(UIButton *)button {
+    if (button == self.addPhotoButton) {
+        [self addPhoto];
+    } else if (button == self.pullPhotosButton) {
+        [self getPhotosFromServer];
+    } else if (button == self.toggleModesButton) {
+        self.galleryMode = (self.galleryMode == GalleryAlphabetical) ? GalleryRecent : GalleryAlphabetical;
+        [[NSUserDefaults standardUserDefaults] setInteger:self.galleryMode forKey:GALLERY_MODE_KEY];
+        [self adjustFetchRequestForGalleryMode:self.galleryMode];
+    }
+}
+
+- (void) addPhoto {
+
+    self.view.userInteractionEnabled = NO;
+    
+    NSString * feelingWord = [self.addPhotoFeelingWords objectAtIndex:self.addPhotoFeelingWordsNextIndex];
+    
+    NSLog(@"setting up feeling");
+    Feeling * feelingLocal = (Feeling *)[self.coreDataManager getFirstObjectForEntityName:@"Feeling" matchingPredicate:[NSPredicate predicateWithFormat:@"word == %@", feelingWord] usingSortDescriptors:nil];
+    PFObject * feelingServer = nil;
+    if (feelingLocal != nil) {
+        feelingServer = [PFObject objectWithClassName:@"Feeling"];
+        feelingServer.objectId = feelingLocal.serverID;
+        [feelingServer setObject:feelingLocal.word forKey:@"word"];
+    } else {
+        PFQuery * feelingQuery = [PFQuery queryWithClassName:@"Feeling"];
+        [feelingQuery whereKey:@"word" equalTo:feelingWord];
+        feelingServer = [feelingQuery getFirstObject];
+        if (feelingServer == nil) {
+            feelingServer = [PFObject objectWithClassName:@"Feeling"];
+            [feelingServer setObject:feelingWord forKey:@"word"];
+        }
+    }
+    NSLog(@"  feelingServer = %@", feelingServer);
+    
+    NSLog(@"saving feelingServer");
+    BOOL savingSuccess = [feelingServer save];
+    NSLog(@"  saving feelingServer success? %d", savingSuccess);
+    
+    NSLog(@"setting up photo");
+    PFObject * photoServer = [PFObject objectWithClassName:@"Photo"];
+    [photoServer setObject:feelingServer forKey:@"feeling"];
+    [photoServer setObject:[PFUser currentUser] forKey:@"user"];
+    NSLog(@"  photoServer = %@", photoServer);
+    
+    NSLog(@"saving photoServer");
+    savingSuccess = [photoServer save];
+    NSLog(@"  saving photoServer success? %d", savingSuccess);
+    
+    NSLog(@"getting full saved photo");
+    photoServer = [PFQuery getObjectOfClass:@"Photo" objectId:photoServer.objectId];
+    NSLog(@"  photo retrieved = %@", photoServer);
+    
+//    Photo * submittedPhoto = [self.coreDataManager addOrUpdatePhotoFromServer:photoServer feelingFromServer:feelingServer userFromServer:[PFUser currentUser]];
+//    NSLog(@"submittedPhotoLocal = %@", submittedPhoto);
+    
+//    [self.coreDataManager saveCoreData];
+    
+    self.view.userInteractionEnabled = YES;
+    
+    [self.addPhotoButton setTitle:[NSString stringWithFormat:@"Add %@ Photo to Server", [self.addPhotoFeelingWords objectAtIndex:self.peekAtNextAddPhotoFeelingWordsIndex]] forState:UIControlStateNormal];
+    
+}
+
+- (NSArray *)addPhotoFeelingWords {
+    if (_addPhotoFeelingWords == nil) {
+        _addPhotoFeelingWords = [NSArray arrayWithObjects:@"a-word", @"b-word", @"c-word", @"d-word", @"e-word", nil];
+    }
+    return _addPhotoFeelingWords;
+}
+
+- (int)addPhotoFeelingWordsNextIndex {
+    _addPhotoFeelingWordsNextIndex++;
+    if (_addPhotoFeelingWordsNextIndex >= self.addPhotoFeelingWords.count) {
+        _addPhotoFeelingWordsNextIndex = 0;
+    }
+    return _addPhotoFeelingWordsNextIndex;
+}
+
+- (int)peekAtNextAddPhotoFeelingWordsIndex {
+    int peek = _addPhotoFeelingWordsNextIndex + 1;
+    if (peek >= self.addPhotoFeelingWords.count) {
+        peek = 0;
+    }
+    return peek;
 }
 
 @end
